@@ -2,7 +2,8 @@ from datetime import datetime
 from unittest import TestCase, TestSuite, makeSuite, main
 import logging
 
-from moai.content import ListBasedContentProvider, DatabaseUpdater, BTreeDatabase
+from moai.content import ListBasedContentProvider, DatabaseUpdater
+from moai.database import BTreeDatabase
 
 DATA = [{'id': u'id:1',
          'content_type': u'publication',
