@@ -134,8 +134,16 @@ class IDatabaseUpdater(Interface):
 class IDatabase(Interface):
 
     def oai_sets(offset=0, batch_size=20):
-        pass
+        """Used by queries from the OAI server. Format returned should be the
+        following:
 
+        [{'id': <string>,
+          'name': <string>,
+          'description': <string>}]
+          
+        """
+        pass
+    
     def oai_query(offset=0,
                   batch_size=20,
                   sets=[],
@@ -186,6 +194,18 @@ class IDatabase(Interface):
         {filename: string,
          scope: string
         }
+        """
+        pass
+
+    def get_set(id):
+        """Returns a dictionary with set metadata,
+        this also contains all the instances that are part of a certain
+        class:
+
+        {id: string,
+         name: string,
+         description: string (optional),
+         content: list of content ids}
         """
         pass
 

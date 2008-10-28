@@ -38,7 +38,7 @@ SETS = [{'id': u'stuff',
          'name': u'Top publications'}
         ]
 
-class OAIQueryTest(TestCase):
+class DatabaseTest(TestCase):
 
     def setUp(self):
         self.db = BTreeDatabase()
@@ -48,7 +48,38 @@ class OAIQueryTest(TestCase):
     def tearDown(self):
         del self.db
 
-    def testBatching(self):
+    def testSetAddRemove(self):
+        # we have 4 sets to begin with
+        result = list(self.db.oai_sets(offset=0, batch_size=100))
+        self.assertEquals(len(result), 4)
+        self.db.add_set(id=u'added set',
+                        name=u'An added set',
+                        description=u'A set description')
+        result = list(self.db.oai_sets(offset=0, batch_size=100))
+        self.assertEquals(len(result), 5)
+        self.assertEquals(self.db.get_set(u'added set')['name'], 'An added set')
+        self.db.remove_set(u'added set')
+        result = list(self.db.oai_sets(offset=0, batch_size=100))
+        self.assertEquals(len(result), 4)
+
+    def testRecordAddRemove(self):
+        # we have 3 records to begin with
+        result = list(self.db.oai_query(offset=0, batch_size=100))
+        self.assertEquals(len(result), 3)
+        self.db.remove_content('id:1')
+        result = list(self.db.oai_query(offset=0, batch_size=100))
+        self.assertEquals(len(result), 2)
+
+        
+    def testOAISets(self):
+        result = list(self.db.oai_sets(offset=0, batch_size=100))
+        self.assertEquals(len(result), 4)
+        result = list(self.db.oai_sets(offset=2, batch_size=100))
+        self.assertEquals(len(result), 2)
+        result = list(self.db.oai_sets(offset=3, batch_size=100))
+        self.assertEquals(len(result), 1)
+
+    def testOAIQueryBatching(self):
         result = list(self.db.oai_query(offset=0, batch_size=100))
         self.assertEquals(len(result), 3)
         result = list(self.db.oai_query(offset=1, batch_size=100))
@@ -66,7 +97,7 @@ class OAIQueryTest(TestCase):
         result = list(self.db.oai_query(batch_size=-1))
         self.assertEquals(result, [])
 
-    def testDateStamps(self):
+    def testOAIQueryDateStamps(self):
         result = list(self.db.oai_query())
         self.assertEquals(len(result), 3)
         result = list(self.db.oai_query(from_date=datetime(2000, 01, 01)))
@@ -89,7 +120,7 @@ class OAIQueryTest(TestCase):
                                         until_date=datetime(2005, 01, 01)))
         self.assertEquals(len(result), 1)
 
-    def testSets(self):
+    def testOAIQuerySets(self):
         result = list(self.db.oai_query(sets=['stuff']))
         self.assertEquals(len(result), 3)
         result = list(self.db.oai_query(sets=['publications']))
@@ -111,7 +142,7 @@ class OAIQueryTest(TestCase):
 
    
 def test_suite():
-    return TestSuite((makeSuite(OAIQueryTest), ))
+    return TestSuite((makeSuite(DatabaseTest), ))
 
 
 if __name__ == '__main__':

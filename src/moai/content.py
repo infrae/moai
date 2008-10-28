@@ -162,11 +162,11 @@ class BTreeDatabase(object):
         return eval(self_content[id.encode('utf8')])['assets']
 
     def get_set(self, id):
-        return eval(self_sets[id.encode('utf8')])
+        return eval(self._sets[id.encode('utf8')])
 
     def remove_content(self, id):
         id = id.encode('utf8')
-        data = self._hash.get(id)
+        data = eval(self._content.get(id))
         if data is None:
             return False
         datestamp = self._datetime2key(data['record']['when_modified'])
@@ -205,7 +205,7 @@ class BTreeDatabase(object):
         data['description'] = description
         self._sets[id.encode('utf8')] = unicode(data)
 
-    def remove_set(id):
+    def remove_set(self, id):
         data = eval(self._sets[id.encode('utf8')])
         del self._sets[id.encode('utf8')]
         for cid in data['content']:
