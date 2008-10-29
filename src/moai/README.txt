@@ -24,7 +24,7 @@ to consume that data. There can be many types of content
 providers, such as file based content providers, or content
 providers that get their data out of a database
 
->>> from moai.content import ListBasedContentProvider
+>>> from moai.provider.list import ListBasedContentProvider
 >>> p = ListBasedContentProvider(content, sets)
 
 A content provider is a list of records. We can ask how
@@ -71,7 +71,7 @@ a file, or in memory if no arguments are passed.
 
 To get the content into the database we use a DatabaseUpdater
 
->>> from moai.content import DatabaseUpdater
+>>> from moai.update import DatabaseUpdater
 
 We pass the database and the content to the updater, a log instance is also
 needed
