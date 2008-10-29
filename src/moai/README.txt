@@ -10,11 +10,11 @@ Lets make some fake data:
 
 >>> content = [{'id':u'tester',
 ...            'content_type': u'document',
-...            'when_modified': datetime.datetime.now(),
+...            'when_modified': datetime.datetime(2008, 10, 29, 13, 25, 00),
 ...            'deleted':False,
 ...            'scope':u'public',
 ...            'sets':[u'stuff'],
-...            'bar':[u'foo']}]
+...            'title':[u'This is a test']}]
 >>> sets = [{'id':u'stuff', 
 ...          'name':u'Stuff',
 ...          'description':u'a set with some stuff'}]
@@ -49,11 +49,11 @@ it can also have an arbitrary number of other values. We can ask
 the content object what theyre names are:
 
 >>> c.field_names()
-['bar']
+['title']
 
 We can then get the values. Note that this should always return a list
->>> c.get_values('bar')
-[u'foo']
+>>> c.get_values('title')
+[u'This is a test']
 
 We can periodicly ask the dataprovider to update its list of content objects
 A date is supplied so the provider only has to look for new objects younger
@@ -90,7 +90,7 @@ Lets see if we can retrieve some data from the database
 ['content_type', 'deleted', 'id', 'scope', 'when_modified']
 
 >>> db.get_metadata('tester')
-{'bar': [u'foo']}
+{'title': [u'This is a test']}
 
 The database also provides some extra methods used by the oai
 Server. One of these is list_sets:
@@ -107,3 +107,80 @@ database called oai_query
 Now that we have our OAI database setup, we can serve it to 
 the world. The OAI Server can serve multiple OAI feeds, 
 each with it's own configuration. 
+
+>>> from moai.server import Server, ServerConfig, CGIRequest
+>>> config = ServerConfig('test',
+...                       'A test repository',
+...                       'http://localhost/repo/test',
+...                        logging) 
+>>> s = Server('http://localhost/repo', db)
+>>> s.add_config(config)
+>>> req = CGIRequest('http://localhost/repo/test', verb='Identify')
+>>> s.handle_request(req)
+Status: 200 OK
+...
+<Identify>
+<repositoryName>A test repository</repositoryName>
+...
+</Identify>
+...
+
+Cool! Lets see what happens if we use a different url
+
+>>> req = CGIRequest('http://localhost/repo/bla', verb='Identify')
+>>> s.handle_request(req)
+Status: 404 ...
+...
+
+Right, that makes sense. Now let's see what happens if we add a wrong verb
+
+>>> req = CGIRequest('http://localhost/repo/test', verb='Bla')
+>>> s.handle_request(req)
+Status: 200 ...
+Content-Type: text/xml
+...
+<error code="badVerb">Illegal verb: Bla</error>
+...
+
+That seems to work.. We're not going to test the full server here. That's been done
+in the pyoai tests.
+
+Now let's see if we can get a list of sets the server supports
+
+>>> req = CGIRequest('http://localhost/repo/test', verb='ListSets')
+>>> s.handle_request(req)
+Status: 200 ...
+...
+<set>
+<setSpec>set_stuff</setSpec>
+<setName>Stuff</setName>
+</set>
+...
+
+We will now get the ids of the Records
+
+>>> req = CGIRequest('http://localhost/repo/test',
+...                  verb='ListIdentifiers',
+...                  metadataPrefix='oai_dc')
+>>> s.handle_request(req)
+Status: 200 ...
+...
+<ListIdentifiers>
+<header>
+<identifier>oai:tester</identifier>
+<datestamp>2008-10-29T13:25:00Z</datestamp>
+<setSpec>stuff</setSpec>
+</header>
+</ListIdentifiers>
+...
+
+Now, let's get the full records:
+>>> req = CGIRequest('http://localhost/repo/test',
+...                  verb='ListRecords',
+...                  metadataPrefix='oai_dc')
+>>> s.handle_request(req)
+Status: 200 ...
+...
+<dc:title>This is a test</dc:title>
+...
+

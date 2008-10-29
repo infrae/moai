@@ -102,7 +102,8 @@ class BTreeDatabase(object):
                   not_sets=[],
                   filter_sets=[],
                   from_date=None,
-                  until_date=None):
+                  until_date=None,
+                  identifier=None):
 
         if len(self._dates) == 0:
             yield
@@ -167,6 +168,10 @@ class BTreeDatabase(object):
             filter_set_ids = filter_set_ids.union(set(eval(self._sets[set_id])['content']))
         if filter_set_ids:
             ids = ids.difference(filter_set_ids)
+
+        if identifier:
+            yield eval(self._content[id])
+            return
         
         # filter batching
         

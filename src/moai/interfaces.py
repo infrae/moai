@@ -150,7 +150,8 @@ class IDatabase(Interface):
                   not_sets=[],
                   filter_sets=[],
                   from_date=None,
-                  until_date=None):
+                  until_date=None,
+                  identifier=None):
         """Used by queries from the OAI server. Format returned should be the
         following:
 
@@ -237,10 +238,16 @@ class IDatabase(Interface):
         
 class IServerConfig(Interface):
 
-    name = Attribute(u"Name of this OAI Server instance")
+    id = Attribute(u"Id of the OAI Server instance")
+    name = Attribute(u"Name of this OAI Server instance (for identify)")
+    url = Attribute(u"Base URL of the OAI Server (for identify)")
+    log = Attribute(u"Logger instance that logs activity and errors")
     admins = Attribute(u"List of email addresses that can be contacted, "
                       "for questions about the feed")
-
+    metadata_prefixes = Attribute(
+        u"List of metadataPrefixes this server can handle"
+        "by default the list has 'oai_dc' included")
+                   
     # some filter attributes
 
     content_type = Attribute(u"Type of content objects being served")
@@ -252,10 +259,25 @@ class IServerConfig(Interface):
         u"Objects served must have one of these sets, besides the"
         "conforming to the (dis-)allowed sets")
     delay = Attribute(u"number of miliseconds to delay the feed")
-    must_have_assets = Attribute(u"Objects can not be metadata_only")
-        
 
-class IServerBackend(Interface):
+
+    def get_oai_id(internal_id):
+        """Rename internal id into oai_id"""
+
+    def get_internal_id(oai_id):
+        """Rename oai_id into internal id"""
+
+    def get_setspec_id(internal_set_id):
+        """Rename internal set id into a setspec id"""
+
+    def get_internal_set_id(oai_setspec_id):
+        """Rename setspec id into  internal set id"""
+
+class IServerRequest(Interface):
+
+    def url():
+        """Return the current url
+        """
 
     def redirect(url):
         """Redirect to this url
@@ -274,8 +296,46 @@ class IServerBackend(Interface):
         """Write data back to the client
         """
 
-    
+    def send_status(code, msg='', mimetype='text/plain'):
+        """Return a status code to the user
+        """
 
+class IServer(Interface):
+
+    def add_config(config):
+        """Add a ServerConfig to the server
+        """
+
+    def get_config(id):
+        """Get a ServerConfig by id
+        """
+        pass
+    
+    def download_asset(url, config):
+        """Download an asset from a url
+        """
+        pass
+    
+    def allow_download(url, config):
+        """Is user allowed to download this asset (returns bool)
+        """
+        pass
+
+    def is_asset_url(url, config):
+        """Is this url pointing to an asset (returns bool)
+        """
+        pass
+            
+    def handle_request(req):
+        """Serve this request this method goes through the following steps:
+        1. check if url is valid
+        2. try to get ServerConfig for this url
+        3. test if this is an asset url, if so check if download is allowed,
+           and download asset
+        4. if not asset url, get the oai server through the OAIServerFactory
+        5. call the handleRequest method on the oai server, and return the result
+        """
+        pass
 
     
 
