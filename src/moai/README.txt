@@ -6,18 +6,34 @@ The Meta OAI Server.
 We start by importing the MOAI package
 >>> import moai
 
+Moai uses logging extensively, let's make a log instance first
+>>> import logging
+>>> log = logging.getLogger('moai')
+
+We now create the core MOAI object, this will register some 
+pluggable extensions.
+
+>>> from moai.core import MOAI
+>>> moai = MOAI(log)
+
 Lets make some fake data:
 
 >>> content = [{'id':u'tester',
+...            'label':u'Tester',
 ...            'content_type': u'document',
 ...            'when_modified': datetime.datetime(2008, 10, 29, 13, 25, 00),
 ...            'deleted':False,
-...            'scope':u'public',
 ...            'sets':[u'stuff'],
-...            'title':[u'This is a test']}]
->>> sets = [{'id':u'stuff', 
-...          'name':u'Stuff',
-...          'description':u'a set with some stuff'}]
+...            'is_set': False,
+...            'title':[u'This is a test']},
+...            {'id':u'stuff', 
+...            'label':u'Stuff',
+...            'content_type': u'collection',
+...            'when_modified': datetime.datetime.now(),
+...            'deleted':False,
+...            'sets':[],
+...            'is_set': True
+...            }]
 
 Now we will use a simple list based content provider
 to consume that data. There can be many types of content
@@ -25,24 +41,27 @@ providers, such as file based content providers, or content
 providers that get their data out of a database
 
 >>> from moai.provider.list import ListBasedContentProvider
->>> p = ListBasedContentProvider(content, sets)
+>>> p = ListBasedContentProvider(content)
+
+We also need to pass in a content class, that knows how to dealt with
+the data returned by the provider. In this case, it's a dictionary, so
+we'll use a content class that can handle dictionaries
+
+>>> from moai.content import DictBasedContentObject
+>>> p.set_content_class(DictBasedContentObject)
+
 
 A content provider is a list of records. We can ask how
 many records it holds
 
 >>> p.count()
-1
+2
 
-The data should have certain values, to make the provider work,
-a content object should always have a unique ID. We can use this id
-to retrieve a single content object
+We can also get all the content objects from the provider, 
 
->>> c = p.get_content_by_id('tester')
-
-We can also get all content objects in a generator, 
-
->>> list(p.get_content())[0].id == c.id
-True
+>>> c = list(p.get_content())[0]
+>>> c.id
+u'tester'
 
 Besides some of the required values a content object must have,
 it can also have an arbitrary number of other values. We can ask
@@ -57,7 +76,7 @@ We can then get the values. Note that this should always return a list
 
 We can periodicly ask the dataprovider to update its list of content objects
 A date is supplied so the provider only has to look for new objects younger
-then that date.
+then that date. The update call will return a list of new found ids
 
 >>> p.update(datetime.datetime.now())
 []
@@ -76,18 +95,22 @@ To get the content into the database we use a DatabaseUpdater
 We pass the database and the content to the updater, a log instance is also
 needed
 
->>> import logging
->>> updater = DatabaseUpdater(p, db, logging)
+>>> updater = DatabaseUpdater(p, db, log)
 
-Now we update the database..
+Now we update the database.. 
 
 >>> updater.update()
-True
+<generator object ...>
+
+Note that this method returns a generator with progress information
+we have to iterate through the results to make sure everything is updated
+
+>>> for c in updater.update():pass
 
 Lets see if we can retrieve some data from the database
 
 >>> sorted(db.get_record('tester').keys())
-['content_type', 'deleted', 'id', 'scope', 'when_modified']
+['content_type', 'deleted', 'id', 'when_modified']
 
 >>> db.get_metadata('tester')
 {'title': [u'This is a test']}
@@ -112,7 +135,7 @@ each with it's own configuration.
 >>> config = ServerConfig('test',
 ...                       'A test repository',
 ...                       'http://localhost/repo/test',
-...                        logging) 
+...                        log) 
 >>> s = Server('http://localhost/repo', db)
 >>> s.add_config(config)
 >>> req = CGIRequest('http://localhost/repo/test', verb='Identify')

@@ -1,0 +1,49 @@
+import sys
+import logging
+
+from zope.interface import Interface
+import martian
+
+import moai.meta
+import moai.metadata
+
+__version__ = '0.3.0'
+    
+class MOAI(object):
+    def __init__(self, log, verbose=False, debug=False):
+        self.verbose = verbose
+        self.debug = debug
+        self.log = self.setup_log(log)
+        self.registry = martian.GrokkerRegistry()
+        self.registry.grok('moai.meta', moai.meta)
+        self.registry.grok('moai.metadata', moai.metadata)
+        
+    def get_configuration(self, configname):
+        return moai.meta.CONFIGURATION_PROFILES.get(configname)
+
+    def add_extension_module(self, module_name):
+        fromlist = []
+        if '.' in module_name:
+            fromlist = module_name.split('.')[:-1]
+        try:
+            module = __import__(module_name, fromlist=fromlist)
+        except ImportError, err:
+            self.log.warning('Could not import extension module "%s":\n         %s' % (
+                module_name, err))
+            if self.debug:
+                raise
+            return
+        self.log.info('Imported extension_module "%s"' % module_name)
+        self.registry.grok(module_name, module)
+        
+    def setup_log(self, log):
+        if self.verbose:
+            errlog = logging.StreamHandler(sys.stderr)
+            errlog.setLevel(logging.INFO)
+            fmt = logging.Formatter(
+                '%(levelname)-8s %(message)s', None)
+            errlog.setFormatter(fmt)
+            log.addHandler(errlog)
+            log.setLevel(logging.INFO)
+        return log
+                

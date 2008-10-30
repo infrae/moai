@@ -1,0 +1,9 @@
+<publication xmlns="http://example.org">
+    <id>publication:1</id>
+    <title>An example publication</title>
+    <set ref="set:1"/>
+    <author ref="person:1"/>
+    <abstract>
+        This is an example publication that comes with the OAIMetaServer
+    </abstract>
+</publication>

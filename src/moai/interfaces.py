@@ -4,6 +4,15 @@ class IContentProvider(Interface):
     """Object that provides the content used to build the database
     that is used to serve the actual oai data
     """
+
+    def set_logger(self, log):
+        """Set the logger instance for this class
+        """
+
+    def set_content_class(self, content_object_class):
+        """Sets the class to be returned by the 'get_content' method of the provider
+        """
+        pass
     
     def update(from_date):
         """Harvests, new content added since from_date
@@ -19,68 +28,30 @@ class IContentProvider(Interface):
         """Returns a list (or generator) of content objects.
         """
 
-    def get_content_by_id(id):
-        """Return a content object associated with a specific id
-        """
-        pass
-
-
-    def get_sets():
-        """Returns a list (or generator) of content sets.
-        """
-
-    def get_sets_by_id(id):
-        """Return a content set associated with a specific id
-        """
-        pass
-
-
-    
 class IContentObject(Interface):
 
     id = Attribute(u"Id of the content object")
+    label = Attribute(u"Name of the object")
     content_type = Attribute(u"Type of the content object")
     when_modified = Attribute(u"Modification date of the object")
     deleted = Attribute(u"Boolean that tells if object is deleted or not")
-    scope = Attribute(u'String indicating how public data is'
-                      '(public/internal/private) if not present scope'
-                      '"public" is assumed')
     sets = Attribute(u"A list of ids from sets that this object belongs to")
-    
-    # we also need to store the provider, since it can be needed when
-    # validating the object relations
-    provider = Attribute(u"The content provider that returned this object")
+    is_set = Attribute(u"Boolean indicating if this object is a set")
 
+    def add_data(data):
+        """Called by IContentProvider, to fill the object with data
+        """
+        
     def field_names():
         """Return a list of field names, used in this object
         """
         pass
 
-    def relation_names():
-        """Return a list of relation names, used in this object
-        """
-        
     def get_values(field_name):
         """Return a list of python objects (string/int/etc)
         from a specific field name
         """
         pass
-
-    def get_relations(relation_name):
-        """Return a list of tuples containing id/type strings
-        of other content objects
-        """   
-
-        
-class IContentSet(Interface):
-
-    id = Attribute(u"Id of the set")
-    name = Attribute(u"Name of the set")
-    description = Attribute(u"Descriptive text of the set")
-    when_modified = Attribute(u"Modification date of the object")
-
-    provider = Attribute(u"The content provider that returned this object")
-
         
 class IContentValidator(Interface):
 
@@ -337,6 +308,3 @@ class IServer(Interface):
         """
         pass
 
-    
-
-    

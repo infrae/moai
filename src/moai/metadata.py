@@ -2,16 +2,20 @@
 from lxml.builder import ElementMaker
 from lxml.etree import SubElement
 
+from moai import MataDataPrefix, name
+from moai.meta import METADATA_PREFIXES
+
 XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
 
 def get_writer(prefix, config, db):
-    writers = {
-        'oai_dc': OAIDCWriter
-        }
-    return writers[prefix](prefix, config, db)
+    writer = METADATA_PREFIXES[prefix]
+    return writer(prefix, config, db)
 
 
-class OAIDCWriter(object):
+class OAIDC(MataDataPrefix):
+    
+    name('oai_dc')
+    
     def __init__(self, prefix, config, db):
         self.prefix = prefix
         self.config = config

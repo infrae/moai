@@ -1,0 +1,4 @@
+<person xmlns="http://example.org">
+    <id>person:1</id>
+    <name>John Doe</name>
+</person>

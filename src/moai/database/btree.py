@@ -6,21 +6,19 @@ from zope.interface import implements
 
 from moai.interfaces import IDatabase
 
-
-
 class BTreeDatabase(object):
     implements(IDatabase)
 
-    def __init__(self, dbpath=None):
+    def __init__(self, dbpath=None, mode='w'):
 
         if dbpath is None:
-            self._content = bsddb.hashopen(dbpath, 'w')
-            self._sets = bsddb.hashopen(dbpath, 'w')
-            self._dates = bsddb.btopen(dbpath, 'w')
+            self._content = bsddb.hashopen(dbpath, mode)
+            self._sets = bsddb.hashopen(dbpath, mode)
+            self._dates = bsddb.btopen(dbpath, mode)
         else:
-            self._content = bsddb.hashopen(dbpath + '_content.db', 'w')
-            self._sets = bsddb.hashopen(dbpath + '_sets.db', 'w')
-            self._dates = bsddb.btopen(dbpath + '_dates.db','w')
+            self._content = bsddb.hashopen(dbpath + '_content.db', mode)
+            self._sets = bsddb.hashopen(dbpath + '_sets.db', mode)
+            self._dates = bsddb.btopen(dbpath + '_dates.db', mode)
 
     def _datetime2key(self, datetime):
         return '%0.10d' % time.mktime(datetime.timetuple())
@@ -78,7 +76,7 @@ class BTreeDatabase(object):
         data = eval(self._sets[id.encode('utf8')])
         data['id'] = id
         data['name'] = name
-        data['description'] = description
+        data['description'] = description or ''
         self._sets[id.encode('utf8')] = unicode(data)
 
     def remove_set(self, id):

@@ -2,7 +2,7 @@
 from zope.interface import implements
 
 from moai.interfaces import IDatabaseUpdater
-
+from moai.error import ContentError, DatabaseError
 
 class DatabaseUpdater(object):
 
@@ -20,25 +20,56 @@ class DatabaseUpdater(object):
         self.content = content_provider
 
     def set_logger(self, log):
-        self.logger = log
+        self._log = log
 
     def update(self, validate=True):
+        total = self.content.count()
+        self._log.info('Updating %s with %s objects from %s' % (self.db.__class__.__name__,
+                                                           total,
+                                                           self.content.__class__.__name__))
+        count = 0
+        errors = 0
         for content in self.content.get_content():
+            count += 1
+            
+            if isinstance(content, ContentError):
+                errors += 1
+                yield count, total, None, content
+                continue
+
+            if content.is_set:
+                try:
+                    self.db.add_set(content.id, content.label, content.get_values('description'))
+                except Exception:
+                    yield count, total, content.id, DatabaseError(content.id, 'set')
+                    continue
+                yield count, total, content.id, None
+                continue
+            
             id = content.id
             sets = content.sets
             record_data = {'id':content.id,
                            'content_type': content.content_type,
                            'when_modified': content.when_modified,
-                           'deleted': content.deleted,
-                           'scope': content.scope}
+                           'deleted': content.deleted}
+
             metadata = {}
+            got_error = False
             for name in content.field_names():
-                metadata[name] = content.get_values(name)
+                try:
+                    metadata[name] = content.get_values(name)
+                except Exception:
+                    yield count, total, content.id, DatabaseError(content.id, 'set')
+                    got_error = True
+                    break
+            if got_error:
+                continue
 
             assets = {}
-            self.db.add_content(id, sets, record_data, metadata, assets)
-
-        for set in self.content.get_sets():
-            self.db.add_set(set.id, set.name, set.description)
+            try:
+                self.db.add_content(id, sets, record_data, metadata, assets)
+            except Exception:
+                yield count, total, content.id, DatabaseError(content.id, 'set')
+                continue
             
-        return True
+            yield count, total, content.id, None

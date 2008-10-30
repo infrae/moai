@@ -3,49 +3,75 @@ from unittest import TestCase, TestSuite, makeSuite, main
 import logging
 
 from moai.provider.list import ListBasedContentProvider
+from moai.content import DictBasedContentObject
 from moai.update import DatabaseUpdater
 from moai.database import BTreeDatabase
 
 DATA = [{'id': u'id:1',
+         'label': u'Publication 1',
          'content_type': u'publication',
          'when_modified': datetime(2008, 01, 01, 14, 30, 00),
          'deleted': False,
-         'scope': u'public',
-         'sets': [u'stuff', u'publications', 'top']
+         'sets': [u'stuff', u'publications', 'top'],
+         'is_set': False,
          },
         {'id': u'id:2',
+         'label': u'Dataset 1',
          'content_type': u'dataset',
          'when_modified': datetime(2004, 01, 01, 14, 30, 00),
          'deleted': False,
-         'scope': u'public',
-         'sets': [u'stuff', u'datasets']
+         'sets': [u'stuff', u'datasets'],
+         'is_set': False,
          },
         {'id': u'id:3',
+         'label': u'Publication 2',
          'content_type': u'publication',
          'when_modified': datetime(2006, 01, 01, 14, 30, 00),
          'deleted': False,
-         'scope': u'public',
-         'sets': [u'stuff', 'publications']
-         }
-        ]
-
-SETS = [{'id': u'stuff',
-         'name': u'Stuff',
-         'description': u'Assorted Stuffs'},
+         'sets': [u'stuff', 'publications'],
+         'is_set': False,
+         },
+        {'id': u'stuff',
+         'label': u'Stuff',
+         'content_type': u'collection',
+         'when_modified': datetime(2006, 01, 01, 14, 30, 00),
+         'deleted': False,
+         'sets': [],
+         'is_set': True,
+         },
         {'id': u'publications',
-         'name': u'publication set'},
+         'label': u'publication set',
+         'content_type': u'collection',
+         'when_modified': datetime(2006, 01, 01, 14, 30, 00),
+         'deleted': False,
+         'sets': [],
+         'is_set': True,
+         },
         {'id': u'datasets',
-         'name': u'Datasets'},
+         'label': u'datasets',
+         'content_type': u'collection',
+         'when_modified': datetime(2006, 01, 01, 14, 30, 00),
+         'deleted': False,
+         'sets': [],
+         'is_set': True,
+         },
         {'id': u'top',
-         'name': u'Top publications'}
+         'label': u'top publications',
+         'content_type': u'collection',
+         'when_modified': datetime(2006, 01, 01, 14, 30, 00),
+         'deleted': False,
+         'sets': [],
+         'is_set': True,
+         },
         ]
 
 class DatabaseTest(TestCase):
 
     def setUp(self):
         self.db = BTreeDatabase()
-        provider = ListBasedContentProvider(DATA, SETS)
-        DatabaseUpdater(provider, self.db, logging).update()
+        provider = ListBasedContentProvider(DATA)
+        provider.set_content_class(DictBasedContentObject)
+        list(DatabaseUpdater(provider, self.db, logging).update())
         
     def tearDown(self):
         del self.db
