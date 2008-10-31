@@ -43,6 +43,12 @@ class OAIServer(object):
         for record in self._listQuery(set, from_, until, cursor, batch_size):
             yield self._createHeader(record)
 
+    def getRecord(self, metadataPrefix, identifier):
+        self._checkMetadataPrefix(metadataPrefix)
+        for record in self._listQuery(identifier=identifier):
+            header, metadata = self._createHeaderAndMetadata(record)
+        return header, metadata, None
+
     def _checkMetadataPrefix(self, metadataPrefix):
         if metadataPrefix not in self.config.metadata_prefixes:
             raise oaipmh.error.CannotDisseminateFormatError
@@ -60,8 +66,8 @@ class OAIServer(object):
         metadata.record = record
         return header, metadata
     
-    def _listQuery(self, set, from_, until, 
-                   cursor, batch_size, identifier=None):
+    def _listQuery(self, set=None, from_=None, until=None, 
+                   cursor=0, batch_size=10, identifier=None):
 
         if identifier:
             identifier = self.config.get_internal_id(identifier)

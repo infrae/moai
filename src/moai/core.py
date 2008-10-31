@@ -1,4 +1,5 @@
 import sys
+import os
 import logging
 
 from zope.interface import Interface
@@ -17,6 +18,7 @@ class MOAI(object):
         self.registry = martian.GrokkerRegistry()
         self.registry.grok('moai.meta', moai.meta)
         self.registry.grok('moai.metadata', moai.metadata)
+        self._module_paths = []
         
     def get_configuration(self, configname):
         return moai.meta.CONFIGURATION_PROFILES.get(configname)
@@ -35,6 +37,17 @@ class MOAI(object):
             return
         self.log.info('Imported extension_module "%s"' % module_name)
         self.registry.grok(module_name, module)
+        if module.__file__ not in self._module_paths:
+            self._module_paths.append(module.__file__)
+            if os.path.basename(module.__file__).startswith('__init__.py'):
+                module_dir = os.path.dirname(module.__file__)
+                for file in os.listdir(module_dir):
+                    if not file.endswith('.py'):
+                        continue
+                    if file == '__init__.py' or file[0] in ['.', '#']:
+                        continue
+
+                    self.add_extension_module(module_name + '.%s' % file.split('.')[0])
         
     def setup_log(self, log):
         if self.verbose:
