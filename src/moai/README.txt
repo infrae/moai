@@ -57,11 +57,19 @@ many records it holds
 >>> p.count()
 2
 
+We can get the object back by id. But what the id is, depends
+on the provider. A provider does not known what kind of content
+it is serving. So we can not use the 'id' key from the content.
+A ListBasedContentProvider used the index number as id
+
+>>> c = p.get_content_by_id(0)
+>>> c.id 
+u'tester'
+
 We can also get all the content objects from the provider, 
 
->>> c = list(p.get_content())[0]
->>> c.id
-u'tester'
+>>> list(p.get_content())[0].id == c.id
+True
 
 Besides some of the required values a content object must have,
 it can also have an arbitrary number of other values. We can ask
@@ -193,7 +201,7 @@ Status: 200 ...
 <header>
 <identifier>oai:tester</identifier>
 <datestamp>2008-10-29T13:25:00Z</datestamp>
-<setSpec>stuff</setSpec>
+<setSpec>set_stuff</setSpec>
 </header>
 </ListIdentifiers>
 ...

@@ -38,7 +38,9 @@ class IContentObject(Interface):
     sets = Attribute(u"A list of ids from sets that this object belongs to")
     is_set = Attribute(u"Boolean indicating if this object is a set")
 
-    def add_data(data):
+    provider = Attribute(u"ContentProvider instance that created this object")
+
+    def update(data, provider):
         """Called by IContentProvider, to fill the object with data
         """
         
@@ -196,7 +198,7 @@ class IDatabase(Interface):
         """
         pass
 
-    def add_set(id, name, description):
+    def add_set(id, name, description=None):
         """Add a set to the database
         Returns a boolean to indicate if the insertion was succesful
         """

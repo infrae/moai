@@ -61,22 +61,30 @@ class BTreeDatabase(object):
                                     'assets':assets_data,
                                     'sets':sets})
         for set in sets:
-            set = set.encode('utf8')
-            if not self._sets.has_key(set):
-                self._sets[set] = unicode({'content':[]})
-            data = eval(self._sets[set])
-            data['content'].append(id)
-            self._sets[set] = unicode(data)
+            set_id = set.encode('utf8')
+            if not self._sets.has_key(set_id):
+                self._sets[set_id] = unicode({'id':set,
+                                              'name':set,
+                                              'description':None,
+                                              'content':[]})
+            data = eval(self._sets[set_id])
+            if id not in data['content']:
+                data['content'].append(id)
+            self._sets[set_id] = unicode(data)
         return True
 
-    def add_set(self, id, name, description):
-        id = id.encode('utf8')
+    def add_set(self, set_id, name, description=None):
+        id = set_id.encode('utf8')
         if not self._sets.has_key(id):
             self._sets[id] = unicode({'content':[]})
-        data = eval(self._sets[id.encode('utf8')])
-        data['id'] = id
+        data = eval(self._sets[id])
+        data['id'] = set_id
         data['name'] = name
-        data['description'] = description or ''
+        if description:
+            data['description'] = description
+        else:
+            data['description'] = None
+            
         self._sets[id.encode('utf8')] = unicode(data)
 
     def remove_set(self, id):

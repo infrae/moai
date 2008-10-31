@@ -1,3 +1,4 @@
+import time
 import datetime
 
 from zope.interface import implements
@@ -8,7 +9,8 @@ from moai.interfaces import IContentObject
 class DictBasedContentObject(object):
     implements(IContentObject)
 
-    def add_data(self, data):
+    def update(self, data, provider):
+        self.provider = provider
         data = data.copy()
         self.id = self.extract_id(data)
         self.label = self.extract_label(data)
@@ -82,8 +84,15 @@ class XMLContentObject(object):
         result = []
 
         for value in values:
+            assert isinstance(value, basestring), (
+                'xpath result of value "%s" is of type "%s", expected string|unicode' %(
+                name, type(value).__name__))
+
+            if pytype is datetime.datetime:
+                value = datetime.datetime(*time.strptime(value, '%Y-%m-%dT%H:%M:%S')[:6])
             try:
-                pyval = pytype(value)
+                if type(value) != pytype:
+                    pyval = pytype(value)
             except:
                 raise ValueError('can not convert %s value "%s" into %s' % (name, value, pytype))
             result.append(value)
@@ -93,7 +102,8 @@ class XMLContentObject(object):
             result = result[0]
         return result
 
-    def add_data(self, path):
+    def update(self, path, provider):
+        self.provider = provider
         self.nsmap = {}
         doc = etree.parse(path)
         self.root = doc.getroot()

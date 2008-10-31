@@ -2,8 +2,20 @@
     <id>publication:1</id>
     <title>An example publication</title>
     <set ref="set:1"/>
+    <scope>public</scope>
     <author ref="person:1"/>
-    <abstract>
+    <abstract xml:lang="en">
         This is an example publication that comes with the OAIMetaServer
     </abstract>
+    <keyword>test</keyword>
+    <keyword>example</keyword>
+    <issued>2008-10-31T12:36:00</issued>
+    <asset>
+      <filename>foo.pdf</filename>
+      <mimetype>application/pdf</mimetype>
+    </asset>
+    <asset>
+      <filename>cover.jpg</filename>
+      <mimetype>image/jpeg</mimetype>
+    </asset>
 </publication>

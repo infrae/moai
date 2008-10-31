@@ -1,39 +1,14 @@
 import os
-import time
-import datetime
-
-from lxml import etree
 
 from moai import ConfigurationProfile, name
-from moai.content import XMLContentObject
 from moai.update import DatabaseUpdater
 from moai.database.btree import BTreeDatabase
 from moai.provider.file import FileBasedContentProvider
 from moai.server import Server, ServerConfig
+from moai.http.cherry import start_server
 
-class ExampleContentObject(XMLContentObject):
-
-    def add_data(self, path):
-        self.nsmap = {'ex':'http://example.org'}
-        doc = etree.parse(path)
-        self.root = doc.getroot()
-
-        self.id = self.xpath('ex:id/text()', 'id', unicode, required=True)
-        self.content_type = self.root.xpath('local-name()')
-        if self.content_type == 'publication':
-            self.label = self.xpath('ex:title/text()', 'title', unicode, required=True)
-        else:
-            self.label = self.xpath('ex:name/text()', 'title', unicode, required=True)
+from moai.examples.example_content import ExampleContentObject
             
-        self.when_modified = datetime.datetime(*time.gmtime(os.path.getmtime(path))[:6])
-        self.deleted = False
-        self.sets = self.xpath('ex:set/@ref', 'set', unicode, required=False, multi=True)
-        self.is_set = self.content_type == 'set'
-        self._fields = {
-            'abstract': [self.xpath('ex:abstract', 'abstract', unicode, required=False)],
-            'author': self.xpath('ex:author/@ref', 'author', unicode, required=False, multi=True)
-            }
-        
 class ExampleConfiguration(ConfigurationProfile):
     name('example')
     
@@ -60,13 +35,12 @@ class ExampleConfiguration(ConfigurationProfile):
             ServerConfig('example',
                          'An example OAI Server',
                          'http://localhost:8080/repo/example',
-                         self.log))
+                         self.log,
+                         sets_allowed=['public'],
+                         metadata_prefixes=['oai_dc', 'mods', 'dare_didl']))
         return server
                    
-    def get_request():
-        pass
-
-    def start_server(log):
-        start_cherrypy_server(host, port, threads, self)
+    def start_server(self):
+        start_server('127.0.0.1', 8080, 10, 'repo', self.get_server())
 
         

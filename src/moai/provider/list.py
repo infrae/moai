@@ -26,14 +26,19 @@ class ListBasedContentProvider(object):
         self._content_object_class = content_object_class
         
     def get_content(self):
-        for content in self._content:
+        for id, content in enumerate(self._content):
             obj = self._content_object_class()
             try:
-                obj.add_data(content)
+                obj.update(content, self)
             except Exception, err:
-                yield ContentError(self._content_object_class, path)
+                yield ContentError(self._content_object_class, id)
                 continue
             yield obj
+
+    def get_content_by_id(self, id):
+        obj = self._content_object_class()
+        obj.update(self._content[id], self)
+        return obj
 
 
 

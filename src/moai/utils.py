@@ -1,8 +1,22 @@
 import sys
+import time
 import logging
 from optparse import OptionParser
 
 from moai.core import MOAI, __version__
+
+
+def get_duration(starttime):
+    h,m,s = time.asctime(time.gmtime(time.time() - starttime)).split(' ')[-2].split(':')
+    s = int(s)
+    m = int(m)
+    h = int(h)
+    duration = '%s second%s' % (int(s), {1:''}.get(s, 's'))
+    if m:
+        duration = '%s minute%s, %s' % (int(m), {1:''}.get(m, 's'), duration)
+    if h:
+        duration = '%s hour%s, %s' % (int(h), {1:''}.get(h, 's'), duration)
+    return duration
 
 class ProgressBar(object):
     def __init__(self, stream=sys.stderr, width=80):
@@ -79,6 +93,7 @@ def update_database(configname, extension_modules):
     updater = profile.get_database_updater()
     progress = ProgressBar()
     error_count = 0
+    starttime = time.time()
     for count, total, id, error in updater.update():
         msg_count = ('%%0.%sd/%%s' % len(str(total))) % (count, total)
         if not error is None:
@@ -96,9 +111,26 @@ def update_database(configname, extension_modules):
             pass
         else:
             progress.tick(count, total)
-            
-    print >> sys.stderr, '\n'
+
+    if not options.quiet and not options.verbose:
+        print >> sys.stderr, '\n'
+
+    duration = get_duration(starttime)
+    msg = 'Updating database with %s objects took %s' % (total, duration)
+    profile.log.info(msg)
+    if not options.verbose and not options.quiet:
+        print >> sys.stderr, msg
+
+    if error_count:
+        multi = ''
+        if error_count > 1:
+            multi = 's'
+        msg = '%s error%s occurred during updating' % (error_count, multi)
+        profile.log.warning(msg)
+        if not options.verbose and not options.quiet:
+            print >> sys.stderr, msg
 
    
 def start_server(configname, extension_modules):
     profile, options = initialize(configname, extension_modules)
+    profile.start_server()

@@ -37,7 +37,7 @@ class Server(object):
         if not req.url().startswith(self.base_url):
             return req.send_status('500 Internal Server Error',
                  'The url "%s" does not start with base url "%s".' % (req.url(),
-                                                                      base_url))
+                                                                      self.base_url))
         url = req.url()[len(self.base_url):]
         
         if url.startswith('/'):
@@ -64,7 +64,8 @@ class Server(object):
             if self.allow_download(url, config):
                 return self.download_asset(url, config)
             else:
-                return req.send_status('403 Not Allowed')
+                return req.send_status('403 Forbidden',
+                                       'You are not allowed to download this asset')
 
         oai_server = OAIServerFactory(self._db, config)
         return req.write(oai_server.handleRequest(req.query_dict()), 'text/xml')

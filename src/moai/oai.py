@@ -50,7 +50,7 @@ class OAIServer(object):
     def _createHeader(self, record):
         oai_id = self.config.get_oai_id(record['record']['id'])
         datestamp = record['record']['when_modified']
-        sets = record['sets']
+        sets = [self.config.get_setspec_id(s) for s in record['sets']]
         deleted = record['record']['deleted']
         return oaipmh.common.Header(oai_id, datestamp, sets, deleted)
 
