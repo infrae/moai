@@ -85,7 +85,7 @@ Now we create a new fresh database. We can use all sorts of databases, as long
 as it implements the IDatabase interface. The btree database stores everything in
 a file, or in memory if no arguments are passed.
 
->>> from moai.database import BTreeDatabase
+>>> from moai.database.btree import BTreeDatabase
 >>> db = BTreeDatabase()
 
 To get the content into the database we use a DatabaseUpdater
@@ -131,7 +131,8 @@ Now that we have our OAI database setup, we can serve it to
 the world. The OAI Server can serve multiple OAI feeds, 
 each with it's own configuration. 
 
->>> from moai.server import Server, ServerConfig, CGIRequest
+>>> from moai.server import Server, ServerConfig
+>>> from moai.http.cgi import CGIRequest
 >>> config = ServerConfig('test',
 ...                       'A test repository',
 ...                       'http://localhost/repo/test',

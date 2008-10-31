@@ -76,7 +76,7 @@ def initialize(configname, extension_modules):
     
 def update_database(configname, extension_modules):
     profile, options = initialize(configname, extension_modules)
-    updater = profile.datebaseUpdaterFactory()
+    updater = profile.get_database_updater()
     progress = ProgressBar()
     error_count = 0
     for count, total, id, error in updater.update():

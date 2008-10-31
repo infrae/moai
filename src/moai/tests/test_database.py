@@ -5,7 +5,7 @@ import logging
 from moai.provider.list import ListBasedContentProvider
 from moai.content import DictBasedContentObject
 from moai.update import DatabaseUpdater
-from moai.database import BTreeDatabase
+from moai.database.btree import BTreeDatabase
 
 DATA = [{'id': u'id:1',
          'label': u'Publication 1',

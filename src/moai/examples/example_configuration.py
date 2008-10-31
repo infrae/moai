@@ -9,6 +9,7 @@ from moai.content import XMLContentObject
 from moai.update import DatabaseUpdater
 from moai.database.btree import BTreeDatabase
 from moai.provider.file import FileBasedContentProvider
+from moai.server import Server, ServerConfig
 
 class ExampleContentObject(XMLContentObject):
 
@@ -36,7 +37,7 @@ class ExampleContentObject(XMLContentObject):
 class ExampleConfiguration(ConfigurationProfile):
     name('example')
     
-    def contentProviderFactory(self):
+    def get_content_provider(self):
         path = os.path.join(os.path.dirname(__file__),'example_data')
         provider = FileBasedContentProvider(path, '*.xml')
         provider.set_logger(self.log)
@@ -44,12 +45,28 @@ class ExampleConfiguration(ConfigurationProfile):
         return provider
 
 
-    def datebaseUpdaterFactory(self):
-        return DatabaseUpdater(self.contentProviderFactory(),
+    def get_database_updater(self):
+        return DatabaseUpdater(self.get_content_provider(),
                                BTreeDatabase('/tmp/moai', 'w'),
                                self.log)
 
-    def serverFactory(self):
-        pass
+    def get_database(self):
+        return BTreeDatabase('/tmp/moai', 'r')
     
+    def get_server(self):
+        server = Server('http://localhost:8080/repo',
+                        self.get_database())
+        server.add_config(
+            ServerConfig('example',
+                         'An example OAI Server',
+                         'http://localhost:8080/repo/example',
+                         self.log))
+        return server
+                   
+    def get_request():
+        pass
 
+    def start_server(log):
+        start_cherrypy_server(host, port, threads, self)
+
+        
