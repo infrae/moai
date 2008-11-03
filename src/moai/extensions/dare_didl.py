@@ -83,7 +83,7 @@ class DIDL(MataDataPrefix):
              DIDL.Item(
               DIDL.Descriptor(
                DIDL.Statement(
-                DIP.ObjectType('info:eu-repo/semantics/humasStartPage'),
+                DIP.ObjectType('info:eu-repo/semantics/humanStartPage'),
                 mimeType="application/xml")
                 ),
               DIDL.Component(
@@ -111,9 +111,9 @@ class DIDL(MataDataPrefix):
         
         
         didl.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s %s %s %s %s' % (self.ns['didl'],
-                                                                            self.schemes['didl'],
+                                                                            self.schemas['didl'],
                                                                             self.ns['dii'],
-                                                                            self.schemes['dii'],
+                                                                            self.schemas['dii'],
                                                                             self.ns['dip'],
-                                                                            self.schemes['dip'])
+                                                                            self.schemas['dip'])
         element.append(didl)
