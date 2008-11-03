@@ -173,7 +173,7 @@ class BTreeDatabase(object):
         for set_id in filter_sets:
             filter_set_ids = filter_set_ids.union(set(eval(self._sets[set_id])['content']))
         if filter_set_ids:
-            ids = ids.difference(filter_set_ids)
+            ids = ids.intersection(filter_set_ids)
 
         if identifier:
             yield eval(self._content[id])
