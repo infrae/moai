@@ -81,7 +81,7 @@ class OAIServer(object):
         if identifier:
             identifier = self.config.get_internal_id(identifier)
         if set:
-            set = self._get_internal_set_id(set)
+            set = self.config.get_internal_set_id(set)
             
         now = datetime.now()
         if until != None and until > now:
@@ -97,12 +97,12 @@ class OAIServer(object):
             until = datetime.fromtimestamp(ut)
             
         if set is None:
-            sets = []
+            filtersets = []
         else:
-            sets = [set]
+            filtersets = [set]
 
-        sets += self.config.sets_allowed
-        filtersets = self.config.filter_sets
+        sets = self.config.sets_allowed
+        filtersets += self.config.filter_sets
         notsets = self.config.sets_disallowed    
         
         return self.db.oai_query(offset=cursor,
