@@ -7,8 +7,8 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
     def __init__(self, fedora_url, output_path, datastream_name):
         oai_url = '%s/oai' % fedora_url
         super(FedoraBasedContentProvider, self).__init__(oai_url, output_path)
-        self.stream = datastream_name
-        self.fedora_url = fedora_url
+        self._stream = datastream_name
+        self._fedora_url = fedora_url
         if not os.path.isdir(output_path):
             os.mkdir(output_path)
 
@@ -20,9 +20,9 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
 
         fedora_id = self._get_id(header)
         
-        url = '%s/get/%s/%s' % (self.fedora_url,
+        url = '%s/get/%s/%s' % (self._fedora_url,
                                 fedora_id,
-                                self.stream)
+                                self._stream)
 
         try:
             fp = urllib2.urlopen(url)
@@ -32,7 +32,7 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
             self._log.warning('Can not get Fedora datastream: %s' % url)
             return False
         
-        path = os.path.join(self.path, '%s.xml' % fedora_id)
+        path = os.path.join(self._path, '%s.xml' % fedora_id)
         fp = open(path, 'w')
         fp.write(xml_data)
         fp.close()
