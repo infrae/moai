@@ -2,9 +2,20 @@ import sys
 import time
 import logging
 from optparse import OptionParser
+from ConfigParser import ConfigParser
 
 from moai.core import MOAI, __version__
 
+def parse_config_file(filename, section):
+    config = ConfigParser()
+    config.read(filename)
+
+    if not section in config.sections():
+        return {}
+    result = {}
+    for option in config.options(section):
+        result[option] = config.get(section, option)
+    return result
 
 def get_duration(starttime):
     h,m,s = time.asctime(time.gmtime(time.time() - starttime)).split(' ')[-2].split(':')
@@ -53,7 +64,7 @@ class ProgressBar(object):
 
 
 
-def initialize(configname, extension_modules):
+def initialize(configfile, configname, extension_modules):
     usage = "usage: %prog [options]"
     version = "%%proc %s" % __version__
 
@@ -79,11 +90,12 @@ def initialize(configname, extension_modules):
         configname = options.config
         
     log = logging.getLogger('moai')    
-    moai = MOAI(log, options.verbose, options.debug)
+    moai = MOAI(log,
+                options.verbose,
+                options.debug)
 
     for module_name in extension_modules:
         moai.add_extension_module(module_name)
-    
     config = moai.get_configuration(configname)
     if config is None:
         msg = 'Unknown configuration: "%s", exiting..' % configname
@@ -92,12 +104,12 @@ def initialize(configname, extension_modules):
         sys.exit(1)
 
     log.info('Initializing configuration profile "%s"' % configname)
-    profile = config(log)
+    profile = config(log, parse_config_file(configfile, configname))
     return profile, options
 
     
-def update_database(configname, extension_modules):
-    profile, options = initialize(configname, extension_modules)
+def update_database(configfile, configname, extension_modules):
+    profile, options = initialize(configfile, configname, extension_modules)
     updater = profile.get_database_updater()
     progress = ProgressBar()
     error_count = 0
@@ -154,6 +166,6 @@ def update_database(configname, extension_modules):
             print >> sys.stderr, msg
 
    
-def start_server(configname, extension_modules):
-    profile, options = initialize(configname, extension_modules)
+def start_server(configfile, configname, extension_modules):
+    profile, options = initialize(configfile, configname, extension_modules)
     profile.start_server()

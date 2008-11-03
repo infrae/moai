@@ -11,8 +11,9 @@ class ConfigurationProfile(object):
     """
     martian.baseclass()
 
-    def __init__(self, log):
+    def __init__(self, log, config):
         self.log = log
+        self.config = config
 
     def databaseUpdaterFactory(self):
         raise NotImplementedError
