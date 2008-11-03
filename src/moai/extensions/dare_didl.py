@@ -9,7 +9,7 @@ from moai.metadata import OAIDC, MODS, XSI_NS
         
 class DIDL(MataDataPrefix):
     
-    name('dare_didl')
+    name('didl')
     
     def __init__(self, prefix, config, db):
         self.prefix = prefix
@@ -24,7 +24,9 @@ class DIDL(MataDataPrefix):
                    'dc': 'http://purl.org/dc/elements/1.1/',
                    }
 
-        self.schemas = {'didl': 'urn:mpeg:mpeg21:2002:02-DIDL-NS http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/did/didl.xsd urn:mpeg:mpeg21:2002:01-DII-NS http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/dii/dii.xsd urn:mpeg:mpeg21:2005:01-DIP-NS http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/dip/dip.xsd'}
+        self.schemas = {'didl':'http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/did/didl.xsd',
+                        'dii': 'http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/dii/dii.xsd',
+                        'dip': 'http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/dip/dip.xsd'}
         
     def __call__(self, element, metadata):
         data = metadata.record
@@ -108,5 +110,10 @@ class DIDL(MataDataPrefix):
             break
         
         
-        didl.attrib['{%s}schemaLocation' % XSI_NS] = self.schemas['didl']
+        didl.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s %s %s %s %s' % (self.ns['didl'],
+                                                                            self.schemes['didl'],
+                                                                            self.ns['dii'],
+                                                                            self.schemes['dii'],
+                                                                            self.ns['dip'],
+                                                                            self.schemes['dip'])
         element.append(didl)

@@ -8,35 +8,61 @@ class DatabaseUpdater(object):
 
     implements(IDatabaseUpdater)
 
-    def __init__(self, content, database, log):
+    def __init__(self, content, content_class, database, log):
         self.set_database(database)
         self.set_content_provider(content)
+        self.set_content_object_class(content_class)
         self.set_logger(log)
 
     def set_database(self, database):
         self.db = database
 
     def set_content_provider(self, content_provider):
-        self.content = content_provider
+        self._provider = content_provider
+
+    def set_content_object_class(self, content_class):
+        self._content_object_class = content_class
 
     def set_logger(self, log):
         self._log = log
 
-    def update(self, validate=True):
-        total = self.content.count()
-        self._log.info('Updating %s with %s objects from %s' % (self.db.__class__.__name__,
-                                                           total,
-                                                           self.content.__class__.__name__))
+    def update_provider(self, from_date=None):
+        msg = 'Starting the update of %s' % self._provider.__class__.__name__
+        if not from_date is None:
+            msg += 'from %s' % from_date
+        self._log.info(msg)
+        count = 0
+        for id in self._provider.update(from_date):
+            yield id
+            count += 1
+
+        self._log.info('Updating %s returned %s new/modified objects' % (
+            self._provider.__class__.__name__,
+            count))
+            
+
+    def update_database(self, validate=True):    
+        
+        total = self._provider.count()
+        self._log.info('Updating %s with %s %s objects' % (
+            self.db.__class__.__name__,
+            total,
+            self._content_object_class.__name__))
         count = 0
         errors = 0
-        for content in self.content.get_content():
+        for content_id in self._provider.get_content_ids():
             count += 1
-            
-            if isinstance(content, ContentError):
-                errors += 1
-                yield count, total, None, content
-                continue
 
+            try:
+                content_data = self._provider.get_content_by_id(content_id)
+                content = self._content_object_class()
+                content.update(content_data, self._provider)
+            except Exception, err:
+                errors += 1
+                yield (count, total, content_id,
+                       ContentError(self._content_object_class, content_id))
+                continue
+            
             if content.is_set:
                 try:
                     self.db.add_set(content.id, content.label, content.get_values('description'))

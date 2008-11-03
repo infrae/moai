@@ -94,7 +94,22 @@ def update_database(configname, extension_modules):
     progress = ProgressBar()
     error_count = 0
     starttime = time.time()
-    for count, total, id, error in updater.update():
+
+    from_date = None
+
+    count = 0    
+    for id in updater.update_provider(from_date):
+        if not options.quiet and not options.verbose:
+            progress.animate('Updating content provider: %s' % id)
+        count += 1
+
+    if not options.quiet and not options.verbose:
+        progress.write('')
+        print >> sys.stderr, 'Content provider returned %s new/modified objects' % count
+        print >> sys.stderr
+    
+    total = 0    
+    for count, total, id, error in updater.update_database():
         msg_count = ('%%0.%sd/%%s' % len(str(total))) % (count, total)
         if not error is None:
             error_count += 1
@@ -105,10 +120,10 @@ def update_database(configname, extension_modules):
                 traceback.print_tb(error.tb)
                 print error.err, error.detail
                 sys.exit(1)
-        elif options.verbose:
-            profile.log.info('%s Added %s'  % (msg_count, id))
         elif options.quiet:
             pass
+        elif options.verbose:
+            profile.log.info('%s Added %s'  % (msg_count, id))
         else:
             progress.tick(count, total)
 

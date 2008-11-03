@@ -22,6 +22,15 @@ class OAIServer(object):
             deletedRecord='transient',
             granularity='YYYY-MM-DDThh:mm:ssZ',
             compression=['identity'])
+
+    def listMetadataFormats(self):
+        result = []
+        for prefix in self.config.metadata_prefixes:
+            writer = get_writer(prefix, self.config, self.db)
+            ns = writer.ns[prefix]
+            schema = writer.schemas[prefix]
+            result.append((prefix, schema, ns))
+        return result
     
     def listSets(self, cursor=0, batch_size=20):
         for set in self.db.oai_sets(cursor, batch_size):

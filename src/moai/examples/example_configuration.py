@@ -16,12 +16,12 @@ class ExampleConfiguration(ConfigurationProfile):
         path = os.path.join(os.path.dirname(__file__),'example_data')
         provider = FileBasedContentProvider(path, '*.xml')
         provider.set_logger(self.log)
-        provider.set_content_class(ExampleContentObject)
         return provider
 
 
     def get_database_updater(self):
         return DatabaseUpdater(self.get_content_provider(),
+                               ExampleContentObject,
                                BTreeDatabase('/tmp/moai', 'w'),
                                self.log)
 
@@ -37,7 +37,7 @@ class ExampleConfiguration(ConfigurationProfile):
                          'http://localhost:8080/repo/example',
                          self.log,
                          sets_allowed=['public'],
-                         metadata_prefixes=['oai_dc', 'mods', 'dare_didl']))
+                         metadata_prefixes=['oai_dc', 'mods', 'didl']))
         return server
                    
     def start_server(self):

@@ -43,16 +43,15 @@ providers that get their data out of a database
 >>> from moai.provider.list import ListBasedContentProvider
 >>> p = ListBasedContentProvider(content)
 
-We also need to pass in a content class, that knows how to dealt with
-the data returned by the provider. In this case, it's a dictionary, so
-we'll use a content class that can handle dictionaries
 
->>> from moai.content import DictBasedContentObject
->>> p.set_content_class(DictBasedContentObject)
+A content provider is a list of records. Before you can use it,
+it needs to be updated. The update call, returns a list of 
+record_ids that where updated. Optionally you can supply a date
 
+>>> sorted(p.update())
+[0, 1]
 
-A content provider is a list of records. We can ask how
-many records it holds
+We can now ask how many records it holds
 
 >>> p.count()
 2
@@ -62,14 +61,22 @@ on the provider. A provider does not known what kind of content
 it is serving. So we can not use the 'id' key from the content.
 A ListBasedContentProvider used the index number as id
 
->>> c = p.get_content_by_id(0)
->>> c.id 
+>>> d = p.get_content_by_id(0)
+>>> d['id']
 u'tester'
 
-We can also get all the content objects from the provider, 
+We can also get all the content ids from the provider, 
+and use that to get the content.
 
->>> list(p.get_content())[0].id == c.id
-True
+>>> sorted(p.get_content_ids())
+[0, 1]
+
+Now we can create a content object from the data, normally
+this will be done by the databaseUpdater class
+
+>>> from moai.content import DictBasedContentObject
+>>> c = DictBasedContentObject()
+>>> c.update(d, p)
 
 Besides some of the required values a content object must have,
 it can also have an arbitrary number of other values. We can ask
@@ -87,7 +94,7 @@ A date is supplied so the provider only has to look for new objects younger
 then that date. The update call will return a list of new found ids
 
 >>> p.update(datetime.datetime.now())
-[]
+[0, 1]
 
 Now we create a new fresh database. We can use all sorts of databases, as long
 as it implements the IDatabase interface. The btree database stores everything in
@@ -100,20 +107,24 @@ To get the content into the database we use a DatabaseUpdater
 
 >>> from moai.update import DatabaseUpdater
 
-We pass the database and the content to the updater, a log instance is also
-needed
+We pass the database and the contentProvider to the updater, a contentObject class
+is also needed, to convert the data provided into an interface, the updater 
+understands. a log instance is also needed.
 
->>> updater = DatabaseUpdater(p, db, log)
+>>> updater = DatabaseUpdater(p, DictBasedContentObject, db, log)
 
-Now we update the database.. 
+Now we will update the database, but before we do that, we need to update
+the provider.. 
 
->>> updater.update()
+>>> list(updater.update_provider())
+[0, 1]
+>>> updater.update_database()
 <generator object ...>
 
 Note that this method returns a generator with progress information
 we have to iterate through the results to make sure everything is updated
 
->>> for c in updater.update():pass
+>>> for c in updater.update_database():pass
 
 Lets see if we can retrieve some data from the database
 

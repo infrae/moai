@@ -70,8 +70,9 @@ class DatabaseTest(TestCase):
     def setUp(self):
         self.db = BTreeDatabase()
         provider = ListBasedContentProvider(DATA)
-        provider.set_content_class(DictBasedContentObject)
-        list(DatabaseUpdater(provider, self.db, logging).update())
+        updater = DatabaseUpdater(provider, DictBasedContentObject, self.db, logging)
+        list(updater.update_provider())
+        list(updater.update_database())
         
     def tearDown(self):
         del self.db

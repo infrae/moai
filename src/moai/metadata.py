@@ -24,7 +24,7 @@ class OAIDC(MataDataPrefix):
 
         self.ns = {'oai_dc': 'http://www.openarchives.org/OAI/2.0/oai_dc/',
                    'dc':'http://purl.org/dc/elements/1.1/'}
-        self.schemas = {'oai_dc': 'http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd'}
+        self.schemas = {'oai_dc': 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd'}
         
     def __call__(self, element, metadata):
 
@@ -35,7 +35,8 @@ class OAIDC(MataDataPrefix):
         DC = ElementMaker(namespace=self.ns['dc'])
 
         oai_dc = OAI_DC.dc()
-        oai_dc.attrib['{%s}schemaLocation' % XSI_NS] = self.schemas['oai_dc']
+        oai_dc.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (self.ns['oai_dc'],
+                                                                  self.schemas['oai_dc'])
 
         for field in ['title', 'creator', 'subject', 'description', 'publisher',
                       'contributor', 'type', 'format', 'identifier',
@@ -63,7 +64,7 @@ class MODS(MataDataPrefix):
                    'dai': 'info:eu-repo/dai'}
 
         self.schemas = {
-           'mods': 'http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-2.xsd'}
+           'mods': 'http://www.loc.gov/standards/mods/v3/mods-3-2.xsd'}
         
     def __call__(self, element, metadata):
 
@@ -123,7 +124,8 @@ class MODS(MataDataPrefix):
             'language', ['en'])[0]
         mods.append(titleInfo)
         
-        mods.attrib['{%s}schemaLocation' % XSI_NS] = self.schemas['mods']
+        mods.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (self.ns['mods'],
+                                                                self.schemas['mods'])
         
         element.append(mods)
 

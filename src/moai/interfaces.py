@@ -9,23 +9,25 @@ class IContentProvider(Interface):
         """Set the logger instance for this class
         """
 
-    def set_content_class(self, content_object_class):
-        """Sets the class to be returned by the 'get_content' method of the provider
-        """
-        pass
-    
-    def update(from_date):
-        """Harvests, new content added since from_date
-        returns a list of content_ids that were changed/added
+    def update(from_date=None):
+        """Harvests new content added since from_date
+        returns a list of content_ids that were changed/added,
+        this should be called before get_contents is called
         """
         pass
 
     def count():
         """Returns number of content objects in the repository
+        returns None if number is unknown, this should not be
+        called before update is called
         """
 
-    def get_content():
-        """Returns a list (or generator) of content objects.
+    def get_content_ids():
+        """returns a list/generator of content_ids
+        """
+
+    def get_content_by_id():
+        """Return content of a specific id
         """
 
 class IContentObject(Interface):
@@ -73,7 +75,6 @@ class IContentValidator(Interface):
         pass
     
 class IDatabaseUpdater(Interface):
-
     def set_database(database):
         """Make the updater use a specific (new) database
         (will probably be set automaticly in __init__)
@@ -86,20 +87,39 @@ class IDatabaseUpdater(Interface):
         """
         pass
 
+    def set_content_class(self, content_object_class):
+        """Sets the class to be used to create the content objects
+        from the provider data
+        """
+        pass
+    
     def set_logger(logger_instance):
        """Make the updater use a specific custom logger
        (will probably be set automaticly in __init__)
        """
        pass
 
-    def update(validate=True):
+    def update_provider(from_date=None):
+       """Updates the provider from a specific date,
+       yields a list of ids that were updated
+       """
+
+    def update_database(validate=True):
         """Update the database with the content_provider
         this will update the content_provider, optionally
         validate the content objects, and add everything
-        to the database. This method returns a Database object
-        if the update was succesful, otherwise None will be
-        returned. Detailed progress information and
-        error messages can be obtained by looking at the logging data
+        to the database.
+        This should never return an error, instead it should
+        yield tuples containing the following values:
+
+        (count, total, provider_id, exception)
+
+        count: current content object number
+        total: total number of objects
+        provider_id: id used by provider
+        exception: if an error occurs, exception should be a
+                   moai.ContentError, or a moai.DatabaseError
+                   otherwise this value will be None
         """
         pass
 

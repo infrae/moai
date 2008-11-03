@@ -53,7 +53,10 @@ class ExampleContentObject(XMLContentObject):
         ids = self.xpath('ex:author/@ref', 'author', unicode, multi=True)
         for id in ids:
             author_rel.append(id)
-            person = self.provider.get_content_by_id(id.replace(':','_')+'.xml')
+            person = ExampleContentObject()
+            person.update(
+                self.provider.get_content_by_id(id.replace(':','_')+'.xml'),
+                self.provider)
             authors.append(person.label)
         fields['author'] = authors
         fields['author_rel'] = author_rel

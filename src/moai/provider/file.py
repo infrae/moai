@@ -1,6 +1,6 @@
 import os
 import sys
-import datetime
+import time
 import fnmatch
 
 from zope.interface import implements
@@ -15,7 +15,7 @@ class FileBasedContentProvider(object):
     def __init__(self, path, content_filter="*"):
         self._path = path
         self._filter = content_filter
-        self._content = self._harvest()
+        self._content = {}
 
     def set_logger(self, log):
         self._log = log
@@ -40,28 +40,21 @@ class FileBasedContentProvider(object):
                 result[id] = path
         return result
 
-    def update(self, from_date):
-        from_time = time.mktime(datetime.timetuple())
+    def update(self, from_date=None):
+        if from_date is None:
+            from_time = None
+        else:
+            from_time = time.mktime(from_date.timetuple())
         result = self._harvest(from_time=from_time)
+        self._content.update(result)
         return result.keys()
 
     def count(self):
         return len(self._content)
 
-    def set_content_class(self, content_object_class):
-        self._content_object_class = content_object_class
-        
-    def get_content(self):
-        for id, path in self._content.items():
-            obj = self._content_object_class()
-            try:
-                obj.update(path, self)
-            except Exception:
-                yield ContentError(self._content_object_class, id)
-                continue
-            yield obj
+    def get_content_ids(self):
+        for id in self._content.keys():
+            yield id
 
     def get_content_by_id(self, id):
-        obj = self._content_object_class()
-        obj.update(self._content[id], self)
-        return obj
+        return self._content[id]
