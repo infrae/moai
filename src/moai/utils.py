@@ -45,7 +45,8 @@ class ProgressBar(object):
 
     def animate(self, msg):
         anim = ['|', '/', '-', '\\']
-        self.write('%s %s'% (anim[self.animstate], msg))
+        rest = self.width - (len(msg) +2)
+        self.write('%s %s%s'% (anim[self.animstate], msg, ' '*rest))
         self.animstate+=1
         if self.animstate == len(anim):
             self.animstate = 0
@@ -68,7 +69,14 @@ def initialize(configname, extension_modules):
                       help="be quiet, do not output and info",
                       action="store_true")
 
+    parser.add_option("-c", "--config", dest="config",
+                      help="do not use default config profile (%s)" % configname,
+                      action="store")
+
     options, args = parser.parse_args()
+
+    if options.config:
+        configname = options.config
         
     log = logging.getLogger('moai')    
     moai = MOAI(log, options.verbose, options.debug)
@@ -96,7 +104,7 @@ def update_database(configname, extension_modules):
     starttime = time.time()
 
     from_date = None
-
+    sys.stderr.write('Updating content provider..')
     count = 0    
     for id in updater.update_provider(from_date):
         if not options.quiet and not options.verbose:
