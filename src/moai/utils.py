@@ -1,5 +1,6 @@
 import sys
 import time
+import datetime
 import logging
 from optparse import OptionParser
 from ConfigParser import ConfigParser
@@ -40,7 +41,7 @@ class ProgressBar(object):
     def write(self,line):
         self.out.write('\r%s' % line)
         self.out.flush()
-        
+
     def tick(self, count, total):
         perc = '%0.1f' % (count / (total/100.0))
         if perc == self.oldperc and not count == total:
@@ -64,7 +65,7 @@ class ProgressBar(object):
 
 
 
-def initialize(configfile, configname, extension_modules):
+def initialize(script, configfile, configname, extension_modules):
     usage = "usage: %prog [options]"
     version = "%%proc %s" % __version__
 
@@ -79,11 +80,15 @@ def initialize(configfile, configname, extension_modules):
     parser.add_option("-q", "--quiet", dest="quiet",
                       help="be quiet, do not output and info",
                       action="store_true")
-
-    parser.add_option("-c", "--config", dest="config",
+    parser.add_option("", "--config", dest="config",
                       help="do not use default config profile (%s)" % configname,
                       action="store")
-
+    
+    if script == 'update_database':
+        parser.add_option("", "--date", dest="from_date",
+                      help="Only update databse from a specific date",
+                      action="store")
+        
     options, args = parser.parse_args()
 
     if options.config:
@@ -109,23 +114,32 @@ def initialize(configfile, configname, extension_modules):
 
     
 def update_database(configfile, configname, extension_modules):
-    profile, options = initialize(configfile, configname, extension_modules)
+    profile, options = initialize('update_database', configfile, configname, extension_modules)
     updater = profile.get_database_updater()
     progress = ProgressBar()
     error_count = 0
     starttime = time.time()
 
     from_date = None
+    if options.from_date:
+        if 'T' in options.from_date:
+            from_date = datetime.datetime(*time.strptime(options.from_date,
+                                                         '%Y-%m-%dT%H:%M:%S')[:6])
+        else:
+            from_date = datetime.datetime(*time.strptime(options.from_date,
+                                                         '%Y-%m-%d')[:3])
+
     sys.stderr.write('Updating content provider..')
     count = 0    
     for id in updater.update_provider(from_date):
         if not options.quiet and not options.verbose:
             progress.animate('Updating content provider: %s' % id)
-        count += 1
+            count += 1
 
     if not options.quiet and not options.verbose:
         progress.write('')
-        print >> sys.stderr, 'Content provider returned %s new/modified objects' % count
+        print >> sys.stderr, ('Content provider returned %s '
+                              'new/modified objects' % count)
         print >> sys.stderr
     
     total = 0    
@@ -167,5 +181,5 @@ def update_database(configfile, configname, extension_modules):
 
    
 def start_server(configfile, configname, extension_modules):
-    profile, options = initialize(configfile, configname, extension_modules)
+    profile, options = initialize('start_server', configfile, configname, extension_modules)
     profile.start_server()
