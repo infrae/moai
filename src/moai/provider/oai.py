@@ -4,36 +4,42 @@ import datetime
 from zope.interface import implements
 from oaipmh.client import Client
 from oaipmh.metadata import MetadataRegistry
+from oaipmh.error import NoRecordsMatchError
 from lxml import etree
 
 from moai.interfaces import IContentProvider
 from moai.content import DictBasedContentObject
 from moai.error import ContentError
+from moai.provider.file import FileBasedContentProvider
 
-class OAIBasedContentProvider(object):
+class OAIBasedContentProvider(FileBasedContentProvider):
     implements(IContentProvider)
 
     def __init__(self, oai_url, output_path, metadata_prefix='oai_dc'):
-        self.url = oai_url
-        self.path = output_path
-        self.prefix = metadata_prefix
-        self._content = {}
+        super(OAIBasedContentProvider, self).__init__(output_path, '*.xml')
+        self._url = oai_url
+        self._prefix = metadata_prefix
 
     def set_logger(self, log):
         self._log = log
 
     def update(self, from_date=None):
-        self._log.info('Harvesting oai server: %s' % self.url)
+        self._log.info('Harvesting oai server: %s' % self._url)
         registry = MetadataRegistry()
-        registry.registerReader(self.prefix, lambda el: el)
+        registry.registerReader(self._prefix, lambda el: el)
 
-        client = Client(self.url, registry)
-        for header, element, about in client.listRecords(
-            metadataPrefix = self.prefix,
-            from_ = from_date):
-            added = self._process_record(header, element)
-            if added:
-                yield self._get_id(header)
+        client = Client(self._url, registry)
+        try:
+            for header, element, about in client.listRecords(
+                metadataPrefix = self._prefix,
+                from_ = from_date):
+                added = self._process_record(header, element)
+                if added:
+                    yield self._get_id(header)
+        except NoRecordsMatchError:
+            pass
+
+        super(OAIBasedContentProvider, self).update()
 
     def _get_id(self, header):
         return header.identifier()
@@ -45,14 +51,5 @@ class OAIBasedContentProvider(object):
         fp = open(path, 'w')
         fp.write(etree.tostring(element, encoding="utf8"))
         fp.close()
-        self._content[oai_id] = path
         return True
 
-    def count(self):
-        return len(self._content)
-
-    def get_content_ids(self):
-        return range(len(self._content))
-
-    def get_content_by_id(self, id):
-        return self._content[id]
