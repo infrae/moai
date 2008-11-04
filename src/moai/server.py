@@ -2,7 +2,7 @@ import os
 
 from zope.interface import implements
 
-from moai.interfaces import IServer, IServerConfig
+from moai.interfaces import IServer, IFeedConfig
 from moai.oai import OAIServerFactory
 
 class Server(object):
@@ -70,9 +70,9 @@ class Server(object):
         oai_server = OAIServerFactory(self._db, config)
         return req.write(oai_server.handleRequest(req.query_dict()), 'text/xml')
 
-class ServerConfig(object):
+class FeedConfig(object):
 
-    implements(IServerConfig)
+    implements(IFeedConfig)
 
     def __init__(self,
                  id,

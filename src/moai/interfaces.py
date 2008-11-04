@@ -229,7 +229,7 @@ class IDatabase(Interface):
         """
 
         
-class IServerConfig(Interface):
+class IFeedConfig(Interface):
 
     id = Attribute(u"Id of the OAI Server instance")
     name = Attribute(u"Name of this OAI Server instance (for identify)")

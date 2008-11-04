@@ -150,9 +150,9 @@ Now that we have our OAI database setup, we can serve it to
 the world. The OAI Server can serve multiple OAI feeds, 
 each with it's own configuration. 
 
->>> from moai.server import Server, ServerConfig
+>>> from moai.server import Server, FeedConfig
 >>> from moai.http.cgi import CGIRequest
->>> config = ServerConfig('test',
+>>> config = FeedConfig('test',
 ...                       'A test repository',
 ...                       'http://localhost/repo/test',
 ...                        log) 

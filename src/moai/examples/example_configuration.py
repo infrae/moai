@@ -4,7 +4,7 @@ from moai import ConfigurationProfile, name
 from moai.update import DatabaseUpdater
 from moai.database.btree import BTreeDatabase
 from moai.provider.file import FileBasedContentProvider
-from moai.server import Server, ServerConfig
+from moai.server import Server, FeedConfig
 from moai.http.cherry import start_server
 
 from moai.examples.example_content import ExampleContentObject
@@ -32,12 +32,12 @@ class ExampleConfiguration(ConfigurationProfile):
         server = Server('http://localhost:8080/repo',
                         self.get_database())
         server.add_config(
-            ServerConfig('example',
-                         'An example OAI Server',
-                         'http://localhost:8080/repo/example',
-                         self.log,
-                         sets_allowed=['public'],
-                         metadata_prefixes=['oai_dc', 'mods', 'didl']))
+            FeedConfig('example',
+                       'An example OAI Server',
+                       'http://localhost:8080/repo/example',
+                       self.log,
+                       sets_allowed=['public'],
+                       metadata_prefixes=['oai_dc', 'mods', 'didl']))
         return server
                    
     def start_server(self):
