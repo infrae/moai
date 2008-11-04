@@ -36,5 +36,4 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
         fp = open(path, 'w')
         fp.write(xml_data)
         fp.close()
-        self._content[fedora_id] = path
         return True
