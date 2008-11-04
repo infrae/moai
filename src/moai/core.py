@@ -2,7 +2,6 @@ import sys
 import os
 import logging
 
-from zope.interface import Interface
 import martian
 
 import moai.meta

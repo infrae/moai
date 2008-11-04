@@ -1,5 +1,3 @@
-import os
-
 from zope.interface import implements
 
 from moai.interfaces import IServer, IFeedConfig

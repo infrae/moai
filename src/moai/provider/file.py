@@ -1,13 +1,10 @@
 import os
-import sys
 import time
 import fnmatch
 
 from zope.interface import implements
 
 from moai.interfaces import IContentProvider
-from moai.content import DictBasedContentObject
-from moai.error import ContentError
 
 class FileBasedContentProvider(object):
     implements(IContentProvider)

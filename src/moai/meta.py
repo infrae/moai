@@ -3,7 +3,6 @@ import martian
 import logging
 
 from moai import ConfigurationProfile, MataDataPrefix, name
-import moai.core
 
 CONFIGURATION_PROFILES={}
 METADATA_PREFIXES={}

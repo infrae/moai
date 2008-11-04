@@ -1,5 +1,4 @@
 import os
-import datetime
 
 from zope.interface import implements
 from oaipmh.client import Client
@@ -8,8 +7,6 @@ from oaipmh.error import NoRecordsMatchError
 from lxml import etree
 
 from moai.interfaces import IContentProvider
-from moai.content import DictBasedContentObject
-from moai.error import ContentError
 from moai.provider.file import FileBasedContentProvider
 
 class OAIBasedContentProvider(FileBasedContentProvider):

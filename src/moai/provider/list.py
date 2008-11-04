@@ -1,10 +1,6 @@
-import datetime
-
 from zope.interface import implements
 
 from moai.interfaces import IContentProvider
-from moai.content import DictBasedContentObject
-from moai.error import ContentError
 
 class ListBasedContentProvider(object):
     implements(IContentProvider)

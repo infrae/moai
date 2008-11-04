@@ -1,7 +1,5 @@
 
-from lxml import etree
 from lxml.builder import ElementMaker
-from lxml.etree import SubElement
 
 from moai import MataDataPrefix, name
 from moai.metadata import OAIDC, MODS, XSI_NS
