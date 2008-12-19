@@ -2,7 +2,7 @@
 import martian
 import logging
 
-from moai import ConfigurationProfile, MataDataPrefix, name
+from moai import ConfigurationProfile, MetaDataPrefix, name
 
 CONFIGURATION_PROFILES={}
 METADATA_PREFIXES={}
@@ -19,7 +19,7 @@ class ConfigurationProfileGrokker(martian.ClassGrokker):
 
 class MetaDataPrefixGrokker(martian.ClassGrokker):
     
-    martian.component(MataDataPrefix)
+    martian.component(MetaDataPrefix)
     martian.directive(name)
     
     def execute(self, class_, name, **kw):

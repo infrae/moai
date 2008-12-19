@@ -1,7 +1,7 @@
 
 from lxml.builder import ElementMaker
 
-from moai import MataDataPrefix, name
+from moai import MetaDataPrefix, name
 from moai.meta import METADATA_PREFIXES
 
 XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
@@ -11,7 +11,7 @@ def get_writer(prefix, config, db):
     return writer(prefix, config, db)
 
 
-class OAIDC(MataDataPrefix):
+class OAIDC(MetaDataPrefix):
     
     name('oai_dc')
     
@@ -48,7 +48,7 @@ class OAIDC(MataDataPrefix):
         
         element.append(oai_dc)
 
-class MODS(MataDataPrefix):
+class MODS(MetaDataPrefix):
     
     name('mods')
     

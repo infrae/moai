@@ -1,11 +1,11 @@
 
 from lxml.builder import ElementMaker
 
-from moai import MataDataPrefix, name
+from moai import MetaDataPrefix, name
 from moai.metadata import OAIDC, MODS, XSI_NS
 
         
-class DIDL(MataDataPrefix):
+class DIDL(MetaDataPrefix):
     
     name('didl')
     

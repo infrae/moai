@@ -27,7 +27,7 @@ class ConfigurationProfile(object):
     def requestFactory(self):
         raise NotImplementedError
 
-class MataDataPrefix(object):
+class MetaDataPrefix(object):
     martian.baseclass()
 
 class name(martian.Directive):
