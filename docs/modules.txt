@@ -1,0 +1,21 @@
+.. automodule::moai.core
+
+   .. autoclass:: moai.core.MOAI
+      :members: 
+      :undoc-members:
+
+.. automodule:: moai.server
+
+   .. autoclass:: moai.server.Server
+      :members:
+      :undoc-members:
+   
+   .. autoclass:: moai.server.FeedConfig
+      :members:
+      :undoc-members:
+
+.. automodule:: moai.update
+
+   .. autoclass:: moai.update.DatabaseUpdater
+      :members:
+      :undoc-members:

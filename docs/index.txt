@@ -1,0 +1,27 @@
+.. MOAI documentation master file, created by sphinx-quickstart on Mon Dec 22 11:52:23 2008.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to MOAI's documentation!
+================================
+
+MOAI, the Meta OAI Server is a flexible piece of software used
+for serving (meta)data from different sources into one or many 
+OAI2.0 compatible streams.
+
+Contents:
+
+.. toctree::
+   :maxdepth: 2
+   
+   oai
+   architecture
+   codebase
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+

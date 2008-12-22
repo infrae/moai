@@ -1,0 +1,74 @@
+.. _interfaces:
+
+Interfaces
+~~~~~~~~~~
+
+.. _icontentprovider:
+
+IContentProvider
+================
+
+MOAI is a server platform, but to be a server you need stuff to be served.
+This is where the ContentProviders come into play. They provide content, that
+can come from different sources.
+
+A content provider can be asked to update it's list of ids. 
+Afterwards, the actual content can be retrieved by id.
+
+.. autointerface:: moai.interfaces.IContentProvider
+
+
+.. _icontentobject:
+
+IContentObject
+==============
+
+Content itself should implement the IContentObject interface.
+This makes sure that every content object has some specific
+attributes that are needed to be able to serve them in an oai
+feed.
+
+Besides these required attributes, the CotentObject also has a
+field_names and get_values method that can be used to return additional
+field names and their values.
+
+If you need to serve content coming from your custom XML files, or database schemas, then you will probably need to create an implementation of this object.
+
+.. autointerface:: moai.interfaces.IContentObject
+
+.. _idatabaseupdater:
+
+IDatabaseUpdater
+================
+
+.. autointerface:: moai.interfaces.IDatabaseUpdater
+
+
+.. _idatabase:
+
+IDatabase
+=========
+
+.. autointerface:: moai.interfaces.IDatabase
+
+.. _ifeedconfig:
+
+IFeedConfig
+===========
+
+.. autointerface:: moai.interfaces.IFeedConfig
+
+.. _iserverrequest:
+
+IServerRequest
+==============
+
+.. autointerface:: moai.interfaces.IServerRequest
+
+.. _iserver:
+
+IServer
+=======
+
+.. autointerface:: moai.interfaces.IServer
+

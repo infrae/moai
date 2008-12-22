@@ -1,0 +1,4 @@
+.. _modindex:
+
+MOAI Module Index
+=================

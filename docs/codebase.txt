@@ -1,0 +1,12 @@
+MOAI Codebase
+~~~~~~~~~~~~~
+
+The MOAI Codebase consists of a number of :ref:`interfaces`.
+These :ref:`interfaces` can have several implementations, and
+can be plugged into the MOAI server.
+
+.. toctree::
+   :maxdepth: 1
+
+   interfaces
+

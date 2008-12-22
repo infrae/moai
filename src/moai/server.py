@@ -1,9 +1,25 @@
+"""
+moai.server
+===========
+
+The Server module contains implementations
+of :ref:`IServer` and :ref:`IFeedConfig`.
+
+"""
+
 from zope.interface import implements
 
 from moai.interfaces import IServer, IFeedConfig
 from moai.oai import OAIServerFactory
 
 class Server(object):
+    """This is the default implementation of the
+    :class:`moai.interfaces.IServer`
+    interface. 
+
+    Developers might want to subclass this, to provide custom
+    asset handling in their implementation.
+    """
 
     implements(IServer)
 
@@ -13,19 +29,40 @@ class Server(object):
         self._configs = {}
 
     def add_config(self, config):
+        """Add a feedconfig object to this server
+        Each config will generate an OAI Feed at a 
+        seperate url.
+        """
         self._configs[config.id] = config
 
     def get_config(self, id):
+        """Returns an object implementing IFeedConfig
+        """
         return self._configs.get(id)
 
     def download_asset(self, url, config):
+        """Download an asset
+        """
         assetpath = url.split('/asset/')[-1]
         return self.backend.sendfile(assetpath, 'apllication/binary')
 
     def allow_download(self, url, config):
+        """Returns a boolean indicating if it is okay to download an
+        asset or not. 
+
+        By examining the url, the id of the oai record can be found, and
+        thus the metadata can be accessed. This metadata could have settings
+        to indicate that the asset is private and should not be downloaded
+
+        This implementation always returns true.
+        """
         return True
 
     def is_asset_url(self, url, config):
+        """Returns a boolean indicating if this is a url
+        for downloading an asset or not
+        """
+
         if url.startswith('asset/'):
             return True
         return False
