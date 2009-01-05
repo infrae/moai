@@ -3,7 +3,7 @@ from os.path import join, dirname
 
 setup(
     name='MOAI',
-    version='0.1',
+    version='1.0',
     author='Infrae',
     author_email='jasper@infrae.com',
     description=open(join(dirname(__file__), 'README.txt')).read(),

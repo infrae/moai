@@ -1,0 +1,25 @@
+MOAI changes
+============
+
+MOAI 1.0 (unreleased)
+---------------------
+
+New Features
+~~~~~~~~~~~~
+
+- Added documentation website (more info in README.txt)
+
+Bugs Fixed
+~~~~~~~~~~
+
+- OAI GetRecord always returned the same record 
+  (also improved OAI test coverage) 
+
+
+MOAI < 1.0 (2008-11-18)
+-----------------------
+
+- Initial development borrowing code and ideas from RepubXML,
+  a repository environment build for the Erasmus Univiersity Rotterdam
+
+

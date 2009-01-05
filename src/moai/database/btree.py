@@ -176,7 +176,7 @@ class BTreeDatabase(object):
             ids = ids.intersection(filter_set_ids)
 
         if identifier:
-            yield eval(self._content[id])
+            yield eval(self._content[identifier])
             return
         
         # filter batching

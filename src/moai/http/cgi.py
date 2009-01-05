@@ -1,3 +1,4 @@
+import sys
 
 from zope.interface import implements
 
@@ -11,6 +12,7 @@ class CGIRequest(object):
     implements(IServerRequest)
 
     def __init__(self, url, **kw):
+        self.stream = sys.stdout
         self._url = url
         self._kw = kw
 
@@ -20,9 +22,8 @@ class CGIRequest(object):
     def redirect(self, url):
         """Redirect to this url
         """
-        print 'Status: 403 Redirect'
-        print 'Location: %s' % url
-        print
+        self.stream.write('Status: 403 Redirect\n')
+        self.stream.write('Location: %s\n\n' % url)
 
     def send_file(self, path, mimetype):
         """Send the file located at 'path' back to the user
@@ -31,11 +32,10 @@ class CGIRequest(object):
         fp.seek(0, 2)
         size = fp.tell()
         fp.seek(0)
-        print 'Status: 200 OK'
-        print 'Content-Type: %s' % mimetype
-        print 'Content-Length: %s' % size
-        print
-        print fp.read()
+        self.stream.write('Status: 200 OK\n')
+        self.stream.write('Content-Type: %s\n' % mimetype)
+        self.stream.write('Content-Length: %s\n\n' % size)
+        self.stream.write(fp.read())
         fp.close()
 
     def query_dict(self):
@@ -47,16 +47,13 @@ class CGIRequest(object):
     def write(self, data, mimetype):
         """Write data back to the client
         """
-        print 'Status: 200 OK'
-        print 'Content-Type: %s' % mimetype
-        print 'Content-Length: %s' % len(data)
-        print
-        print data
+        self.stream.write('Status: 200 OK\n')
+        self.stream.write('Content-Type: %s\n' % mimetype)
+        self.stream.write('Content-Length: %s\n\n' % len(data))
+        self.stream.write(data)
 
     def send_status(self, code, msg='', mimetype='text/plain'):
-        print 'Status: %s' % code
-        print 'Content-Type: %s' % mimetype
-        print 'Content-Length: %s' % len(msg)
-        print
-        print msg
-
+        self.stream.write('Status: %s\n' % code)
+        self.stream.write('Content-Type: %s\n' % mimetype)
+        self.stream.write('Content-Length: %s\n\n' % len(msg))
+        self.stream.write(msg)
