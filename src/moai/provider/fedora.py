@@ -1,5 +1,7 @@
 import os
 import urllib2
+import md5
+
 
 from moai.provider.oai import OAIBasedContentProvider
 
@@ -31,8 +33,15 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
         except urllib2.HTTPError, err:
             self._log.warning('Can not get Fedora datastream: %s' % url)
             return False
+
+        directory = md5.new(fedora_id).hexdigest()[:3]
+
+        path = os.path.join(self._path, directory)
+        if not os.path.isdir(path):
+            os.mkdir(path)
+                
+        path = os.path.join(path, '%s.xml' % fedora_id)
         
-        path = os.path.join(self._path, '%s.xml' % fedora_id)
         fp = open(path, 'w')
         fp.write(xml_data)
         fp.close()

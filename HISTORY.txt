@@ -1,13 +1,14 @@
 MOAI changes
 ============
 
-MOAI 1.0 (unreleased)
+MOAI 0.10 (unreleased)
 ---------------------
 
 New Features
 ~~~~~~~~~~~~
 
 - Added documentation website (more info in README.txt)
+- Made Fedora provider not write all files in same directory
 
 Bugs Fixed
 ~~~~~~~~~~
@@ -16,7 +17,7 @@ Bugs Fixed
   (also improved OAI test coverage) 
 
 
-MOAI < 1.0 (2008-11-18)
+MOAI 0.9 (2008-11-18)
 -----------------------
 
 - Initial development borrowing code and ideas from RepubXML,
