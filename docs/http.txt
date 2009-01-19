@@ -1,0 +1,13 @@
+MOAI Http Module
+================
+.. automodule:: moai.http
+
+    .. autoclass:: moai.http.cgi.CGIRequest
+       :members:
+       :undoc-members:
+
+    .. autoclass:: moai.http.cherry.CherryPyRequest
+       :members:
+       :undoc-members:
+
+

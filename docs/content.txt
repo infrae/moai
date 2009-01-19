@@ -1,0 +1,11 @@
+MOAI Content Module
+===================
+.. automodule:: moai.content
+
+    .. autoclass:: moai.content.DictBasedContentObject
+       :members:
+       :undoc-members:
+
+    .. autoclass:: moai.content.XMLContentObject
+       :members:
+       :undoc-members:

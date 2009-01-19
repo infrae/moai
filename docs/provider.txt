@@ -1,0 +1,19 @@
+MOAI Provider Module
+====================
+.. automodule:: moai.provider
+
+   .. autoclass:: moai.provider.list.ListBasedContentProvider
+      :members:
+      :undoc-members:
+   
+   .. autoclass:: moai.provider.file.FileBasedContentProvider
+      :members:
+      :undoc-members:
+
+   .. autoclass:: moai.provider.oai.OAIBasedContentProvider
+      :members:
+      :undoc-members:
+
+   .. autoclass:: moai.provider.fedora.FedoraBasedContentProvider
+      :members:
+      :undoc-members:

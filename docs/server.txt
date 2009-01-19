@@ -1,0 +1,13 @@
+MOAI Server Module
+==================
+
+.. automodule:: moai.server
+
+   .. autoclass:: moai.server.Server
+      :members:
+      :undoc-members:
+   
+   .. autoclass:: moai.server.FeedConfig
+      :members:
+      :undoc-members:
+

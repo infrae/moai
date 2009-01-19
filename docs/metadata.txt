@@ -1,0 +1,33 @@
+MOAI Metadata Module
+====================
+
+The metadata module contains some OAI metadataprefix implementations.
+
+Normally you would not need to import these classes directly, unless 
+you want to subclass them. 
+
+When you create your own metadataprefixes, you don't have to put them in this
+module, just use the 'name' method on the class, and the metadataprefix will
+automaticly be registeren under that name
+
+
+.. automodule:: moai.metadata
+
+   .. autoclass:: moai.metadata.OAIDC
+      :members:
+      :undoc-members:
+   
+   .. autoclass:: moai.metadata.MODS
+      :members:
+      :undoc-members:
+
+
+Some additional metadata prefix extensions are located
+in the `extensions directory`:
+
+.. automodule:: moai.extensions
+   
+   .. autoclass:: moai.extensions.dare_didl.DIDL
+      :members:
+      :undoc-members:
+

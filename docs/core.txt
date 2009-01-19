@@ -1,0 +1,8 @@
+MOAI Core Module
+================
+.. automodule::moai.core
+
+   .. autoclass:: moai.core.MOAI
+      :members: 
+      :undoc-members:
+

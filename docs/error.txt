@@ -1,0 +1,12 @@
+MOAI Error Module
+=================
+.. automodule:: moai.error
+
+   .. autoclass:: moai.error.ContentError
+      :members:
+      :undoc-members:
+   
+   .. autoclass:: moai.error.DatabaseError
+      :members:
+      :undoc-members:
+

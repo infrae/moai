@@ -1,0 +1,7 @@
+MOAI Update Module
+==================
+.. automodule:: moai.update
+
+   .. autoclass:: moai.update.DatabaseUpdater
+      :members:
+      :undoc-members:

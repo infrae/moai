@@ -1,0 +1,9 @@
+MOAI Database Module
+==================
+
+.. automodule:: moai.database
+
+   .. autoclass:: moai.database.btree.BTreeDatabase
+      :members:
+      :undoc-members:
+   
