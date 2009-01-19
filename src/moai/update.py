@@ -5,6 +5,12 @@ from moai.interfaces import IDatabaseUpdater
 from moai.error import ContentError, DatabaseError
 
 class DatabaseUpdater(object):
+    """Default implementation of :ref:`IDatabaseUpdater`.
+    
+    This class can update something implementing :ref:`IDatabase`
+    given a contentprovider and content object class
+    (implementations of :ref:`IContentProvider` and :ref:`IContentObject`)
+    """
 
     implements(IDatabaseUpdater)
 

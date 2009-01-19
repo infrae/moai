@@ -10,6 +10,10 @@ from moai.interfaces import IContentProvider
 from moai.provider.file import FileBasedContentProvider
 
 class OAIBasedContentProvider(FileBasedContentProvider):
+    """Providers content by harvesting OAI feeds.
+    Implements the :ref:`IContentProvider` interface
+    """
+    
     implements(IContentProvider)
 
     def __init__(self, oai_url, output_path, metadata_prefix='oai_dc'):

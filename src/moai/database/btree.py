@@ -7,6 +7,11 @@ from zope.interface import implements
 from moai.interfaces import IDatabase
 
 class BTreeDatabase(object):
+    """Simple reference implementation of a database backend
+    based on btree and hash storage.
+    This implements the :ref:`IDatabase` interface, look there for
+    more documentation.
+    """
     implements(IDatabase)
 
     def __init__(self, dbpath=None, mode='w'):

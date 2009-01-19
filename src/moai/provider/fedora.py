@@ -2,10 +2,20 @@ import os
 import urllib2
 import md5
 
+from zope.interface import implements
 
 from moai.provider.oai import OAIBasedContentProvider
+from moai.interfaces import IContentProvider
 
 class FedoraBasedContentProvider(OAIBasedContentProvider):
+    """Providers content by harvesting a Fedora Commons OAI feed.
+    Then uses the content from a specific datastream
+    Implements the :ref:`IContentProvider` interface
+    """
+    
+    implements(IContentProvider)
+    
+    
     def __init__(self, fedora_url, output_path, datastream_name):
         oai_url = '%s/oai' % fedora_url
         super(FedoraBasedContentProvider, self).__init__(oai_url, output_path)

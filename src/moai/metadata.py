@@ -12,6 +12,12 @@ def get_writer(prefix, config, db):
 
 
 class OAIDC(MetaDataPrefix):
+    """The standard OAI Dublin Core metadata format.
+    
+    Every OAI feed should at least provide this format.
+
+    It is registered under the name 'oai_dc'
+    """
     
     name('oai_dc')
     
@@ -49,6 +55,10 @@ class OAIDC(MetaDataPrefix):
         element.append(oai_dc)
 
 class MODS(MetaDataPrefix):
+    """This is the minimods formats as defined by DARE.
+
+    It is registered as prefix 'mods'.'
+    """
     
     name('mods')
     

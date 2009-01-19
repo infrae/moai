@@ -7,6 +7,10 @@ from lxml import etree
 from moai.interfaces import IContentObject
 
 class DictBasedContentObject(object):
+    """Simple Content object that gets its
+    content from a python dictionary.
+    Implements :ref:`IContentObject`
+    """
     implements(IContentObject)
 
     def update(self, data, provider):
@@ -74,7 +78,13 @@ class DictBasedContentObject(object):
 
 
 class XMLContentObject(object):
+    """Content object that gets an xml string,
+    parses it, and uses xpath expressions to extract
+    the values. Implements :ref:`IContentObject`.
+    """
     implements(IContentObject)
+
+
     
     def xpath(self, xpath, name, pytype, required=False, multi=False):
         values = self.root.xpath(xpath, namespaces=self.nsmap)

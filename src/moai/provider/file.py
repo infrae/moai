@@ -7,6 +7,9 @@ from zope.interface import implements
 from moai.interfaces import IContentProvider
 
 class FileBasedContentProvider(object):
+    """Provides content by reading directories of files
+    Implements the :ref:`IContentProvider` interface
+    """
     implements(IContentProvider)
 
     def __init__(self, path, content_filter="*"):

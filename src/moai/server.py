@@ -14,8 +14,7 @@ from moai.oai import OAIServerFactory
 
 class Server(object):
     """This is the default implementation of the
-    :class:`moai.interfaces.IServer`
-    interface. 
+    :ref:`IServer` interface. 
 
     Developers might want to subclass this, to provide custom
     asset handling in their implementation.
@@ -106,6 +105,9 @@ class Server(object):
         return req.write(oai_server.handleRequest(req.query_dict()), 'text/xml')
 
 class FeedConfig(object):
+    """The feedconfig object contains all the settings for a specific
+    feed. It implements the :ref:`IFeedConfig` interface.
+    """
 
     implements(IFeedConfig)
 

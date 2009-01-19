@@ -8,6 +8,7 @@ class CGIRequest(object):
     """This is a request object that can be used in a CGI environment.
     Note that this is not to be used in production scenarios, it's main
     use is documentation, and as a backend used in the unittests
+    This class implements :ref:`IServerRequest` interface.
     """
     implements(IServerRequest)
 

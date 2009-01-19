@@ -9,6 +9,7 @@ from moai.interfaces import IServerRequest
 
 class CherryPyRequest(object):
     """This is a request object that can be used in a CherryPy environment.
+    It implements :ref:`IServerRequest` interface.
     """
     implements(IServerRequest)
 
