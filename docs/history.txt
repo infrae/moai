@@ -1,0 +1,20 @@
+.. _history:
+
+MOAI History
+============
+
+The MOAI software started it's life under a different name as part of the repository software for the `Erasmus University Rotterdam`_ RePub repository.
+
+The software was build on top of `pyoai`_, an OAI Server and Client library that was build for Erasmus University in 2003. The software was initially used for the `RePub publication site`_.
+
+Many of the features that MOAI supports are the direct result of the experience and excellent feedback from the Erasmus University library team.
+
+About a year later, the `Technical University Delft`_ funded a project to refactor and repackage the OAI server code from the Erasmus repository into a standalone software package: MOAI.
+
+During this proces, some more abstractions were added, specificly the ContentProviders story, which allows MOAI to aggregate content from different sources, including the `Fedora Commons`_ object repository. This was a key feature for the Technical University Delft.
+
+.. _Erasmus University Rotterdam: http://www.eur.nl
+.. _pyoai: http://pypi.python.org/pypi/pyoai
+.. _RePub publication site: http://repub.eur.nl
+.. _Technical University Delft: http://tudelft.nl
+.. _Fedora Commons: http://www.fedora.info

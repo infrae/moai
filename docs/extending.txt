@@ -1,0 +1,193 @@
+Configuring and Extending MOAI
+==============================
+
+The MOAI code can be easily extended in several ways. 
+
+- Create a buildout for your custom product, that pulls in MOAI
+- Add some python files in the extensions directory of MOAI
+- Add some python files to another directory, and register this directory in the buildout
+
+The first way is prefered, because you can then easily maintain your own setup in your versioning control system, and deploy just by running a buildout.
+The second and third way might be easier if you're just doing some experiments.
+
+In the buildout.cfg file, you will find a section called MOAI, it looks like this:
+
+.. code-block:: ini
+
+  [moai]
+  configuration_profile = example
+  extension_modules = moai.extensions
+
+The extension_modules line adds modules that will be examined by MOAI to see if it contains extensions. You can add your own modules here, or put some scripts in the default extensions directory.
+
+The configuration_profile line determines which profile will be used, you probably want to create your own profile, and change this line.
+
+After any changes to the buildout.cfg file, you need to run the buildout script again
+
+.. code-block:: sh
+
+  > bin/buildout
+
+Creating your own Configuration Profile
+---------------------------------------
+
+First, you will need to choose a name for your profile, we will use 'myuni' in this example. Change the configuration_profile value in buildout.cfg
+
+
+.. code-block:: ini
+
+  configuration_profile = myuni
+
+Let's also add some more specific configuration, that our profile will use
+
+.. code-block:: ini
+
+  [myuni]
+  fedora = http://library.myuni.edu/fedora
+  datastream = DATA
+  path = /tmp/myuni
+  database = /tmp/moai
+
+Don't forget to run buildout:
+
+.. code-block:: sh
+
+  > bin/buildout
+
+To create your own configuration profile, create a python file, and put
+it in a python module that's listed as an extension module.
+
+In the python file, add the following code
+
+.. code-block:: python
+
+   from moai import ConfigurationProfile, name
+   from moai.provider.fedora import FedoraBasedContentProvider
+   from moai.database.btree import BTreeDatabase
+   from moai.update import DatabaseUpdater
+   from moai.server import Server, FeedConfig
+   from moai.http.cherry import start_server
+
+   from moai.extensions.myuni.content import MyUniContent
+
+   class MyUniConfiguration(ConfigurationProfile):
+       name('myuni') # configuration profile name used in buildout.cfg
+
+       def get_content_provider(self):
+           provider = FedoraBasedContentProvider(
+               self.config['fedora'], 
+               self.config['path'],
+               self.config['datastream'])
+           provider.set_logger(self.log)
+           return provider
+
+       def get_database_updater(self):
+           return DatabaseUpdater(self.get_content_provider(),
+                               MyUniContent,
+                               BTreeDatabase(self.config['database'], 'w'),
+                               self.log)
+
+       def get_database(self):
+           return BTreeDatabase(self.config['database'], 'r')
+       
+       def get_server(self):
+           server = Server('http://localhost:8080/oai',
+                           self.get_database())
+           server.add_config(
+               FeedConfig('publications',
+                       'MyUni Publication Server',
+                       'http://localhost:8080/oai/publications',
+                       self.log,
+                       sets_allowed=['publication'],
+                       metadata_prefixes=['oai_dc', 'mods', 'didl']))
+           server.add_config(
+               FeedConfig('stuff',
+                       'MyUni Stuff that are Publications Server',
+                       'http://localhost:8080/oai/stuff',
+                       self.log,
+                       sets_disallowed=['publication'],
+                       metadata_prefixes=['oai_dc', 'mods', 'didl']))
+           
+           return server
+
+       def start_server(self):
+           start_server('127.0.0.1', 8080, 10, 'oai', self.get_server())
+
+
+Allthough this might be a bit more complicated then a config file, it does expose all the hooks we're you are able to plug in different implementations making it a very powerful way to customize things. 
+In the released version of MOAI, we will ship with a number of configuration profiles, so you wont have to write a complete configuration profile if it's not needed.
+
+Creating your own ContentObjects
+--------------------------------
+
+A content object will take an object (handed by a ContentProvider) and transform it so it can be inserted into the MOAI database. 
+Since every university will probably use a different metadata format, this object will need to be implemented. In the above configuration profile, a class called MyUniContentObject is imported from a seperate python module.
+
+This python module (content.py) could look something like this:
+
+.. code-block:: python
+
+    import os
+    import time
+    from datetime import datetime
+
+    from lxml import etree
+
+    from moai.content import XMLContentObject
+
+    class MyUniContent(XMLContentObject):
+
+        def update(self, path, provider):
+            self.provider = provider
+            self.nsmap = {'uni':'http://library.myuni.edu/ns'}
+            doc = etree.parse(path)
+            self.root = doc.getroot()
+
+            self.when_modified = datetime(*time.gmtime(os.path.getmtime(path))[:6])
+            self.deleted = False
+            self.sets = []
+            self.content_type = self.root.xpath('local-name()')
+            self.is_set = self.content_type == 'set'
+            self._fields = {}
+
+            if self.content_type == 'person':
+                self.id = self.xpath('uni:id/text()', 'id', unicode, required=True)
+                self.label = self.xpath('uni:id/text()', 'id', unicode, required=True)
+            else:
+                self.id = self.xpath('uni:uuid/text()', 'id', unicode, required=True)
+                self.label = self.xpath('uni:title/text()', 'id', unicode, required=True)
+                self.sets = self.xpath('uni:oai-sets/text()', 'id', unicode, multi=True)
+                self.sets.append('publication')
+                self._fields = self.add_publication_fields()
+
+        def add_publication_fields(self):
+            fields = {
+                'language': self.xpath('uni:language/text()', 'id', unicode, multi=True),
+                'contributor': self.xpath('uni:creator/text()', 'id', unicode, multi=True),
+                'title': [self.label],
+                'publisher': self.xpath('uni:publisher/text()', 'id', unicode, multi=True),
+                'type': self.xpath('uni:type/text()', 'id', unicode, multi=True),
+                'subject': self.xpath('uni:type/text()', 'id', unicode, multi=True),
+                }
+
+            dates = self.xpath('uni:date/text()', 'id', unicode, multi=True)
+            if dates:
+                dateval = parse_date(dates[0])
+                assert not dateval is None, 'Unknown dateFormat: %s' % dateval
+                fields['date'] = [dateval]        
+
+            fields['author'] = fields['contributor']
+            fields['url'] = ['http://dx.doi.org/????/%s' % self.id]
+            fields['dare_id'] = ['urn:NBN:nl:ui:??-%s' %self.id]
+            filename = self.xpath('uni:date/text()', 'id', unicode, multi=True)
+            if filename:
+                fields['assets'] = [{'filename': filename[0],
+                                    'mimetype': 'application/binary'}]
+            return fields
+            
+
+Note that this is just an example of how a content object might look, this will totally depend on your existing content format, and which kind of properties you want to store in the MOAI database. This in turn decides which metadataprefixes you can use in the OAI server.
+        
+        
+
+

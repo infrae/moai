@@ -23,5 +23,5 @@ Besides the code, there are also some unittests. You can run them by calling the
    module_metadata
    module_provider
 
-
+You can also use the :ref:`modindex` for browsing the modules.
 

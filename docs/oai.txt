@@ -1,5 +1,5 @@
-OAI, the Open Archives Initiative
-=================================
+More about OAI, the Open Archives Initiative
+============================================
 
 .. image:: _static/OA100.gif
 

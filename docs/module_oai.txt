@@ -1,0 +1,13 @@
+MOAI OAI Module
+===============
+
+.. automodule:: moai.oai
+
+   .. autoclass:: moai.oai.OAIServer
+      :members:
+      :undoc-members:
+   
+   .. autoclass:: moai.oai.OAIServerFactory
+      :members:
+      :undoc-members:
+

@@ -1,0 +1,52 @@
+Installing MOAI
+===============
+
+At the moment, there has not been an official release of the MOAI
+code. If we make a release, we will put tarballs on this website,
+or on pypi.
+
+For now, you can grab a copy from the svn trunk here:
+
+http://svn.infrae.com/MOAI/trunk
+
+Installation instructions
+-------------------------
+
+Checkout MOAI and go into the checkout directory:
+
+.. code-block:: sh
+
+  > svn co http://svn.infrae.com/MOAI/trunk moai
+  > cd moai
+
+Run the bootstrap script with a python interpreter:
+
+.. code-block:: sh
+
+  > python bootstrap.py
+
+Setup the project, and pull in dependencies by running the buildout script:
+
+.. code-block:: sh
+
+  > bin/buildout
+
+After the buildout has finished, a script 'update_database' has been created. This script is used to load the content into the MOAI database.
+
+.. code-block:: sh
+
+  > ./bin/update_database --help
+
+  Usage: update_database [options]
+
+  Options:
+    --version         show program's version number and exit
+    -h, --help        show this help message and exit
+    -v, --verbose     print logging at info level
+    -d, --debug       print traceback and quit on error
+    -q, --quiet       be quiet, do not output and info
+    --config=CONFIG   do not use default config profile (example)
+    --date=FROM_DATE  Only update databse from a specific date
+
+Another script 'start_server' is also available to start the OAI Server (if the default cherrypy server is used)
+

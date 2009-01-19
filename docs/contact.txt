@@ -1,0 +1,15 @@
+Community & Contact
+===================
+
+Since the initial release of MOAI has not taken place yet,
+there have not been a lot of communication channels setup.
+
+We will setup a MOAI mailing list when we do the first public
+release.
+
+For now you can always send an email to jasper@infrae.com
+
+Feedback is always appreciated!
+
+
+
