@@ -1,5 +1,5 @@
-Welcome to MOAI's documentation!
-================================
+Welcome to the MOAI Project!
+============================
 
 MOAI is a platform for aggregating content from different sources, and publishing it through the Open Archive Initiatives protocol for metadata harvesting.
 It's been build for academic institutional repositories dealing with (relational) metadata and asset files.
