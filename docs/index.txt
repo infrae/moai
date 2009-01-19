@@ -40,8 +40,8 @@ More specificly MOAI has the ability to:
 
 In the comming weeks when the first MOAI release is done, we will add more thorough explanation and examples.
 
-Contents:
---------
+Site Contents
+-------------
 .. toctree::
   :maxdepth: 1
 
