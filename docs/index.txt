@@ -12,11 +12,10 @@ OAI2.0 compatible streams.
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    
-   oai
-   architecture
    codebase
+   oai
 
 Indices and tables
 ==================

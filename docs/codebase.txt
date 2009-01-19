@@ -1,12 +1,27 @@
 MOAI Codebase
 ~~~~~~~~~~~~~
 
-The MOAI Codebase consists of a number of :ref:`interfaces`.
-These :ref:`interfaces` can have several implementations, and
-can be plugged into the MOAI server.
+The MOAI Codebase consists of a number of modules, :ref:`interfaces`, and an extension mechanism.
+
+The :ref:`interfaces` can have several implementations, and
+can be plugged into the MOAI server, by using specific configuration profiles.
+
+Besides the code, there are also some unittests. You can run them by calling the `test` script in the `bin` directory. Most of the tests are in the form of unittests, but there's also a nice doctest in the `README.txt` file. This gives a nice birdseye overview of the whole MOAI system.
 
 .. toctree::
    :maxdepth: 1
 
    interfaces
+   module_database
+   module_server
+   module_content
+   module_error
+   module_oai
+   module_update
+   module_core
+   module_http
+   module_metadata
+   module_provider
+
+
 
