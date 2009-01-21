@@ -6,7 +6,7 @@ MOAI 0.10 (unreleased)
 
 New Features
 ~~~~~~~~~~~~
-
+- Renamed MetaDataPrefix classes to MetaDataFormat
 - Added configurable plugin system
 - Added documentation website (more info in README.txt)
 - Made Fedora provider not write all files in same directory
