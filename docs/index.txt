@@ -38,7 +38,7 @@ More specificly MOAI has the ability to:
 - Simple and Robust authentication through integration with Apache webserver
 - Serve assets through Apache while still using configurable authentication rules.
 
-In the comming weeks when the first MOAI release is done, we will add more thorough explanation and examples.
+In the coming weeks when the first MOAI release is done, we will add more thorough explanation and examples.
 
 Site Contents
 -------------
