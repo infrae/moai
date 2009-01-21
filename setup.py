@@ -14,8 +14,8 @@ setup(
     license='BSD',
     entry_points= {
     'console_scripts': [
-    'update_database = moai.utils:update_database',
-    'start_server = moai.utils:start_server' 
+    'update_database = moai.tools:update_database',
+    'start_server = moai.tools:start_server' 
       ]
     },
     install_requires=[

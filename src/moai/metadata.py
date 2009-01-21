@@ -1,17 +1,12 @@
 
 from lxml.builder import ElementMaker
 
-from moai import MetaDataPrefix, name
-from moai.meta import METADATA_PREFIXES
+from moai import MetaDataFormat, name
+from moai.meta import METADATA_FORMATS
 
 XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
 
-def get_writer(prefix, config, db):
-    writer = METADATA_PREFIXES[prefix]
-    return writer(prefix, config, db)
-
-
-class OAIDC(MetaDataPrefix):
+class OAIDC(MetaDataFormat):
     """The standard OAI Dublin Core metadata format.
     
     Every OAI feed should at least provide this format.
@@ -54,7 +49,7 @@ class OAIDC(MetaDataPrefix):
         
         element.append(oai_dc)
 
-class MODS(MetaDataPrefix):
+class MODS(MetaDataFormat):
     """This is the minimods formats as defined by DARE.
 
     It is registered as prefix 'mods'.'

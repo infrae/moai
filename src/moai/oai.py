@@ -5,7 +5,11 @@ import oaipmh.metadata
 import oaipmh.server
 import oaipmh.error
 
-from moai.metadata import get_writer
+from moai.core import get_metadata_format
+
+def get_writer(prefix, config, db):
+    writer = get_metadata_formats(prefix)
+    return writer(prefix, config, db)
 
 class OAIServer(object):
     def __init__(self, db, config):

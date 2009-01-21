@@ -27,7 +27,24 @@ class ConfigurationProfile(object):
     def requestFactory(self):
         raise NotImplementedError
 
-class MetaDataPrefix(object):
+class Plugin(object):
+    """Create you're own plugins by subclassing this
+    and specifying a moai.name.
+    The plugin is executed after the database was updated'
+    """
+    martian.baseclass()
+    def __init__(self, database, config=None):
+        """Execute the plugin, with the new database.
+        an optional config dictionary is used,
+        if config values for this plugin were added in the buildout.cfg file
+        """
+        pass
+    
+    def run(self, updated_ids):
+        """Do something with the list of updated ids
+        """
+    
+class MetaDataFormat(object):
     martian.baseclass()
 
 class name(martian.Directive):

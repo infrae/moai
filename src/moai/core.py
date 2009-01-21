@@ -8,6 +8,10 @@ import moai.meta
 import moai.metadata
 
 __version__ = '0.3.0'
+
+
+def get_metadata_format(prefix):
+    return moai.meta.METADATA_FORMATS.get(prefix)
     
 class MOAI(object):
     def __init__(self, log, verbose=False, debug=False):
@@ -19,8 +23,14 @@ class MOAI(object):
         self.registry.grok('moai.metadata', moai.metadata)
         self._module_paths = []
         
-    def get_configuration(self, configname):
-        return moai.meta.CONFIGURATION_PROFILES.get(configname)
+    def get_configuration(self, config_name):
+        return moai.meta.CONFIGURATION_PROFILES.get(config_name)
+
+    def get_plugin(self, plugin_name):
+        return moai.meta.PLUGINS.get(plugin_name)
+    
+    def get_plugin_names(self):
+        return moai.meta.PLUGINS.keys()
 
     def add_extension_module(self, module_name):
         fromlist = []

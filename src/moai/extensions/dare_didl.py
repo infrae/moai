@@ -1,11 +1,11 @@
 
 from lxml.builder import ElementMaker
 
-from moai import MetaDataPrefix, name
+from moai import MetaDataFormat, name
 from moai.metadata import OAIDC, MODS, XSI_NS
 
         
-class DIDL(MetaDataPrefix):
+class DIDL(MetaDataFormat):
     """A metadata prefix implementing the DARE DIDL metadata format
     this format is registered under the name "didl"
     Note that this format re-uses oai_dc and mods formats that come with
