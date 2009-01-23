@@ -8,7 +8,7 @@ import oaipmh.error
 from moai.core import get_metadata_format
 
 def get_writer(prefix, config, db):
-    writer = get_metadata_formats(prefix)
+    writer = get_metadata_format(prefix)
     return writer(prefix, config, db)
 
 class OAIServer(object):
