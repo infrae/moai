@@ -32,16 +32,41 @@ class BTreeDatabase(object):
         return datetime.datetime(*time.gmtime(int(key))[:6])
 
     def get_record(self, id):
-        return eval(self._content[id.encode('utf8')])['record']
+        rid = id.encode('utf8')
+        data = self._content.get(rid)
+        if data is None:
+            return
+
+        data = eval(data)
+        result = data['record']
+        result['sets'] = data['sets']
+        return result
                 
     def get_metadata(self, id):
-        return eval(self._content[id.encode('utf8')])['metadata']
+        rid = id.encode('utf8')
+        data = self._content.get(rid)
+        if data is None:
+            return
+        data = eval(data)
+        
+        return data['metadata']
 
-    def get_assets(self, id):
-        return eval(self_content[id.encode('utf8')])['assets']
+    def get_sets(self, id):
+        rid = id.encode('utf8')
+        data = self._content.get(rid)
+        if data is None:
+            return []
+
+        data = eval(data)
+        return data['sets']
 
     def get_set(self, id):
-        return eval(self._sets[id.encode('utf8')])
+        rid = id.encode('utf8')
+        data = self._sets.get(rid)
+        if data is None:
+            return       
+        
+        return eval(data)
 
     def remove_content(self, id):
         id = id.encode('utf8')
@@ -160,6 +185,7 @@ class BTreeDatabase(object):
 
         set_ids = set()
         for set_id in sets:
+            set_id = set_id.encode('utf8')
             set_ids = set_ids.union(set(eval(self._sets[set_id])['content']))
         if set_ids:
             ids = ids.intersection(set_ids)
@@ -168,6 +194,7 @@ class BTreeDatabase(object):
         
         not_set_ids = set()
         for set_id in not_sets:
+            set_id = set_id.encode('utf8')
             not_set_ids = not_set_ids.union(set(eval(self._sets[set_id])['content']))
         if not_set_ids:
             ids = ids.difference(not_set_ids)
@@ -176,6 +203,7 @@ class BTreeDatabase(object):
         
         filter_set_ids = set()
         for set_id in filter_sets:
+            set_id = set_id.encode('utf8')
             filter_set_ids = filter_set_ids.union(set(eval(self._sets[set_id])['content']))
         if filter_set_ids:
             ids = ids.intersection(filter_set_ids)

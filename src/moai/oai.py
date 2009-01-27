@@ -12,6 +12,11 @@ def get_writer(prefix, config, db):
     return writer(prefix, config, db)
 
 class OAIServer(object):
+    """An OAI-2.0 compliant oai server.
+    
+    Underlying code is based on pyoai's oaipmh.server'
+    """
+    
     def __init__(self, db, config):
         self.db = db
         self.config = config
@@ -113,13 +118,16 @@ class OAIServer(object):
                                  batch_size=batch_size,
                                  sets=sets,
                                  not_sets=notsets,
-                                 filter_sets=filtersets,
+                                  filter_sets=filtersets,
                                  from_date=from_,
                                  until_date=until,
                                  identifier=identifier
                                  )
 
 def OAIServerFactory(db, config):
+    """Create a new OAI batching OAI Server given a config and
+    a database"""
+    
     metadata_registry = oaipmh.metadata.MetadataRegistry()
     for prefix in config.metadata_prefixes:
         metadata_registry.registerWriter(prefix,

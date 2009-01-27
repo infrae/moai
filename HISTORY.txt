@@ -6,6 +6,7 @@ MOAI 0.10 (unreleased)
 
 New Features
 ~~~~~~~~~~~~
+- Added SQLite database backend
 - Renamed MetaDataPrefix classes to MetaDataFormat
 - Added configurable plugin system
 - Added documentation website (more info in README.txt)

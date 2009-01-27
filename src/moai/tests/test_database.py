@@ -6,6 +6,8 @@ from moai.provider.list import ListBasedContentProvider
 from moai.content import DictBasedContentObject
 from moai.update import DatabaseUpdater
 from moai.database.btree import BTreeDatabase
+from moai.database.sqlite import SQLiteDatabase
+from moai.error import UnknownRecordID
 
 DATA = [{'id': u'id:1',
          'label': u'Publication 1',
@@ -14,6 +16,7 @@ DATA = [{'id': u'id:1',
          'deleted': False,
          'sets': [u'stuff', u'publications', u'top'],
          'is_set': False,
+         'abstract': [u'A test publication']
          },
         {'id': u'id:2',
          'label': u'Dataset 1',
@@ -65,17 +68,35 @@ DATA = [{'id': u'id:1',
          },
         ]
 
-class DatabaseTest(TestCase):
+class BtreeDatabaseTest(TestCase):
 
     def setUp(self):
         self.db = BTreeDatabase()
         provider = ListBasedContentProvider(DATA)
         updater = DatabaseUpdater(provider, DictBasedContentObject, self.db, logging)
-        list(updater.update_provider())
-        list(updater.update_database())
+        updater.update_provider()
+        updater.update_database()
         
     def tearDown(self):
         del self.db
+
+    def testGetRecord(self):
+        self.assertEquals(self.db.get_record(u'bla'), None)
+        record = self.db.get_record(u'id:1')
+        self.assertEquals(type(record.get('id')), unicode)
+        self.assertEquals(type(record.get('when_modified')), datetime)
+        self.assertEquals(type(record.get('deleted')), bool)
+        self.assertEquals(type(record.get('is_set')), bool)
+        self.assertEquals(type(record.get('content_type')), unicode)
+
+    def testGetMetadata(self):
+        self.assertEquals(self.db.get_metadata(u'bla'), None)
+        record = self.db.get_metadata(u'id:1')
+
+    def testGetSets(self):
+        self.assertEquals(self.db.get_sets(u'bla'), [])
+        sets = self.db.get_sets(u'id:1')
+        self.assertEquals(len(sets), 3)
 
     def testSetAddRemove(self):
         # we have 4 sets to begin with
@@ -93,7 +114,7 @@ class DatabaseTest(TestCase):
         # we have 3 records to begin with
         result = list(self.db.oai_query(offset=0, batch_size=100))
         self.assertEquals(len(result), 3)
-        self.db.remove_content('id:1')
+        self.db.remove_content(u'id:1')
         result = list(self.db.oai_query(offset=0, batch_size=100))
         self.assertEquals(len(result), 2)
 
@@ -148,28 +169,42 @@ class DatabaseTest(TestCase):
         self.assertEquals(len(result), 1)
 
     def testOAIQuerySets(self):
-        result = list(self.db.oai_query(sets=['stuff']))
+        result = list(self.db.oai_query(sets=[u'stuff']))
         self.assertEquals(len(result), 3)
-        result = list(self.db.oai_query(sets=['publications']))
+        result = list(self.db.oai_query(sets=[u'publications']))
         self.assertEquals(len(result), 2)
-        result = list(self.db.oai_query(sets=['datasets']))
+        result = list(self.db.oai_query(sets=[u'datasets']))
         self.assertEquals(len(result), 1)
-        result = list(self.db.oai_query(sets=['datasets', 'publications']))
+        result = list(self.db.oai_query(sets=[u'datasets',
+                                              u'publications']))
         self.assertEquals(len(result), 3)
-        result = list(self.db.oai_query(not_sets=['stuff']))
+        result = list(self.db.oai_query(not_sets=[u'stuff']))
         self.assertEquals(len(result), 0)
-        result = list(self.db.oai_query(not_sets=['publications']))
+        result = list(self.db.oai_query(not_sets=[u'publications']))
         self.assertEquals(len(result), 1)
-        result = list(self.db.oai_query(not_sets=['datasets']))
+        result = list(self.db.oai_query(not_sets=[u'datasets']))
         self.assertEquals(len(result), 2)
-        result = list(self.db.oai_query(sets=['stuff'], not_sets=['publications']))
+        result = list(self.db.oai_query(sets=[u'stuff'], not_sets=['publications']))
         self.assertEquals(len(result), 1)
-        result = list(self.db.oai_query(sets=['publications'], filter_sets=['top']))
+        result = list(self.db.oai_query(sets=[u'publications'], filter_sets=['top']))
         self.assertEquals(len(result), 1)
 
-   
+class SQLiteDatabaseTest(BtreeDatabaseTest):
+    def setUp(self):
+        self.db = SQLiteDatabase()
+        provider = ListBasedContentProvider(DATA)
+        updater = DatabaseUpdater(provider, DictBasedContentObject, self.db, logging)
+        updater.update_provider()
+        updater.update_database()
+        
+    def tearDown(self):
+        del self.db
+
 def test_suite():
-    return TestSuite((makeSuite(DatabaseTest), ))
+    suite = TestSuite()
+    suite.addTest(makeSuite(BtreeDatabaseTest))
+    suite.addTest(makeSuite(SQLiteDatabaseTest))
+    return suite
 
 
 if __name__ == '__main__':

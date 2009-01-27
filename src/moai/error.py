@@ -31,3 +31,5 @@ class DatabaseError(Exception):
             self.err.__name__,
             self.detail)
     
+class UnknownRecordID(Exception):
+    pass

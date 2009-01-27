@@ -25,7 +25,7 @@ def update_database(configfile, configname, extension_modules):
 
     sys.stderr.write('Updating content provider..')
     count = 0    
-    for id in updater.update_provider(from_date):
+    for id in updater.update_provider_iterate(from_date):
         if not options.quiet and not options.verbose:
             progress.animate('Updating content provider: %s' % id)
             count += 1
@@ -38,7 +38,7 @@ def update_database(configfile, configname, extension_modules):
     
     total = 0
     updated = []
-    for count, total, id, error in updater.update_database():
+    for count, total, id, error in updater.update_database_iterate(supress_errors=True):
         msg_count = ('%%0.%sd/%%s' % len(str(total))) % (count, total)
         if not error is None:
             error_count += 1

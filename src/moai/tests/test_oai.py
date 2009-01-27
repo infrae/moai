@@ -16,8 +16,8 @@ class OAITest(TestCase):
         self.db = BTreeDatabase()
         provider = ListBasedContentProvider(DATA)
         updater = DatabaseUpdater(provider, DictBasedContentObject, self.db, logging)
-        list(updater.update_provider())
-        list(updater.update_database())
+        updater.update_provider()
+        updater.update_database()
         config = FeedConfig('test', 'A test Repository',
                             'http://localhost/repo/test',
                             logging)

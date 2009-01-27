@@ -116,20 +116,19 @@ understands. a log instance is also needed.
 Now we will update the database, but before we do that, we need to update
 the provider.. 
 
->>> list(updater.update_provider())
+>>> updater.update_provider()
 [0, 1]
 >>> updater.update_database()
-<generator object ...>
+0
 
-Note that this method returns a generator with progress information
-we have to iterate through the results to make sure everything is updated
-
->>> for c in updater.update_database():pass
+Note that this function calls update_database_iterate, which 
+gives more feedback, and can be used to track the progress of
+the update.
 
 Lets see if we can retrieve some data from the database
 
 >>> sorted(db.get_record('tester').keys())
-['content_type', 'deleted', 'id', 'when_modified']
+['content_type', 'deleted', 'id', 'is_set', 'sets', 'when_modified']
 
 >>> db.get_metadata('tester')
 {'title': [u'This is a test']}

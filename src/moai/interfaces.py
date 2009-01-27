@@ -49,13 +49,11 @@ class IContentObject(Interface):
     def field_names():
         """Return a list of field names, used in this object
         """
-        pass
 
     def get_values(field_name):
         """Return a list of python objects (string/int/etc)
         from a specific field name
         """
-        pass
         
 class IContentValidator(Interface):
 
@@ -65,51 +63,56 @@ class IContentValidator(Interface):
        """Make the validator use a specific custom logger
        (will probably be set automaticly in __init__)
        """
-       pass
    
     def validate_object(content_object):
         """Validates an object, return a Boolean to indicate validity,
         Alle warnings and errors, should also be logged with the log object
         that's provided as an argument of the set_logger method
         """
-        pass
     
 class IDatabaseUpdater(Interface):
     def set_database(database):
         """Make the updater use a specific (new) database
         (will probably be set automaticly in __init__)
         """
-        pass
 
     def set_content_provider(content_provider):
         """Make the updater use a specific ContentProvider
         (will probably be set automaticly in __init__)
         """
-        pass
 
     def set_content_class(self, content_object_class):
         """Sets the class to be used to create the content objects
         from the provider data
         """
-        pass
     
     def set_logger(logger_instance):
        """Make the updater use a specific custom logger
        (will probably be set automaticly in __init__)
        """
-       pass
 
     def update_provider(from_date=None):
-       """Updates the provider from a specific date,
-       yields a list of ids that were updated
-       """
+        """Iterates through update_provider_iterate in a loop,
+        returns a list of updated ids
+        """
 
-    def update_database(validate=True):
+    def update_provider_iterate(from_date=None):
+       """Updates the provider from a specific date,
+       yields the ids that where updated
+       """
+   
+    def update_database(validate=True, supress_errors=False):
+        """Iterates through update_database_iterate in a loop,
+        returns the number of errors that occured (int)
+        """
+    
+    def update_database_iterate(validate=True, supress_errors=False):
         """Update the database with the content_provider
         this will update the content_provider, optionally
         validate the content objects, and add everything
         to the database.
-        This should never return an error, instead it should
+        If supress_errors is True, this method should
+        never return an error, instead it should
         yield tuples containing the following values:
 
         (count, total, provider_id, exception)
@@ -121,8 +124,6 @@ class IDatabaseUpdater(Interface):
                    moai.ContentError, or a moai.DatabaseError
                    otherwise this value will be None
         """
-        pass
-
 
 class IDatabase(Interface):
 
@@ -135,7 +136,6 @@ class IDatabase(Interface):
           'description': <string>}]
           
         """
-        pass
     
     def oai_query(offset=0,
                   batch_size=20,
@@ -153,61 +153,46 @@ class IDatabase(Interface):
           'assets': <dict similar to get_assets() output>}
         ]
         """
-        pass
     
     def get_record(id):
         """Returns a dictionary of data that is available from the
         object with the specific id. The dictionary should contain at least
         the following data:
 
-        {'identifier': unicode,
+        {'id': unicode,
         'when_modified': dateTime,
         'deleted': boolean,
-        'content_type': string,
         'sets': list of strings,
-        'scope': string,
         }
 
-        If the id does not exist, None will be returned
+        If the id does not exist, None is returned
         """
-        pass
 
     def get_metadata(id):
         """Returns a dictionary with additional data.
         Keys are always a string, values are always lists of python
         objects.
-
-        If the id does not exist, None will be returned
+        
+        If the id does not exist, None is returned
         """
-        pass
 
-    def get_assets(id):
-        """Returns a list with dictionaries describing the assets.
-        The dictionaries should at least contain the following values:
-
-        {filename: string,
-         scope: string
-        }
+    def get_sets(id):
+        """Returns a list of set ids for a specific id,
         """
-        pass
 
     def get_set(id):
-        """Returns a dictionary with set metadata,
-        this also contains all the instances that are part of a certain
-        class:
-
-        {id: string,
-         name: string,
-         description: string (optional),
-         content: list of content ids}
+        """Returns a dictionary of set info containing
+        - id
+        - name
+        - description
+        
+        If the id does not exist, None is returned
         """
-        pass
 
     def remove_content(id):
         """Remove all the content of a given id, returns a boolean to indicate
         if the removal was succesful
         """
-        pass
 
     def add_content(id, sets, record_data, meta_data, assets_data):
         """Add content to the database, supplying an id and 3 dictionaries,
@@ -216,7 +201,6 @@ class IDatabase(Interface):
         requests.
         Returns a boolean to indicate if the insertion was succesful
         """
-        pass
 
     def add_set(id, name, description=None):
         """Add a set to the database
@@ -302,22 +286,18 @@ class IServer(Interface):
     def get_config(id):
         """Get a ServerConfig by id
         """
-        pass
     
     def download_asset(url, config):
         """Download an asset from a url
         """
-        pass
     
     def allow_download(url, config):
         """Is user allowed to download this asset (returns bool)
         """
-        pass
 
     def is_asset_url(url, config):
         """Is this url pointing to an asset (returns bool)
         """
-        pass
             
     def handle_request(req):
         """Serve this request this method goes through the following steps:
@@ -328,5 +308,3 @@ class IServer(Interface):
         4. if not asset url, get the oai server through the OAIServerFactory
         5. call the handleRequest method on the oai server, and return the result
         """
-        pass
-

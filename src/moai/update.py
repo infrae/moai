@@ -33,6 +33,12 @@ class DatabaseUpdater(object):
         self._log = log
 
     def update_provider(self, from_date=None):
+        result = []
+        for id in self.update_provider_iterate(from_date):
+            result.append(id)
+        return result
+            
+    def update_provider_iterate(self, from_date=None):
         msg = 'Starting the update of %s' % self._provider.__class__.__name__
         if not from_date is None:
             msg += 'from %s' % from_date
@@ -46,8 +52,16 @@ class DatabaseUpdater(object):
             self._provider.__class__.__name__,
             count))
             
+    def update_database(self, validate=True, supress_errors=False):
+        errors = 0
+        for count, total, content_id, error in self.update_database_iterate(validate,
+                                                                            supress_errors):
+            if not error is None:
+                errors += 1
+                
+        return errors
 
-    def update_database(self, validate=True):    
+    def update_database_iterate(self, validate=True, supress_errors=False):    
         
         total = self._provider.count()
         self._log.info('Updating %s with %s %s objects' % (
@@ -64,6 +78,9 @@ class DatabaseUpdater(object):
                 content = self._content_object_class()
                 content.update(content_data, self._provider)
             except Exception, err:
+                if not supress_errors:
+                    raise
+
                 errors += 1
                 yield (count, total, content_id,
                        ContentError(self._content_object_class, content_id))
@@ -73,6 +90,8 @@ class DatabaseUpdater(object):
                 try:
                     self.db.add_set(content.id, content.label, content.get_values('description'))
                 except Exception:
+                    if not supress_errors:
+                        raise
                     yield count, total, content.id, DatabaseError(content.id, 'set')
                     continue
                 yield count, total, content.id, None
@@ -82,6 +101,7 @@ class DatabaseUpdater(object):
             sets = content.sets
             record_data = {'id':content.id,
                            'content_type': content.content_type,
+                           'is_set': content.is_set,
                            'when_modified': content.when_modified,
                            'deleted': content.deleted}
 
@@ -91,6 +111,8 @@ class DatabaseUpdater(object):
                 try:
                     metadata[name] = content.get_values(name)
                 except Exception:
+                    if not supress_errors:
+                        raise
                     yield count, total, content.id, DatabaseError(content.id, 'set')
                     got_error = True
                     break
@@ -101,6 +123,8 @@ class DatabaseUpdater(object):
             try:
                 self.db.add_content(id, sets, record_data, metadata, assets)
             except Exception:
+                if not supress_errors:
+                    raise
                 yield count, total, content.id, DatabaseError(content.id, 'set')
                 continue
             

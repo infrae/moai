@@ -20,6 +20,7 @@ setup(
     },
     install_requires=[
     'pyoai',
-    'martian'
+    'martian',
+    'sqlalchemy',
     ],
 )
