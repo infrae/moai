@@ -14,6 +14,7 @@ class SQLiteDatabase(object):
     implements(IDatabase)
 
     def __init__(self, dbpath=None, mode='w'):
+        self._path = dbpath
         self.db = self._connect(dbpath)
         self.records = self.db.tables['records']
         self.metadata = self.db.tables['metadata']
@@ -117,11 +118,10 @@ class SQLiteDatabase(object):
                    'sets': u' %s ' % ' '.join(sets),
                    'content_type': record_data['content_type'],
                    'when_modified': record_data['when_modified']}
+        
         result = self.records.insert(rowdata).execute()
         record_id = result.last_inserted_ids()[0]
 
-        rowdata = []
-                    
         self._add_metadata(record_id, meta_data)
         
         return record_id
@@ -131,9 +131,11 @@ class SQLiteDatabase(object):
         
         for key, vals in meta_data.items():
             for val in vals:
+
                 rowdata.append({'field': key,
                                 'value': val,
                                 'record_id': record_id})
+        
         self.metadata.insert().execute(*rowdata)
 
 
@@ -142,6 +144,7 @@ class SQLiteDatabase(object):
             pass
 
     def add_set(self, set_id, name, description=None):
+        
         if description is None:
             description = [u'']
         elif not isinstance(description, list):
@@ -241,7 +244,10 @@ class SQLiteDatabase(object):
             
             
         for row in query.distinct().offset(offset).limit(batch_size).execute():
-            
-            yield {'record': dict(row),
+            record = dict(row)
+            record['id'] = record['name']
+            del record['name']
+            yield {'record': record,
+                   'sets': record['sets'].strip().split(' '),
                    'metadata': self.get_metadata(row['name']),
                    'assets':{}}

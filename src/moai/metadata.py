@@ -39,13 +39,10 @@ class OAIDC(MetaDataFormat):
 
         for field in ['title', 'creator', 'subject', 'description', 'publisher',
                       'contributor', 'type', 'format', 'identifier',
-                      'source', 'language', 'relation', 'coverage', 'rights']:
+                      'source', 'language', 'date', 'relation', 'coverage', 'rights']:
             el = getattr(DC, field)
             for value in data['metadata'].get(field, []):
                 oai_dc.append(el(value))
-
-        for value in data['metadata'].get('date', []):
-            oai_dc.append(DC.date(value.isoformat()))
         
         element.append(oai_dc)
 

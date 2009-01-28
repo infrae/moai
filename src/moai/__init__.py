@@ -15,16 +15,22 @@ class ConfigurationProfile(object):
         self.log = log
         self.config = config
 
-    def databaseUpdaterFactory(self):
-        raise NotImplementedError
-    
-    def contentProviderFactory(self):
+    def get_content_provider(self):
         raise NotImplementedError
 
-    def serverFactory(self):
+    def get_content_object(self):
         raise NotImplementedError
         
-    def requestFactory(self):
+    def get_database_updater(self):
+        raise NotImplementedError
+
+    def get_database(self):
+        raise NotImplementedError
+
+    def get_server(self):
+        raise NotImplementedError
+
+    def start_server(self):
         raise NotImplementedError
 
 class Plugin(object):

@@ -1,3 +1,4 @@
+import os
 import time
 import datetime
 import bsddb
@@ -15,7 +16,7 @@ class BTreeDatabase(object):
     implements(IDatabase)
 
     def __init__(self, dbpath=None, mode='w'):
-
+        self._dbpath = dbpath
         if dbpath is None:
             self._content = bsddb.hashopen(dbpath, mode)
             self._sets = bsddb.hashopen(dbpath, mode)

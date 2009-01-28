@@ -1,6 +1,7 @@
 import sys
 import time
 import logging
+import logging.handlers
 import datetime
 from optparse import OptionParser
 
@@ -129,7 +130,12 @@ def initialize(script, configfile, configname, extension_modules):
     if options.config:
         configname = options.config
         
-    log = logging.getLogger('moai')    
+    log = logging.getLogger('moai')
+    log.setLevel(logging.DEBUG)
+    handler = logging.handlers.RotatingFileHandler('moai.log')
+    handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+    log.addHandler(handler)
+
     moai = MOAI(log,
                 options.verbose,
                 options.debug)

@@ -68,7 +68,8 @@ class DictBasedContentObject(object):
         return data
 
     def field_names(self):
-        return self._fields.keys()
+        # only return names, when there is a value
+        return [kv[0] for kv in self._fields.items() if kv[1]]
 
     def get_values(self, field_name):
         result = self._fields.get(field_name, [])
@@ -97,6 +98,7 @@ class XMLContentObject(object):
             assert isinstance(value, basestring), (
                 'xpath result of value "%s" is of type "%s", expected string|unicode' %(
                 name, type(value).__name__))
+            value = unicode(value)
 
             if pytype is datetime.datetime:
                 value = datetime.datetime(*time.strptime(value, '%Y-%m-%dT%H:%M:%S')[:6])
@@ -110,6 +112,7 @@ class XMLContentObject(object):
             
         if not multi and result:
             result = result[0]
+        
         return result
 
     def update(self, path, provider):

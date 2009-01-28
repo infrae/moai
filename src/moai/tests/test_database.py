@@ -188,7 +188,6 @@ class BtreeDatabaseTest(TestCase):
         self.assertEquals(len(result), 1)
         result = list(self.db.oai_query(sets=[u'publications'], filter_sets=['top']))
         self.assertEquals(len(result), 1)
-
 class SQLiteDatabaseTest(BtreeDatabaseTest):
     def setUp(self):
         self.db = SQLiteDatabase()

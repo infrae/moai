@@ -1,12 +1,12 @@
 import os
+import shutil
 
 from moai import ConfigurationProfile, name
 from moai.update import DatabaseUpdater
-from moai.database.btree import BTreeDatabase
 from moai.provider.file import FileBasedContentProvider
 from moai.server import Server, FeedConfig
 from moai.http.cherry import start_server
-
+from moai.database.sqlite import SQLiteDatabase
 from moai.examples.example_content import ExampleContentObject
             
 class ExampleConfiguration(ConfigurationProfile):
@@ -19,13 +19,23 @@ class ExampleConfiguration(ConfigurationProfile):
 
 
     def get_database_updater(self):
+
+        dbpath = '/tmp/moai.new.db'
+        if os.path.isfile(dbpath):
+            self.log.warning('removing old moai.new.db')
+            os.remove(dbpath)
+        
         return DatabaseUpdater(self.get_content_provider(),
                                ExampleContentObject,
-                               BTreeDatabase('/tmp/moai', 'w'),
+                               SQLiteDatabase(dbpath, 'w'),
                                self.log)
 
     def get_database(self):
-        return BTreeDatabase('/tmp/moai', 'r')
+        if os.path.isfile('/tmp/moai.new.db'):
+            shutil.move('/tmp/moai.new.db',
+                        '/tmp/moai.db')
+            
+        return SQLiteDatabase('/tmp/moai.db', 'r')
     
     def get_server(self):
         server_url = 'http://localhost:%s/repo' % self.config['port']

@@ -153,7 +153,8 @@ class IDatabase(Interface):
           'assets': <dict similar to get_assets() output>}
         ]
         """
-    
+
+        
     def get_record(id):
         """Returns a dictionary of data that is available from the
         object with the specific id. The dictionary should contain at least
