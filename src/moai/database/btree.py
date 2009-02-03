@@ -143,7 +143,7 @@ class BTreeDatabase(object):
                   identifier=None):
 
         if len(self._dates) == 0:
-            yield
+            yield None
             return
 
         # make sure until date is set, and not in future
@@ -151,9 +151,14 @@ class BTreeDatabase(object):
             until_date = datetime.datetime.now()
 
         # make sure from date is set
+        
         if from_date == None:
-            from_date = self._key2datetime(self._dates.first()[0])
-
+            try:
+                from_date = self._key2datetime(self._dates.first()[0])
+            except bsddb._bsddb.DBNotFoundError:
+                # database is empty
+                from_date = self._key2datetime('0')
+                
         until_date = self._datetime2key(until_date)
         from_date = self._datetime2key(from_date)
 
