@@ -37,7 +37,9 @@ class MOAI(object):
         if '.' in module_name:
             fromlist = module_name.split('.')[:-1]
         try:
-            module = __import__(module_name, fromlist=fromlist)
+            globals = {}
+            locals = {}
+            module = __import__(module_name, globals, locals, fromlist)
         except ImportError, err:
             self.log.warning('Could not import extension module "%s":\n         %s' % (
                 module_name, err))
