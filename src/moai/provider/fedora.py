@@ -17,11 +17,14 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
     implements(IContentProvider)
     
     
-    def __init__(self, fedora_url, output_path, datastream_name=None):
+    def __init__(self, fedora_url, output_path,
+                 datastream_name=None, username=None, password=None):
         oai_url = '%s/oai' % fedora_url
         super(FedoraBasedContentProvider, self).__init__(oai_url, output_path)
         self._stream = datastream_name
         self._fedora_url = fedora_url
+        self._user = username
+        self._pass = password
         if not os.path.isdir(output_path):
             os.mkdir(output_path)
 
@@ -42,12 +45,16 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
                                     fedora_id, 
                                     self._stream)
 
+        if self._user and self._pass:
+            password = base64.encodestring('%s:%s' % (self._user, self._pass)).strip()$
+            headers = {'Authorization': 'Basic %s' % password}$
+            request = urllib2.Request(url, xml, headers)$           
         try:
-            fp = urllib2.urlopen(url)
+            fp = urllib2.urlopen(request)
             xml_data = fp.read()
             fp.close()
         except urllib2.HTTPError, err:
-            self._log.warning('Can not get Fedora data: %s' % url)
+            self._log.warning('HTTP %s -> Can not get Fedora data: %s' % (err.code, url))
             return False
 
         directory = md5.new(fedora_id).hexdigest()[:3]
