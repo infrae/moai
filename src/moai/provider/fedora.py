@@ -48,7 +48,7 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
         if self._user and self._pass:
             password = ('%s:%s' % (self._user, self._pass)).strip().encode('base64')
             headers = {'Authorization': 'Basic %s' % password}
-            request = urllib2.Request(url, '', headers)
+            request = urllib2.Request(url, headers=headers)
         try:
             fp = urllib2.urlopen(request)
             xml_data = fp.read()
