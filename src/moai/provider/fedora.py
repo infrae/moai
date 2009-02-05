@@ -9,14 +9,15 @@ from moai.interfaces import IContentProvider
 
 class FedoraBasedContentProvider(OAIBasedContentProvider):
     """Providers content by harvesting a Fedora Commons OAI feed.
-    Then uses the content from a specific datastream
+    Then uses the content from a specific datastream, or retrieves the
+    full foxml file if no datastream is provided
     Implements the :ref:`IContentProvider` interface
     """
     
     implements(IContentProvider)
     
     
-    def __init__(self, fedora_url, output_path, datastream_name):
+    def __init__(self, fedora_url, output_path, datastream_name=None):
         oai_url = '%s/oai' % fedora_url
         super(FedoraBasedContentProvider, self).__init__(oai_url, output_path)
         self._stream = datastream_name
@@ -32,16 +33,21 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
 
         fedora_id = self._get_id(header)
         
-        url = '%s/get/%s/%s' % (self._fedora_url,
-                                fedora_id,
-                                self._stream)
+        if self._stream is None:
+            url = '%s/objects/%s/objectXML' % (self._fedora_url,
+                                               fedora_id)
+        else:
+            # get only a specific data stream
+            url = '%s/get/%s/%s' % (self._fedora_url,
+                                    fedora_id, 
+                                    self._stream)
 
         try:
             fp = urllib2.urlopen(url)
             xml_data = fp.read()
             fp.close()
         except urllib2.HTTPError, err:
-            self._log.warning('Can not get Fedora datastream: %s' % url)
+            self._log.warning('Can not get Fedora data: %s' % url)
             return False
 
         directory = md5.new(fedora_id).hexdigest()[:3]
