@@ -12,5 +12,5 @@ class ExamplePlugin(Plugin):
     def run(self, updated_ids):
         self.log.info('Hello %s from ExamplePlugin' % self.config['hello'])
         
-        print 'Hello %s -> Updating %s records' % (self.config['hello'],
-                                                   len(updated_ids))
+        print 'Hello %s from example plugin -> Updating %s records' % (
+                self.config['hello'], len(updated_ids))
