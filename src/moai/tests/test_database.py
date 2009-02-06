@@ -25,6 +25,15 @@ DATA = [{'id': u'id:1',
          'deleted': False,
          'sets': [u'stuff', u'datasets'],
          'is_set': False,
+         'assets': [{
+             u'filename': u'test.txt',
+             u'url': u'http://example.org/assets/test.txt',
+             u'mimetype': u'text/plain',
+             u'md5': u'730652c70a12db042b8842f5049390d4',
+             u'absolute_uri': u'file:///tmp/test.txt',
+             u'metadata': {u'access': [u'public'],
+                           u'type': [u'preprint']}}]
+
          },
         {'id': u'id:3',
          'label': u'Publication 2',
@@ -97,6 +106,21 @@ class BtreeDatabaseTest(TestCase):
         self.assertEquals(self.db.get_sets(u'bla'), [])
         sets = self.db.get_sets(u'id:1')
         self.assertEquals(len(sets), 3)
+
+    def testGetAssets(self):
+        self.assertEquals(self.db.get_assets(u'bla'), [])
+        self.assertEquals(self.db.get_assets(u'id:1'), [])
+        assets = self.db.get_assets(u'id:2')
+        self.assertEquals(len(assets), 1)
+        asset = assets[0]
+        self.assertEquals(type(asset.get('filename')), unicode)
+        self.assertEquals(type(asset.get('url')), unicode)
+        self.assertEquals(type(asset.get('mimetype')), unicode)
+        self.assertEquals(type(asset.get('md5')), unicode)
+        self.assertEquals(type(asset.get('absolute_uri')), unicode)
+        self.assertEquals(type(asset.get('metadata')), dict)
+        self.assertTrue(asset['metadata'].has_key('type'))
+        self.assertEquals(asset['metadata']['type'], [u'preprint'])
 
     def testSetAddRemove(self):
         # we have 4 sets to begin with

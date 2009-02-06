@@ -69,6 +69,14 @@ class BTreeDatabase(object):
         
         return eval(data)
 
+    def get_assets(self, id):
+        rid = id.encode('utf8')
+        data = self._content.get(rid)
+        if data is None:
+            return []
+        
+        return eval(data)['assets']
+
     def remove_content(self, id):
         id = id.encode('utf8')
         data = eval(self._content.get(id))

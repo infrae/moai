@@ -119,7 +119,7 @@ class DatabaseUpdater(object):
             if got_error:
                 continue
 
-            assets = {}
+            assets = content.get_assets()
             try:
                 self.db.add_content(id, sets, record_data, metadata, assets)
             except Exception:

@@ -11,11 +11,7 @@
     <keyword>example</keyword>
     <issued>2008-10-31T12:36:00</issued>
     <asset>
-      <filename>foo.pdf</filename>
-      <mimetype>application/pdf</mimetype>
-    </asset>
-    <asset>
-      <filename>cover.jpg</filename>
-      <mimetype>image/jpeg</mimetype>
+      <filename>test.txt</filename>
+      <mimetype>text/plain</mimetype>
     </asset>
 </publication>

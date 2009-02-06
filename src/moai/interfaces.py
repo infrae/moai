@@ -54,6 +54,21 @@ class IContentObject(Interface):
         """Return a list of python objects (string/int/etc)
         from a specific field name
         """
+
+    def get_assets():
+        """Return a list of python dictionaries, each dictionary contains
+        at least the following keys:
+
+        - url               - Url of the asset, this will be used in feeds
+        - filename          - The filename of the asset
+        - md5sum            - md5 checksum of the asset
+        - mimetype          - mimetype of the asset
+        - absolute_uri      - file:/// or http:/// uri referencing the file
+        - metadata          - dictionary with lists of strings as values holding
+                              additional metadata
+        """
+        
+
         
 class IContentValidator(Interface):
 
@@ -189,6 +204,20 @@ class IDatabase(Interface):
         
         If the id does not exist, None is returned
         """
+
+    def get_assets(id):
+        """Returns a list of dictionaries describing the assets
+        Each dictionary contains the following fields:
+        - filename
+        - url
+        - mimetype
+        - md5
+        - absolute_uri
+        - metadata
+        
+        Where metadata is a dictionary with additional lists of string values
+        """
+
 
     def remove_content(id):
         """Remove all the content of a given id, returns a boolean to indicate

@@ -6,6 +6,9 @@ MOAI 0.10 (unreleased)
 
 New Features
 ~~~~~~~~~~~~
+- Added basic authentication for fedora provider
+- Made fedora provider datastream argument optional,
+  if not specified the whole foxml file is returned
 - Added SQLite database backend
 - Renamed MetaDataPrefix classes to MetaDataFormat
 - Added configurable plugin system

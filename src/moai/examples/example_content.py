@@ -28,6 +28,7 @@ class ExampleContentObject(XMLContentObject):
         self.sets.extend(self.xpath('ex:scope/text()', 'scope', unicode, multi=True))
         self.is_set = self.content_type == u'set'
 
+        self._assets = []
         if self.content_type == u'person':
             self._fields = self.set_person_fields()
         elif self.content_type == u'set':
@@ -78,7 +79,6 @@ class ExampleContentObject(XMLContentObject):
         fields[u'url'] = [u'http://hdl.handle.net/????/%s' % self.id]
         fields[u'dare_id'] = [u'urn:NBN:nl:ui:??-%s' %self.id]
 
-        assets = []
         for el in self.root.xpath('ex:asset', namespaces=self.nsmap):
             asset = {}
             for child in el.xpath('*[text()]'):
@@ -87,10 +87,25 @@ class ExampleContentObject(XMLContentObject):
             assert u'mimetype' in asset, 'found asset without mimetype'
             asset[u'url'] = u'http://example.org/repo/assets/%s/%s' % (self.id.replace(':', '_'),
                                                                      asset['filename'])
-            assets.append(asset)
+            self._assets.append(asset)
+
+            path = os.path.join(os.path.dirname(__file__),
+                                'example_data',
+                                'assets', self.id.replace(':', '_'),
+                                asset['filename'])
+            assert os.path.isfile(path), "Can not find asset: %s" % path
+
+            asset[u'absolute_uri'] = u'file://%s' % path
+            assets[u'metadata'] = []
+            self._assets.append(asset)
+                
+            
         #fields[u'asset'] = assets
         
         return fields
+
+    def get_assets(self):
+        return self._assets
 
     def set_person_fields(self):
         fields = {
