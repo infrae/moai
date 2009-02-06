@@ -6,6 +6,8 @@ The Server module contains implementations
 of :ref:`IServer` and :ref:`IFeedConfig`.
 
 """
+import os
+import tempfile
 
 from zope.interface import implements
 
@@ -39,11 +41,25 @@ class Server(object):
         """
         return self._configs.get(id)
 
-    def download_asset(self, url, config):
+    def download_asset(self, req, url, config):
         """Download an asset
         """
-        assetpath = url.split('/asset/')[-1]
-        return self.backend.sendfile(assetpath, 'apllication/binary')
+        url = url.lstrip('/')
+        asset_url = url.split('asset/')[-1]
+        id, filename = asset_url.split('/')
+        assetpath = config.get_asset_path(id, filename)
+
+        if not os.path.isfile(assetpath):
+            return req.send_status('404 File not Found',
+                                   'The asset file "%s" does not exist' % filename)
+
+        for asset in self._db.get_assets(id):
+            if (asset['filename'] == filename or
+                asset['md5'] == filename):
+                break
+        
+        return req.send_file(assetpath,
+                             asset['mimetype'])
 
     def allow_download(self, url, config):
         """Returns a boolean indicating if it is okay to download an
@@ -61,7 +77,7 @@ class Server(object):
         """Returns a boolean indicating if this is a url
         for downloading an asset or not
         """
-
+        
         if url.startswith('asset/'):
             return True
         return False
@@ -96,7 +112,7 @@ class Server(object):
 
         if self.is_asset_url(url, config):
             if self.allow_download(url, config):
-                return self.download_asset(url, config)
+                return self.download_asset(req, url, config)
             else:
                 return req.send_status('403 Forbidden',
                                        'You are not allowed to download this asset')
@@ -123,7 +139,8 @@ class FeedConfig(object):
                  sets_allowed = [],
                  sets_disallowed = [],
                  filter_sets = [],
-                 delay = 0):
+                 delay = 0,
+                 base_asset_path=None):
         
         self.id = id
         self.name = repository_name
@@ -137,6 +154,7 @@ class FeedConfig(object):
         self.sets_disallowed = sets_disallowed
         self.filter_sets = filter_sets
         self.delay = delay
+        self.base_asset_path = tempfile.gettempdir()
 
     def get_oai_id(self, internal_id):
         return 'oai:%s' % internal_id
@@ -150,3 +168,8 @@ class FeedConfig(object):
     def get_internal_set_id(self, oai_setspec_id):
         return oai_setspec_id[4:]
 
+    def get_asset_path(self, internal_id, filename):
+        return os.path.abspath(
+            os.path.join(self.base_asset_path,
+                         internal_id,
+                         filename))

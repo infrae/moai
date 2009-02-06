@@ -145,6 +145,9 @@ database called oai_query
 >>> len(list(db.oai_query()))
 1
 
+OAI Server
+----------
+
 Now that we have our OAI database setup, we can serve it to 
 the world. The OAI Server can serve multiple OAI feeds, 
 each with it's own configuration. 
@@ -226,3 +229,101 @@ Status: 200 ...
 <dc:title>This is a test</dc:title>
 ...
 
+Assets
+------
+
+MOAI can also serve asset files, we can ask the MOAI database 
+if a record has assets
+
+>>> db.get_assets(u'tester')
+[]
+
+Let's add an asset with some assets
+>>> content[0]['assets'] = [{'filename': u'test.txt',
+...                          'mimetype': u'text/plain',
+...                          'url': u'http://www.example.com',
+...                          'absolute_uri': u'file:///test.txt',
+...                          'md5': u'1234',
+...                          'metadata': {u'foo': [u'bar']}}]
+
+Let's update the provider, and get the content object
+
+>>> p = ListBasedContentProvider(content)
+>>> c = DictBasedContentObject()
+>>> c.update(d, p.get_content_by_id(0))
+
+A content object has a method to retrieve a list of assets
+dictionaries
+
+>>> c.get_assets()
+[{...test.txt...}]
+
+Let's update the database with the new content
+
+>>> db = BTreeDatabase()
+>>> updater = DatabaseUpdater(p, DictBasedContentObject, db, log)
+>>> updater.update_provider()
+[0, 1]
+>>> updater.update_database()
+0
+
+The database has a similar method to retrieve the assets from a record
+>>> assets = db.get_assets(u'tester')
+>>> len(assets)
+1
+>>> asset = assets[0]
+
+An asset dictionary always has the following keys
+>>> sorted(asset.keys())
+['absolute_uri', 'filename', 'md5', 'metadata', 'mimetype', 'url']
+
+Additional values can be stored in the metadata dict
+
+>>> asset['metadata']
+{u'foo': [u'bar']}
+
+The assets can be served by the OAI server as part of an oai feed
+By default the path will be <basepath>/<id>/<filename> where
+basepath defaults to the systems temp dir. 
+The basepath and the resolving to the asset file can be configured
+in the FeedConfig objects.
+
+Let's put a textfile in the right directory, and see if we
+can open it through the server
+
+>>> import os, tempfile
+>>> path = tempfile.gettempdir() + '/tester'
+>>> if not os.path.isdir(path): 
+...    os.mkdir(path)
+>>> open(path + '/test.txt', 'w').write('Hello Asset World')
+
+Now, let's do a webrequest for the asset.
+
+>>> s = Server('http://localhost/repo', db)
+>>> s.add_config(config)
+>>> req = CGIRequest('http://localhost/repo/test/asset/tester/test.txt')
+>>> s.handle_request(req)
+Status: 200 OK
+Content-Type: text/plain
+Content-Length: 17
+<BLANKLINE>
+Hello Asset World
+
+Cool, that seems to work.
+
+If we try to get a non existing file, the server returns
+a http 404 status
+
+>>> req = CGIRequest('http://localhost/repo/test/asset/tester/foo.txt')
+>>> s.handle_request(req)
+Status: 404 File not Found
+Content-Type: text/plain
+Content-Length: 39
+<BLANKLINE>
+The asset file "foo.txt" does not exist
+
+Now let's clean up the asset directory
+
+>>> if os.path.isdir(path):
+...    import shutil
+...    shutil.rmtree(path)

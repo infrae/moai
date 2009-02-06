@@ -280,6 +280,11 @@ class IFeedConfig(Interface):
     def get_internal_set_id(oai_setspec_id):
         """Rename setspec id into  internal set id"""
 
+    def get_asset_path(internal_id, filename):
+        """Return an absolute path to an asset given
+        an internal id and a filename
+        """
+
 class IServerRequest(Interface):
 
     def url():
@@ -317,7 +322,7 @@ class IServer(Interface):
         """Get a ServerConfig by id
         """
     
-    def download_asset(url, config):
+    def download_asset(req, url, config):
         """Download an asset from a url
         """
     
