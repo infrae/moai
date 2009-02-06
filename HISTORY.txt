@@ -9,7 +9,7 @@ New Features
 - Added basic authentication for fedora provider
 - Made fedora provider datastream argument optional,
   if not specified the whole foxml file is returned
-- Added SQLite database backend
+- Ported SQLite database backend from EUR RePub
 - Renamed MetaDataPrefix classes to MetaDataFormat
 - Added configurable plugin system
 - Added documentation website (more info in README.txt)
