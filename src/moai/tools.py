@@ -87,7 +87,7 @@ def update_database(configfile, configname, extension_modules):
         sys.exit(0)
         
 
-    for num, name in enumerate(moai.get_plugin_names()):
+    for num, name in enumerate(plugin_names):
         num += 1
         msg = 'Running plugin %s/%s: %s' % (num,
                                             len(plugin_names),
@@ -99,8 +99,16 @@ def update_database(configfile, configname, extension_modules):
         plugin = moai.get_plugin(name)(updater.db,
                                        profile.log,
                                        config)
-        plugin.run(updated)
-   
+        try:
+            plugin.run(updated)
+        except Exception, err:
+            errname = type(err).__name__
+            if not options.quiet:
+                print >> sys.stderr, '-> %s: %s' % (errname, err)
+            profile.log.error('Error while running plugin %s:\n%s' % (name, err))
+            if options.debug:
+                raise
+            
 def start_server(configfile, configname, extension_modules):
     profile, options, moai = initialize('start_server', configfile, configname, extension_modules)
     profile.start_server()
