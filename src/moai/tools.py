@@ -10,6 +10,7 @@ from moai.utils import ProgressBar, get_duration, parse_config_file
 
 def update_database(configfile, configname, extension_modules):
     profile, options, moai = initialize('update_database', configfile, configname, extension_modules)
+    
     updater = profile.get_database_updater()
     progress = ProgressBar()
     error_count = 0
@@ -79,6 +80,9 @@ def update_database(configfile, configname, extension_modules):
 
 
     plugin_names = moai.get_plugin_names()
+    configured_plugins = profile.config.get('plugins', [])
+    plugin_names = [n for n in plugin_names if n in configured_plugins]
+    
     if len(plugin_names) == 0:
         sys.exit(0)
         
