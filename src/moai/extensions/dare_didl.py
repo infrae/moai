@@ -83,30 +83,33 @@ class DIDL(MetaDataFormat):
                ),
               DIDL.Component(mods_data)
               ),
-             DIDL.Item(
-              DIDL.Descriptor(
-               DIDL.Statement(
-                DIP.ObjectType('info:eu-repo/semantics/humanStartPage'),
-                mimeType="application/xml")
-                ),
-              DIDL.Component(
-               DIDL.Resource(mimetype="text/html", ref=data['metadata'].get('url', [''])[0])
-               )
-              ),
              )
             )
-
+        if data['metadata'].get('url'):
+             item = DIDL.Item(
+                 DIDL.Descriptor(
+                  DIDL.Statement(
+                   DIP.ObjectType('info:eu-repo/semantics/humanStartPage'),
+                   mimeType="application/xml")
+                  ),
+                 DIDL.Component(
+                  DIDL.Resource(mimetype="text/html", ref=data['metadata']['url'][0])
+                 )
+                )
+             root_item.append(item)
+        
         for root_item in didl:
-            for asset in data['metadata'].get('asset', []):
+            for asset_id in data['metadata'].get('asset', []):
+                asset = self.db.get_metadata(asset_id)
                 item = DIDL.Item(
                     DIDL.Descriptor(
                      DIDL.Statement(
-                      DIP.ObjectType('info:eu-repo/semantics/humasStartPage'),
+                      DIP.ObjectType('info:eu-repo/semantics/objectFile'),
                       mimeType="application/xml")
                      ),
                     DIDL.Component(
-                     DIDL.Resource(mimetype=asset['mimetype'],
-                                   ref=asset['url'])
+                     DIDL.Resource(mimetype=asset['mimetype'][0],
+                                   ref=asset['url'][0])
                      )
                     )
                 root_item.append(item)
