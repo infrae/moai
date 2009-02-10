@@ -134,7 +134,6 @@ class SQLiteDatabase(object):
         return True
     
     def add_content(self, id, sets, record_data, meta_data, assets_data):
-
         record_id = self._add_record(record_data, sets)
         self._add_metadata(record_id, meta_data)
 
@@ -164,16 +163,13 @@ class SQLiteDatabase(object):
                 rowdata.append({'field': key,
                                 'value': val,
                                 'record_id': record_id})
-        
-        self.metadata.insert().execute(*rowdata)
+        if rowdata:
+            self.metadata.insert().execute(*rowdata)
 
 
     def _remove_metadata(self, record_id):
         asset_ids = []
-        for result in self.metadata.delete(self.metadata.c.record_id == record_id).execute():
-            import pdb;pdb.set_trace()
-            
-            
+        self.metadata.delete(self.metadata.c.record_id == record_id).execute()
 
     def _add_asset(self, record_id, asset_name, asset_data):
 
@@ -270,6 +266,9 @@ class SQLiteDatabase(object):
         # filter dates
         query.append_whereclause(self.records.c.when_modified < until_date)
 
+        if identifier:
+            query.append_whereclause(self.records.c.name == identifier)
+
         if not from_date is None:
             query.append_whereclause(self.records.c.when_modified > from_date)
 
@@ -305,12 +304,12 @@ class SQLiteDatabase(object):
             query.append_whereclause(sql.not_(
                 sql.or_(*not_setclauses)))
             
-            
         for row in query.distinct().offset(offset).limit(batch_size).execute():
             record = dict(row)
             record['id'] = record['name']
             del record['name']
             yield {'record': record,
                    'sets': record['sets'].strip().split(' '),
-                   'metadata': self.get_metadata(row['name']),
+                   'metadata': self.get_metadata(row['name']) or {},
                    'assets':{}}
+        
