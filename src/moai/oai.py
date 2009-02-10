@@ -63,8 +63,12 @@ class OAIServer(object):
 
     def getRecord(self, metadataPrefix, identifier):
         self._checkMetadataPrefix(metadataPrefix)
+        header = None
+        metadata = None
         for record in self._listQuery(identifier=identifier):
             header, metadata = self._createHeaderAndMetadata(record)
+        if header is None:
+            raise oaipmh.error.IdDoesNotExistError(identifier)
         return header, metadata, None
 
     def _checkMetadataPrefix(self, metadataPrefix):
