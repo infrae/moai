@@ -2,10 +2,79 @@ import os
 import urllib2
 import md5
 
+from lxml import etree
 from zope.interface import implements
 
 from moai.provider.oai import OAIBasedContentProvider
 from moai.interfaces import IContentProvider
+
+class FOXMLFile(object):
+
+    def __init__(self, file_obj):
+        self._doc = etree.parse(file_obj)
+        self._ns = 'info:fedora/fedora-system:def/foxml#'
+
+    def get_xml_ids(self):
+        ids = self._doc.xpath(
+            '//foxml:datastream[@CONTROL_GROUP="X"]/@ID',
+            namespaces={'foxml':self._ns})
+        return [i.decode('utf8') for i in ids]
+    def get_ids(self):
+        ids = self._doc.xpath(
+            '//foxml:datastream/@ID',
+            namespaces={'foxml':self._ns})
+        return [i.decode('utf8') for i in ids]
+
+    def get_xml(self, id):
+        contents = self._doc.xpath(
+            ('//foxml:datastream[@CONTROL_GROUP="X" and '
+             '@ID="%s"]/foxml:datastreamVersion/foxml:xmlContent' % id),
+            namespaces={'foxml':self._ns})
+        if not contents:
+            return
+        for child in contents[-1]:
+            xml = etree.tostring(child, encoding='UTF8', pretty_print=True)
+            break
+        return xml.strip().decode('utf8')
+
+    def get_location(self, id):
+        locations = self._doc.xpath(
+            ('//foxml:datastream['
+             '@ID="%s"]/foxml:datastreamVersion/'
+             'foxml:contentLocation[@TYPE="URL"]/@REF' % id),
+            namespaces={'foxml':self._ns})
+        if not locations:
+            return
+        return locations[-1].decode('utf8')
+    
+    def get_digest(self, id):
+        digests = self._doc.xpath(
+            ('//foxml:datastream['
+             '@ID="%s"]/foxml:datastreamVersion/'
+             'foxml:contentDigest[@TYPE="MD5"]/@DIGEST' % id),
+            namespaces={'foxml':self._ns})
+        if not digests:
+            return
+        return digests[-1].decode('utf8')
+    
+    def get_mimetype(self, id):
+        mimes = self._doc.xpath(
+            ('//foxml:datastream['
+             '@ID="%s"]/foxml:datastreamVersion/@MIMETYPE' % id),
+            namespaces={'foxml':self._ns})
+        if not mimes:
+            return
+        return mimes[-1].decode('utf8')
+        
+    def get_label(self, id):
+        labels = self._doc.xpath(
+            ('//foxml:datastream['
+             '@ID="%s"]/foxml:datastreamVersion/@LABEL' % id),
+            namespaces={'foxml':self._ns})
+        if not labels:
+            return
+        return labels[-1].decode('utf8')
+        
 
 class FedoraBasedContentProvider(OAIBasedContentProvider):
     """Providers content by harvesting a Fedora Commons OAI feed.
