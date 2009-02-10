@@ -101,6 +101,8 @@ class BtreeDatabaseTest(TestCase):
     def testGetMetadata(self):
         self.assertEquals(self.db.get_metadata(u'bla'), None)
         record = self.db.get_metadata(u'id:1')
+        self.assertEquals(record.get('abstract'),
+                          [u'A test publication'])
 
     def testGetSets(self):
         self.assertEquals(self.db.get_sets(u'bla'), [])
@@ -212,6 +214,7 @@ class BtreeDatabaseTest(TestCase):
         self.assertEquals(len(result), 1)
         result = list(self.db.oai_query(sets=[u'publications'], filter_sets=['top']))
         self.assertEquals(len(result), 1)
+        
 class SQLiteDatabaseTest(BtreeDatabaseTest):
     def setUp(self):
         self.db = SQLiteDatabase()
