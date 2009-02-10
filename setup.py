@@ -15,7 +15,7 @@ setup(
     entry_points= {
     'console_scripts': [
     'update_database = moai.tools:update_database',
-    'start_server = moai.tools:start_server',
+    'start_development_server = moai.tools:start_development_server',
     'generate_modpython_config = moai.http.apache:generate_config'
       ]
     },

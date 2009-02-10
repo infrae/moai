@@ -6,13 +6,16 @@ import datetime
 from optparse import OptionParser
 
 from moai.core import MOAI, __version__                   
-import moai.utils
+from moai.utils import (get_moai_log,
+                        parse_config_file,
+                        get_duration,
+                        ProgressBar)
                  
 def update_database(configfile, configname, extension_modules):
     profile, options, moai = initialize('update_database', configfile, configname, extension_modules)
     
     updater = profile.get_database_updater()
-    progress = moai.utils.ProgressBar()
+    progress = ProgressBar()
     error_count = 0
     starttime = time.time()
 
@@ -63,7 +66,7 @@ def update_database(configfile, configname, extension_modules):
     if not options.quiet and not options.verbose:
         print >> sys.stderr, '\n'
 
-    duration = moai.utils.get_duration(starttime)
+    duration = get_duration(starttime)
     msg = 'Updating database with %s objects took %s' % (total, duration)
     profile.log.info(msg)
     if not options.verbose and not options.quiet:
@@ -95,7 +98,7 @@ def update_database(configfile, configname, extension_modules):
         if not options.verbose and not options.quiet:
             print >> sys.stderr, msg
         profile.log.info(msg)
-        config = moai.utils.parse_config_file(configfile, name)
+        config = parse_config_file(configfile, name)
         plugin = moai.get_plugin(name)(updater.db,
                                        profile.log,
                                        config)
@@ -109,9 +112,9 @@ def update_database(configfile, configname, extension_modules):
             if options.debug:
                 raise
             
-def start_server(configfile, configname, extension_modules):
+def start_development_server(configfile, configname, extension_modules):
     profile, options, moai = initialize('start_server', configfile, configname, extension_modules)
-    profile.start_server()
+    profile.start_development_server()
 
 def initialize(script, configfile, configname, extension_modules):
     usage = "usage: %prog [options]"
@@ -142,7 +145,7 @@ def initialize(script, configfile, configname, extension_modules):
     if options.config:
         configname = options.config
         
-    log = moai.utils.get_moai_log()
+    log = get_moai_log()
 
     moai = MOAI(log,
                 options.verbose,
@@ -159,7 +162,7 @@ def initialize(script, configfile, configname, extension_modules):
 
     log.info('Initializing configuration profile "%s"' % configname)
     profile = config(log,
-                     moai.utils.parse_config_file(configfile, configname))
+                     parse_config_file(configfile, configname))
     return profile, options, moai
 
     
