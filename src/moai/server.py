@@ -10,9 +10,10 @@ import os
 import tempfile
 
 from zope.interface import implements
+import oaipmh.error
 
 from moai.interfaces import IServer, IFeedConfig
-from moai.oai import OAIServerFactory
+from moai.oai import OAIServerFactory, OAIServer
 
 class Server(object):
     """This is the default implementation of the
@@ -69,8 +70,23 @@ class Server(object):
         thus the metadata can be accessed. This metadata could have settings
         to indicate that the asset is private and should not be downloaded
 
-        This implementation always returns true.
         """
+        
+        url = url.lstrip('/')
+        asset_url = url.split('asset/')[-1]
+        id, filename = asset_url.split('/')
+        
+        oai_server = OAIServer(self._db, config)
+        try:
+            header, metadata, descriptio = oai_server.getRecord(
+                'oai_dc', config.get_oai_id(id))
+        except oaipmh.error.IdDoesNotExistError:
+            # record is not in the oai feed, don't download
+            return False
+        if header.isDeleted():
+            # record has deleted status, don't download
+            return False
+
         return True
 
     def is_asset_url(self, url, config):
