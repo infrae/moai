@@ -1,8 +1,17 @@
 import sys
 import os
 import time
+import logging
 from ConfigParser import ConfigParser
 
+
+def get_moai_log():
+    log = logging.getLogger('moai')
+    log.setLevel(logging.DEBUG)
+    handler = logging.handlers.RotatingFileHandler('moai.log')
+    handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+    log.addHandler(handler)
+    return log
 
 def parse_config_file(filename, section):
     config = ConfigParser()
