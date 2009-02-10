@@ -223,8 +223,14 @@ class BTreeDatabase(object):
             ids = ids.intersection(filter_set_ids)
 
         if identifier:
-            yield eval(self._content[identifier])
-            return
+            
+            # the database expects keys to be in utf8, not unicode
+            identifier = identifier.encode('utf8')
+
+            if identifier in ids:
+                ids = [identifier]
+            else:
+                ids = []
         
         # filter batching
         
