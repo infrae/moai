@@ -1,11 +1,12 @@
 MOAI changes
 ============
 
-MOAI 0.10 (unreleased)
+MOAI 1.0 (unreleased)
 ---------------------
 
 New Features
 ~~~~~~~~~~~~
+- Added Apache mod_python backend
 - Added basic authentication for fedora provider
 - Made fedora provider datastream argument optional,
   if not specified the whole foxml file is returned
