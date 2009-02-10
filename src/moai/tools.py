@@ -6,13 +6,13 @@ import datetime
 from optparse import OptionParser
 
 from moai.core import MOAI, __version__                   
-from moai.utils import ProgressBar, get_duration, parse_config_file
-
+import moai.utils
+                 
 def update_database(configfile, configname, extension_modules):
     profile, options, moai = initialize('update_database', configfile, configname, extension_modules)
     
     updater = profile.get_database_updater()
-    progress = ProgressBar()
+    progress = moai.utils.ProgressBar()
     error_count = 0
     starttime = time.time()
 
@@ -63,7 +63,7 @@ def update_database(configfile, configname, extension_modules):
     if not options.quiet and not options.verbose:
         print >> sys.stderr, '\n'
 
-    duration = get_duration(starttime)
+    duration = moai.utils.get_duration(starttime)
     msg = 'Updating database with %s objects took %s' % (total, duration)
     profile.log.info(msg)
     if not options.verbose and not options.quiet:
@@ -95,7 +95,7 @@ def update_database(configfile, configname, extension_modules):
         if not options.verbose and not options.quiet:
             print >> sys.stderr, msg
         profile.log.info(msg)
-        config = parse_config_file(configfile, name)
+        config = moai.utils.parse_config_file(configfile, name)
         plugin = moai.get_plugin(name)(updater.db,
                                        profile.log,
                                        config)
@@ -142,11 +142,7 @@ def initialize(script, configfile, configname, extension_modules):
     if options.config:
         configname = options.config
         
-    log = logging.getLogger('moai')
-    log.setLevel(logging.DEBUG)
-    handler = logging.handlers.RotatingFileHandler('moai.log')
-    handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
-    log.addHandler(handler)
+    log = moai.utils.get_moai_log()
 
     moai = MOAI(log,
                 options.verbose,
@@ -162,7 +158,8 @@ def initialize(script, configfile, configname, extension_modules):
         sys.exit(1)
 
     log.info('Initializing configuration profile "%s"' % configname)
-    profile = config(log, parse_config_file(configfile, configname))
+    profile = config(log,
+                     moai.utils.parse_config_file(configfile, configname))
     return profile, options, moai
 
     
