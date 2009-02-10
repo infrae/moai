@@ -73,6 +73,11 @@ class MODS(MetaDataFormat):
         DAI = ElementMaker(namespace=self.ns['dai'], nsmap=self.ns)
         mods = MODS.mods(version="3.2")
 
+        if data['metadata'].get('identifier'):
+            mods.append(MODS.identifier(data['metadata']['identifier'][0],
+                                        type="uri"))
+
+
         author_data = []
         for id in data['metadata'].get('author_rel', []):
             author = self.db.get_metadata(id)
@@ -116,14 +121,46 @@ class MODS(MetaDataFormat):
                 
             mods.append(MODS.extension(daiList))
 
-    
-        titleInfo = MODS.titleInfo(
-            MODS.title(data['metadata'].get('title', [])[0])
-            )
-        titleInfo.attrib['{%s}lang' % self.ns['xml']] = data['metadata'].get(
-            'language', ['en'])[0]
-        mods.append(titleInfo)
+
+        if data['metadata'].get('title'):
+            titleInfo = MODS.titleInfo(
+                MODS.title(data['metadata']['title'][0])
+                )
+            titleInfo.attrib['{%s}lang' % self.ns['xml']] = data['metadata'].get(
+                'language', ['en'])[0]
+            mods.append(titleInfo)
+            
+        if data['metadata'].get('description'):
+            mods.append(MODS.abstract(data['metadata']['description'][0]))
+
+        if data['metadata'].get('language'):
+            mods.append(MODS.language(MODS.languageTerm(data['metadata']['language'][0],
+                                                        type="code",
+                                                        authority="rfc3066")))
+
+        origin = MODS.originInfo()
+        mods.append(origin)
+        if data['metadata'].get('publisher'):
+            origin.append(MODS.publisher(data['metadata']['publisher'][0]))
+        if data['metadata'].get('date'):
+            origin.append(MODS.dateIssued(data['metadata']['date'][0],
+                                        encoding='iso8601'))
+
+        mods.append(MODS.typeOfResource('text'))        
+        if data['metadata'].get('dare_type'):
+            mods.append(MODS.genre(data['metadata']['dare_type'][0]))
+                                        
+        subjects = data['metadata'].get('subject', [])
+        if subjects:
+            s_el = MODS.subject()
+            for subject in subjects:
+                s_el.append(MODS.topic(subject))
+            mods.append(s_el)
+
+        if data['metadata'].get('rights'):
+            mods.append(MODS.accessCondition(data['metadata']['rights'][0]))
         
+            
         mods.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (self.ns['mods'],
                                                                 self.schemas['mods'])
         

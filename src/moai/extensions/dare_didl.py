@@ -42,9 +42,6 @@ class DIDL(MetaDataFormat):
         oai_url = self.config.url+'?verb=GetRecord&metadataPrefix=dare_didl&identifier=%s' % (
             self.config.get_oai_id(data['record']['id']))
 
-        # generate oai_dc for this feed
-        oai_dc_data = DIDL.Resource(mimetype="application/xml")
-        OAIDC('oai_dc', self.config, self.db)(oai_dc_data, metadata)
         # generate mods for this feed
         mods_data = DIDL.Resource(mimetype="application/xml")
         MODS('mods', self.config, self.db)(mods_data, metadata)
@@ -66,14 +63,6 @@ class DIDL(MetaDataFormat):
               ),
              DIDL.Component(
               DIDL.Resource(ref=oai_url,mimeType="application/xml")
-              ),
-             DIDL.Item(
-              DIDL.Descriptor(
-               DIDL.Statement(
-                DIP.ObjectType('info:eu-repo/semantics/descriptiveMetadata'),
-                mimeType="application/xml")
-               ),
-              DIDL.Component(oai_dc_data)
               ),
              DIDL.Item(
               DIDL.Descriptor(
