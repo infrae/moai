@@ -55,7 +55,7 @@ class Server(object):
                 break
         else:
             return req.send_status('404 File not Found',
-                                   'The asset file "%s" does not exist' % filename)
+                                   'The asset "%s" does not exist' % filename)
             
         assetpath = config.get_asset_path(id, asset)
 
@@ -65,7 +65,7 @@ class Server(object):
 
         
         return req.send_file(assetpath,
-                             asset['mimetype'])
+                             asset['mimetype'].encode('ascii'))
 
     def allow_download(self, url, config):
         """Returns a boolean indicating if it is okay to download an
@@ -175,7 +175,7 @@ class FeedConfig(object):
         self.sets_disallowed = sets_disallowed
         self.filter_sets = filter_sets
         self.delay = delay
-        self.base_asset_path = tempfile.gettempdir()
+        self.base_asset_path = base_asset_path or tempfile.gettempdir()
 
     def get_oai_id(self, internal_id):
         return 'oai:%s' % internal_id
