@@ -14,6 +14,14 @@ class FOXMLFile(object):
         self._doc = etree.parse(file_obj)
         self._ns = 'info:fedora/fedora-system:def/foxml#'
 
+    def get_property(self, name):
+        properties = self._doc.xpath(
+            '//foxml:property[@NAME="%s"]' % name,
+            namespaces={'foxml':self._ns})
+        if not properties: return
+        value = properties[-1].get('VALUE')
+        if value: return value.decode('utf8')
+        
     def get_xml_ids(self):
         ids = self._doc.xpath(
             '//foxml:datastream[@CONTROL_GROUP="X"]/@ID',
