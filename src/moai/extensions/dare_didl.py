@@ -101,7 +101,7 @@ class DIDL(MetaDataFormat):
                      ),
                     DIDL.Component(
                      DIDL.Resource(mimetype=asset['mimetype'][0],
-                                   ref=asset['url'][0])
+                                   ref=url)
                      )
                     )
                 root_item.append(item)
