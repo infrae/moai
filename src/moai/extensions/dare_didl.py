@@ -90,6 +90,9 @@ class DIDL(MetaDataFormat):
         for root_item in didl:
             for asset_id in data['metadata'].get('asset', []):
                 asset = self.db.get_metadata(asset_id)
+                url = asset['url'][0]
+                if not url.startswith('http://'):
+                    url = self.config.url.rstrip('/') + '/' + url.lstrip('/')
                 item = DIDL.Item(
                     DIDL.Descriptor(
                      DIDL.Statement(
