@@ -288,9 +288,10 @@ class IFeedConfig(Interface):
     def get_internal_set_id(oai_setspec_id):
         """Rename setspec id into  internal set id"""
 
-    def get_asset_path(internal_id, filename):
+    def get_asset_path(internal_id, asset):
         """Return an absolute path to an asset given
-        an internal id and a filename
+        an internal id the asset data dict containing
+        filename, md5, url and metadata
         """
 
 class IServerRequest(Interface):

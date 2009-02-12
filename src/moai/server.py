@@ -48,16 +48,21 @@ class Server(object):
         url = url.lstrip('/')
         asset_url = url.split('asset/')[-1]
         id, filename = asset_url.split('/')
-        assetpath = config.get_asset_path(id, filename)
-
-        if not os.path.isfile(assetpath):
-            return req.send_status('404 File not Found',
-                                   'The asset file "%s" does not exist' % filename)
 
         for asset in self._db.get_assets(id):
             if (asset['filename'] == filename or
                 asset['md5'] == filename):
                 break
+        else:
+            return req.send_status('404 File not Found',
+                                   'The asset file "%s" does not exist' % filename)
+            
+        assetpath = config.get_asset_path(id, asset)
+
+        if not os.path.isfile(assetpath):
+            return req.send_status('404 File not Found',
+                                   'The asset file "%s" does not exist' % filename)
+
         
         return req.send_file(assetpath,
                              asset['mimetype'])
@@ -184,8 +189,8 @@ class FeedConfig(object):
     def get_internal_set_id(self, oai_setspec_id):
         return oai_setspec_id[4:]
 
-    def get_asset_path(self, internal_id, filename):
+    def get_asset_path(self, internal_id, asset):
         return os.path.abspath(
             os.path.join(self.base_asset_path,
                          internal_id,
-                         filename))
+                         asset['filename']))
