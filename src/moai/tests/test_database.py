@@ -129,6 +129,7 @@ class BtreeDatabaseTest(TestCase):
         result = list(self.db.oai_sets(offset=0, batch_size=100))
         self.assertEquals(len(result), 4)
         self.db.add_set(u'added set', u'An added set', description=u'A set description')
+        self.db.flush_update()
         result = list(self.db.oai_sets(offset=0, batch_size=100))
         self.assertEquals(len(result), 5)
         self.assertEquals(self.db.get_set(u'added set')['name'], 'An added set')

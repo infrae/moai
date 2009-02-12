@@ -138,6 +138,10 @@ class IDatabaseUpdater(Interface):
         exception: if an error occurs, exception should be a
                    moai.ContentError, or a moai.DatabaseError
                    otherwise this value will be None
+
+        After the database update is finished, the flush_update method
+        of the database is called. This allows the database to
+        implement a batching strategy
         """
 
 class IDatabase(Interface):
@@ -218,7 +222,11 @@ class IDatabase(Interface):
         Where metadata is a dictionary with additional lists of string values
         """
 
-
+    def flush_update():
+        """Called once by the database updater at the end of the update proces
+        This allows the database to implement a batching strategy
+        """
+        
     def remove_content(id):
         """Remove all the content of a given id, returns a boolean to indicate
         if the removal was succesful

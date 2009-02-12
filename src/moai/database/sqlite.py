@@ -18,7 +18,10 @@ class SQLiteDatabase(object):
         self.db = self._connect(dbpath)
         self.records = self.db.tables['records']
         self.metadata = self.db.tables['metadata']
-
+        self._record_id = 0
+        self._record_cache = []
+        self._metadata_cache = []
+        
     def _connect(self, dbpath):
         if dbpath is None:
             dburi = 'sqlite:///:memory:'
@@ -132,7 +135,13 @@ class SQLiteDatabase(object):
             pass
         self._remove_metadata(rid)
         return True
-    
+
+    def flush_update(self):
+        self.records.insert().execute(self._record_cache)
+        self._record_cache = []
+        self.metadata.insert().execute(self._metadata_cache)
+        self._metadata_cache = []
+        
     def add_content(self, id, sets, record_data, meta_data, assets_data):
         record_id = self._add_record(record_data, sets)
         self._add_metadata(record_id, meta_data)
@@ -144,28 +153,24 @@ class SQLiteDatabase(object):
         return record_id
 
     def _add_record(self, record_data, sets):
-        rowdata = {'name': record_data['id'],
+        self._record_id += 1
+        rowdata = {'record_id': self._record_id,
+                   'name': record_data['id'],
                    'deleted': record_data['deleted'],
                    'is_set': record_data['is_set'],
                    'is_asset': record_data.get('is_asset', False),
                    'sets': u' %s ' % ' '.join(sets),
                    'content_type': record_data['content_type'],
                    'when_modified': record_data['when_modified']}
-        result = self.records.insert(rowdata).execute()
-        record_id = result.last_inserted_ids()[0]
-        return record_id
+        self._record_cache.append(rowdata)
+        return self._record_id
 
     def _add_metadata(self, record_id, meta_data):
-        rowdata = []
-        
         for key, vals in meta_data.items():
             for val in vals:
-                rowdata.append({'field': key,
-                                'value': val,
-                                'record_id': record_id})
-        if rowdata:
-            self.metadata.insert().execute(*rowdata)
-
+                self._metadata_cache.append({'field': key,
+                                             'value': val,
+                                             'record_id': record_id})
 
     def _remove_metadata(self, record_id):
         asset_ids = []

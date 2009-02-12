@@ -47,7 +47,7 @@ class DatabaseUpdater(object):
         for id in self._provider.update(from_date):
             yield id
             count += 1
-
+        
         self._log.info('Updating %s returned %s new/modified objects' % (
             self._provider.__class__.__name__,
             count))
@@ -129,3 +129,4 @@ class DatabaseUpdater(object):
                 continue
             
             yield count, total, content.id, None
+        self.db.flush_update()

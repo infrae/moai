@@ -77,6 +77,9 @@ class BTreeDatabase(object):
         
         return eval(data)['assets']
 
+    def flush_update(self):
+        pass
+    
     def remove_content(self, id):
         id = id.encode('utf8')
         data = eval(self._content.get(id))
