@@ -318,9 +318,9 @@ a http 404 status
 >>> s.handle_request(req)
 Status: 404 File not Found
 Content-Type: text/plain
-Content-Length: 39
+Content-Length: 34
 <BLANKLINE>
-The asset file "foo.txt" does not exist
+The asset "foo.txt" does not exist
 
 Now let's clean up the asset directory
 
