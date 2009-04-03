@@ -313,8 +313,11 @@ class SQLiteDatabase(object):
             record = dict(row)
             record['id'] = record['name']
             del record['name']
+            record['sets'] = record['sets'].strip().split(' ')
+            if record['sets'] == [u'']:
+                record['sets'] = []
             yield {'record': record,
-                   'sets': record['sets'].strip().split(' '),
+                   'sets': record['sets'],
                    'metadata': self.get_metadata(row['name']) or {},
                    'assets':{}}
         
