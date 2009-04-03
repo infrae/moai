@@ -23,7 +23,7 @@ DATA = [{'id': u'id:1',
          'content_type': u'dataset',
          'when_modified': datetime(2004, 01, 01, 14, 30, 00),
          'deleted': False,
-         'sets': [u'stuff', u'datasets'],
+         'sets': [u'stuff', u'datasets', u'dynamic'],
          'is_set': False,
          'assets': [{
              u'filename': u'test.txt',
@@ -125,17 +125,17 @@ class BtreeDatabaseTest(TestCase):
         self.assertEquals(asset['metadata']['type'], [u'preprint'])
 
     def testSetAddRemove(self):
-        # we have 4 sets to begin with
+        # we have 5 sets to begin with
         result = list(self.db.oai_sets(offset=0, batch_size=100))
-        self.assertEquals(len(result), 4)
+        self.assertEquals(len(result), 5)
         self.db.add_set(u'added set', u'An added set', description=u'A set description')
         self.db.flush_update()
         result = list(self.db.oai_sets(offset=0, batch_size=100))
-        self.assertEquals(len(result), 5)
+        self.assertEquals(len(result), 6)
         self.assertEquals(self.db.get_set(u'added set')['name'], 'An added set')
         self.db.remove_set(u'added set')
         result = list(self.db.oai_sets(offset=0, batch_size=100))
-        self.assertEquals(len(result), 4)
+        self.assertEquals(len(result), 5)
 
     def testRecordAddRemove(self):
         # we have 3 records to begin with
@@ -144,14 +144,13 @@ class BtreeDatabaseTest(TestCase):
         self.db.remove_content(u'id:1')
         result = list(self.db.oai_query(offset=0, batch_size=100))
         self.assertEquals(len(result), 2)
-
         
     def testOAISets(self):
         result = list(self.db.oai_sets(offset=0, batch_size=100))
-        self.assertEquals(len(result), 4)
+        self.assertEquals(len(result), 5)
         result = list(self.db.oai_sets(offset=2, batch_size=100))
-        self.assertEquals(len(result), 2)
-        result = list(self.db.oai_sets(offset=3, batch_size=100))
+        self.assertEquals(len(result), 3)
+        result = list(self.db.oai_sets(offset=4, batch_size=100))
         self.assertEquals(len(result), 1)
 
     def testOAIQueryBatching(self):

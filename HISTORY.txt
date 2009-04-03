@@ -18,9 +18,8 @@ New Features
 
 Bugs Fixed
 ~~~~~~~~~~
-
-- OAI GetRecord always returned the same record 
-  (also improved OAI test coverage) 
+- OAI ListSets did not return dynamic sets (added test)
+- OAI GetRecord returning the same record (added test) 
 
 
 MOAI 0.9 (2008-11-18)

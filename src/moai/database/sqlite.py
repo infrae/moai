@@ -21,6 +21,7 @@ class SQLiteDatabase(object):
         self._record_id = 0
         self._record_cache = []
         self._metadata_cache = []
+        self._set_ids = set(self._get_set_ids())
         
     def _connect(self, dbpath):
         if dbpath is None:
@@ -57,7 +58,11 @@ class SQLiteDatabase(object):
         db.create_all()
         return db
 
-
+    def _get_set_ids(self):
+        for record in self.records.select(
+            self.records.c.is_set == True).execute():
+            yield record.id
+        
     def _get_record_id(self, id):
         result = None
         for record in self.records.select(
@@ -154,7 +159,8 @@ class SQLiteDatabase(object):
 
     def _add_record(self, record_data, sets):
         self._record_id += 1
-        rowdata = {'record_id': self._record_id,
+        record_id = self._record_id
+        rowdata = {'record_id': record_id,
                    'name': record_data['id'],
                    'deleted': record_data['deleted'],
                    'is_set': record_data['is_set'],
@@ -162,8 +168,15 @@ class SQLiteDatabase(object):
                    'sets': u' %s ' % ' '.join(sets),
                    'content_type': record_data['content_type'],
                    'when_modified': record_data['when_modified']}
+        
         self._record_cache.append(rowdata)
-        return self._record_id
+
+        for set in sets:
+            # add dynamic sets
+            if not set in self._set_ids:
+                self.add_set(set, set)
+        
+        return record_id
 
     def _add_metadata(self, record_id, meta_data):
         for key, vals in meta_data.items():
@@ -223,13 +236,14 @@ class SQLiteDatabase(object):
                        'name': [name],
                        'description': description}
 
-        record_id = self._get_record_id(set_id)
-        
-        if record_id is None:
+
+        if not set_id in self._set_ids:
             # add a new set
             record_id = self.add_content(set_id, [], record_data, meta_data, {})
+            self._set_ids.add(set_id)
         else:
             # set is allready there, update the metadata
+            record_id = self._get_record_id(set_id)
             self._remove_metadata(record_id)
             self._add_metadata(record_id, meta_data)
 
