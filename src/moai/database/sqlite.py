@@ -61,7 +61,7 @@ class SQLiteDatabase(object):
     def _get_set_ids(self):
         for record in self.records.select(
             self.records.c.is_set == True).execute():
-            yield record.id
+            yield record.name
         
     def _get_record_id(self, id):
         result = None
