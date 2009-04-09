@@ -258,7 +258,7 @@ class SQLiteDatabase(object):
             result = {}
             for data in self.metadata.select(
                 self.metadata.c.record_id==row['record_id']).execute():
-                result[self.metadata.c.field] = self.metadata.c.value
+                result[data.field] = data.value
             yield result
 
     def oai_query(self,
