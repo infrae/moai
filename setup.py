@@ -23,5 +23,6 @@ setup(
     'pyoai',
     'martian',
     'sqlalchemy',
+    'simplejson'
     ],
 )

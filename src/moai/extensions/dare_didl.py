@@ -39,8 +39,9 @@ class DIDL(MetaDataFormat):
         DIP = ElementMaker(namespace=self.ns['dip'])
         DCTERMS = ElementMaker(namespace=self.ns['dcterms'])
 
-        oai_url = self.config.url+'?verb=GetRecord&metadataPrefix=dare_didl&identifier=%s' % (
-            self.config.get_oai_id(data['record']['id']))
+        oai_url = (self.config.url+'?verb=GetRecord&'
+                   'metadataPrefix=dare_didl&identifier=%s' % (
+            self.config.get_oai_id(data['record']['id'])))
 
         # generate mods for this feed
         mods_data = DIDL.Resource(mimetype="application/xml")
@@ -108,10 +109,11 @@ class DIDL(MetaDataFormat):
             break
         
         
-        didl.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s %s %s %s %s' % (self.ns['didl'],
-                                                                            self.schemas['didl'],
-                                                                            self.ns['dii'],
-                                                                            self.schemas['dii'],
-                                                                            self.ns['dip'],
-                                                                            self.schemas['dip'])
+        didl.attrib['{%s}schemaLocation' % XSI_NS] = (
+            '%s %s %s %s %s %s' % (self.ns['didl'],
+                                   self.schemas['didl'],
+                                   self.ns['dii'],
+                                   self.schemas['dii'],
+                                   self.ns['dip'],
+                                   self.schemas['dip']))
         element.append(didl)

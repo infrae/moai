@@ -1,5 +1,6 @@
 
 from lxml.builder import ElementMaker
+import simplejson
 
 from moai import MetaDataFormat, name
 from moai.meta import METADATA_FORMATS
@@ -34,12 +35,14 @@ class OAIDC(MetaDataFormat):
         DC = ElementMaker(namespace=self.ns['dc'])
 
         oai_dc = OAI_DC.dc()
-        oai_dc.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (self.ns['oai_dc'],
-                                                                  self.schemas['oai_dc'])
+        oai_dc.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (
+            self.ns['oai_dc'],
+            self.schemas['oai_dc'])
 
-        for field in ['title', 'creator', 'subject', 'description', 'publisher',
-                      'contributor', 'type', 'format', 'identifier',
-                      'source', 'language', 'date', 'relation', 'coverage', 'rights']:
+        for field in ['title', 'creator', 'subject', 'description',
+                      'publisher', 'contributor', 'type', 'format',
+                      'identifier', 'source', 'language', 'date',
+                      'relation', 'coverage', 'rights']:
             el = getattr(DC, field)
             for value in data['metadata'].get(field, []):
                 oai_dc.append(el(value))
@@ -77,51 +80,7 @@ class MODS(MetaDataFormat):
             mods.append(MODS.identifier(data['metadata']['identifier'][0],
                                         type="uri"))
 
-
-        author_data = []
-        for id in data['metadata'].get('author_rel', []):
-            author = self.db.get_metadata(id)
-            author['id'] = id
-            author_data.append(author)
-        
-        if not author_data:            
-            author_data = [{'name':[a]} for a in data['metadata'].get('author', [])]
-
-        dai_list = []
-        for author in author_data:
-            unique_id = data['record']['id'] + '_' + author.get('id', author['name'][0])
-            unique_id = unique_id.replace(':', '')
-            name = MODS.name(
-                MODS.displayForm(author['name'][0]),
-                type='personal',
-                id=unique_id
-                )
-            surname = author.get('surname')
-            if surname:
-                name.append(MODS.namePart(surname[0], type="family"))
-            firstname = author.get('firstname')
-            if firstname:
-                name.append(MODS.namePart(firstname[0], type="given"))
                 
-            name.append(                    
-                     MODS.role(
-                       MODS.roleTerm('aut',
-                                     type='code',
-                                     authority='marcrelator')
-                       ))
-            mods.append(name)
-            dai = author.get('dai')
-            if dai:
-                dai_list.append((unique_id, dai))
-
-        if dai_list:
-            daiList = DAI.daiList()
-            for id, dai in dai_list:
-                daiList.append(DAI.identifier(dai[0], IDRef=id, authority='info:eu-repo/dai/nl'))
-                
-            mods.append(MODS.extension(daiList))
-
-
         if data['metadata'].get('title'):
             titleInfo = MODS.titleInfo(
                 MODS.title(data['metadata']['title'][0])
@@ -133,10 +92,120 @@ class MODS(MetaDataFormat):
         if data['metadata'].get('description'):
             mods.append(MODS.abstract(data['metadata']['description'][0]))
 
+
+        for ctype in ['author', 'editor', 'advisor']:
+            contributor_data = []
+            for id in data['metadata'].get('%s_rel' % ctype, []):
+                contributor = self.db.get_metadata(id)
+                contributor['id'] = id
+                contributor_data.append(contributor)
+
+            if data['metadata'].get('%s_data' % ctype):
+                contributor_data = [simplejson.loads(s) for s in data[
+                    'metadata']['%s_data' % ctype]]
+        
+            if not contributor_data:            
+                contributor_data = [{'name':[a]} for a in data[
+                    'metadata'].get(ctype, [])]
+
+            dai_list = []
+            for contributor in contributor_data:
+                unique_id = data['record']['id'] + '_' + contributor.get(
+                    'id', contributor['name'][0])
+                if unique_id[0].isdigit():
+                    unique_id = '_'+unique_id
+                unique_id = unique_id.replace(':', '')
+                name = MODS.name(
+                    MODS.displayForm(contributor['name'][0]),
+                    type='personal',
+                    id=unique_id
+                    )
+                surname = contributor.get('surname')
+                if surname:
+                    name.append(MODS.namePart(surname[0], type="family"))
+                firstname = contributor.get('firstname')
+                if firstname:
+                    name.append(MODS.namePart(firstname[0], type="given"))
+
+                roles = {'author': 'aut', 'editor': 'edt', 'advisor':'ths'}
+                name.append(                    
+                    MODS.role(
+                    MODS.roleTerm(roles[ctype],
+                                  type='code',
+                                  authority='marcrelator')
+                    ))
+                mods.append(name)
+                dai = contributor.get('dai')
+                if dai:
+                    dai_list.append((unique_id, dai))
+            if dai_list:
+                daiList = DAI.daiList()
+                for id, dai in dai_list:
+                    daiList.append(DAI.identifier(
+                        dai[0],
+                        IDRef=id,
+                        authority='info:eu-repo/dai/nl'))
+                
+                mods.append(MODS.extension(daiList))
+
+
+        dgg = data['metadata'].get('degree_grantor')
+        if dgg:
+            mods.append(MODS.name(
+                MODS.namePart(dgg[0]),
+                MODS.role(
+                  MODS.roleTerm('dgg',
+                                authority="marcrelator",
+                                type="code")
+                ),
+                type="corporate"))
+
         if data['metadata'].get('language'):
-            mods.append(MODS.language(MODS.languageTerm(data['metadata']['language'][0],
-                                                        type="code",
-                                                        authority="rfc3066")))
+            mods.append(MODS.language(
+                MODS.languageTerm(data['metadata']['language'][0],
+                                  type="code",
+                                  authority="rfc3066")))
+
+        for host in ['journal', 'series']:
+            title = data['metadata'].get('%s_title' % host)
+            part_type = {'journal': 'host'}.get(host, host)
+            relitem = MODS.relatedItem(type=part_type)
+            if title:
+                relitem.append(MODS.titleInfo(MODS.title(title[0])))
+            else:
+                continue
+            issn = data['metadata'].get('%s_issn' % host)
+            if issn:
+                relitem.append(
+                    MODS.identifier('urn:issn:%s' % issn[0],
+                                    type="uri"))
+            volume = data['metadata'].get('%s_volume' % host)
+            issue = data['metadata'].get('%s_issue' % host)
+            start_page = data['metadata'].get('%s_start_page' % host)
+            end_page = data['metadata'].get('%s_end_page' % host)
+            if volume or issue or end_page or start_page:
+                part = MODS.part()
+                if volume:
+                    part.append(MODS.detail(MODS.number(volume[0]),
+                                            type="volume"))
+                if issue:
+                    part.append(MODS.detail(MODS.number(issue[0]),
+                                            type="issue"))
+                if start_page or end_page:
+                    extent = MODS.extent(unit="page")
+                    if start_page:
+                        extent.append(MODS.start(start_page[0]))
+                    if end_page:
+                        extent.append(MODS.end(end_page[0]))
+                    part.append(extent)
+                relitem.append(part)
+            if data['metadata'].get('%s_publisher' % host):
+                relitem.append(
+                    MODS.originInfo(
+                      MODS.publisher(
+                        data['metadata']['%s_publisher' % host][0])))
+                
+            mods.append(relitem)
 
         origin = MODS.originInfo()
         mods.append(origin)
@@ -149,7 +218,16 @@ class MODS(MetaDataFormat):
         mods.append(MODS.typeOfResource('text'))        
         if data['metadata'].get('dare_type'):
             mods.append(MODS.genre(data['metadata']['dare_type'][0]))
-                                        
+
+        
+        classifications = data['metadata'].get('classification', [])
+        for classification in data['metadata'].get('classification', []):
+            if classification.count('#') == 1:
+                authority, value = classification.split('#')
+                mods.append(MODS.classification(value, authority=authority))
+            else:
+                mods.append(MODS.classification(classsification))
+        
         subjects = data['metadata'].get('subject', [])
         if subjects:
             s_el = MODS.subject()
@@ -161,8 +239,9 @@ class MODS(MetaDataFormat):
             mods.append(MODS.accessCondition(data['metadata']['rights'][0]))
         
             
-        mods.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (self.ns['mods'],
-                                                                self.schemas['mods'])
+        mods.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (
+            self.ns['mods'],
+            self.schemas['mods'])
         
         element.append(mods)
 
