@@ -127,10 +127,15 @@ class MODS(MetaDataFormat):
                 if firstname:
                     name.append(MODS.namePart(firstname[0], type="given"))
 
-                roles = {'author': 'aut', 'editor': 'edt', 'advisor':'ths'}
+                role = contributor.get('role')
+                if role:
+                    role = role[0]
+                else:
+                    roles = {'author': 'aut', 'editor': 'edt', 'advisor':'ths'}
+                    role = roles[ctype]
                 name.append(                    
                     MODS.role(
-                    MODS.roleTerm(roles[ctype],
+                    MODS.roleTerm(role,
                                   type='code',
                                   authority='marcrelator')
                     ))
