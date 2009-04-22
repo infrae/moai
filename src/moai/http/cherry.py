@@ -28,7 +28,7 @@ class CherryPyRequest(object):
     def send_file(self, path, mimetype):
         """Send the file located at 'path' back to the user
         """
-        return serve_file(path, "mimetype", "attachment")
+        return serve_file(path, mimetype, "attachment")
 
     def query_dict(self):
         """Return a dictionary with QueryString values of the
