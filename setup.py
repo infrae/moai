@@ -12,7 +12,7 @@ setup(
                  "Programming Language :: Python",
                  "License :: OSI Approved :: BSD License",
                  "Topic :: Software Development :: Libraries :: Python Modules",
-                 "Environment :: Web Environment"]
+                 "Environment :: Web Environment"],
     packages=find_packages('src'),
     package_dir = {'': 'src'},
     include_package_data = True,
