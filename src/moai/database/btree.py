@@ -225,7 +225,7 @@ class BTreeDatabase(object):
         if filter_set_ids:
             ids = ids.intersection(filter_set_ids)
 
-        if identifier:
+        if not identifier is None:
             
             # the database expects keys to be in utf8, not unicode
             identifier = identifier.encode('utf8')

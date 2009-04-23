@@ -285,7 +285,7 @@ class SQLiteDatabase(object):
         # filter dates
         query.append_whereclause(self.records.c.when_modified <= until_date)
 
-        if identifier:
+        if not identifier is None:
             query.append_whereclause(self.records.c.name == identifier)
 
         if not from_date is None:
@@ -322,7 +322,7 @@ class SQLiteDatabase(object):
         if not_setclauses:
             query.append_whereclause(sql.not_(
                 sql.or_(*not_setclauses)))
-            
+
         for row in query.distinct().offset(offset).limit(batch_size).execute():
             record = dict(row)
             record['id'] = record['name']
