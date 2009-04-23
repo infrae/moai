@@ -32,7 +32,7 @@ class OAIServer(object):
             granularity='YYYY-MM-DDThh:mm:ssZ',
             compression=['identity'])
 
-    def listMetadataFormats(self):
+    def listMetadataFormats(self, identifier=None):
         result = []
         for prefix in self.config.metadata_prefixes:
             writer = get_writer(prefix, self.config, self.db)
