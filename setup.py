@@ -3,10 +3,16 @@ from os.path import join, dirname
 
 setup(
     name='MOAI',
-    version='0.10',
+    version='1.0b1',
     author='Infrae',
     author_email='jasper@infrae.com',
-    description=open(join(dirname(__file__), 'README.txt')).read(),
+    description="MOAI, A Open Access Server Platform for Institutional Repositories",
+    long_description=open(join(dirname(__file__), 'README.txt')).read(),
+    classifiers=["Development Status :: 4 - Beta",
+                 "Programming Language :: Python",
+                 "License :: OSI Approved :: BSD License",
+                 "Topic :: Software Development :: Libraries :: Python Modules",
+                 "Environment :: Web Environment"]
     packages=find_packages('src'),
     package_dir = {'': 'src'},
     include_package_data = True,
