@@ -18,6 +18,7 @@ New Features
 
 Bugs Fixed
 ~~~~~~~~~~
+- OAI ListRecords with from and until dateparams where not inclusive in SQLite engine
 - OAI ListSets did not return dynamic sets (added test)
 - OAI GetRecord returning the same record (added test) 
 

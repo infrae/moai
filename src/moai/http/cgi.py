@@ -16,6 +16,9 @@ class CGIRequest(object):
         self.stream = sys.stdout
         self._url = url
         self._kw = kw
+        if 'from_' in self._kw:
+            self._kw['from'] = self._kw['from_']
+            del self._kw['from_']
 
     def url(self):
         return self._url

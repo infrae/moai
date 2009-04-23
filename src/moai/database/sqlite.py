@@ -283,13 +283,13 @@ class SQLiteDatabase(object):
                                              self.records.c.is_asset == False))
 
         # filter dates
-        query.append_whereclause(self.records.c.when_modified < until_date)
+        query.append_whereclause(self.records.c.when_modified <= until_date)
 
         if identifier:
             query.append_whereclause(self.records.c.name == identifier)
 
         if not from_date is None:
-            query.append_whereclause(self.records.c.when_modified > from_date)
+            query.append_whereclause(self.records.c.when_modified >= from_date)
 
         # filter sets
 

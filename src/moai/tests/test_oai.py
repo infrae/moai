@@ -58,6 +58,24 @@ class OAIBtreeTest(TestCase):
         self.assertEquals(response.count('<identifier>'), 3)
         self.assertEquals(response.count('<metadata>'), 3)
 
+        response = self.request(verb=u'ListRecords', metadataPrefix=u'oai_dc', until='2004-01-01T14:30:00Z')
+        self.assertEquals(response.count('<identifier>'), 1)
+
+        response = self.request(verb=u'ListRecords', metadataPrefix=u'oai_dc', until='2004-01-01T14:29:59Z')
+        self.assertEquals(response.count('<identifier>'), 0)
+
+        response = self.request(verb=u'ListRecords', metadataPrefix=u'oai_dc', from_='2008-01-01T14:30:00Z')
+        self.assertEquals(response.count('<identifier>'), 1)
+
+        response = self.request(verb=u'ListRecords', metadataPrefix=u'oai_dc', from_='2008-01-01T14:30:01Z')
+        self.assertEquals(response.count('<identifier>'), 0)
+
+        response = self.request(verb=u'ListRecords', metadataPrefix=u'oai_dc',
+                                until='2004-01-01T14:30:00Z',
+                                from_='2004-01-01T14:30:00Z')
+        self.assertEquals(response.count('<identifier>'), 1)
+
+
     def test_get_record(self):
         response = self.request(verb=u'GetRecord', identifier=u'oai:id:1',
                                 metadataPrefix=u'oai_dc')
