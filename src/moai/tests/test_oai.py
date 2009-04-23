@@ -76,6 +76,12 @@ class OAIBtreeTest(TestCase):
         self.assertEquals(response.count('<identifier>'), 1)
 
 
+    def test_list_metadata_formats(self):
+        response = self.request(verb=u'ListMetadataFormats')
+        self.assertTrue('<metadataPrefix>oai_dc</metadataPrefix>' in response)
+        response = self.request(verb=u'ListMetadataFormats', identifier='oai:id:1')
+        self.assertTrue('<metadataPrefix>oai_dc</metadataPrefix>' in response)
+
     def test_get_record(self):
         response = self.request(verb=u'GetRecord', identifier=u'oai:id:1',
                                 metadataPrefix=u'oai_dc')
@@ -91,6 +97,10 @@ class OAIBtreeTest(TestCase):
                                 metadataPrefix=u'oai_dc')
         self.assertEquals(response.count('<identifier>'), 1)
         self.assertTrue('<identifier>oai:id:2</identifier>' in response)
+
+        response = self.request(verb=u'GetRecord', identifier=u'invalid"id',
+                                metadataPrefix=u'oai_dc')
+        self.assertTrue('code="idDoesNotExist"' in response)
 
     def test_disallowed_record(self):
         config = FeedConfig('test', 'A test Repository',
