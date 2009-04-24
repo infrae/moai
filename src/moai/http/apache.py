@@ -36,7 +36,8 @@ class ModPythonRequest(object):
         """Send the file located at 'path' back to the user
         """
         self.req.content_type = mimetype
-        return self.req.sendfile(path)
+        self.req.sendfile(path)
+        return apache.OK
     
     def query_dict(self):
         """Return a dictionary with QueryString values of the
@@ -100,14 +101,19 @@ def generate_config(cfgfile, profile_name, extensions):
   SetEnv MOAI_PROFILE "%s"
   SetEnv MOAI_CONFIGFILE "%s"
   SetEnv MOAI_EXTENSIONS "%s"
-  
+  SetEnv PYTHON_EGG_CACHE "%s"  
+
   PythonHandler moai.http.apache::handler
   PythonDebug On
 
   PythonPath "%s"
 
 </location>    
-    """ % (profile_name, cfgfile, ' '.join(extensions), sys.path)
+    """ % (profile_name,
+           cfgfile,
+           ' '.join(extensions),
+           os.path.join(os.path.dirname(cfgfile), '.python_eggs'),
+           sys.path)
     print config
     
     
