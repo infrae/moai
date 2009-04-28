@@ -3,6 +3,7 @@ MOAI
 ====
 
 MOAI is a platform for aggregating content from different sources, and publishing it through the Open Archive Initiatives protocol for metadata harvesting.
+
 It's been build for academic institutional repositories dealing with (relational) metadata and asset files.
 
 What does it do
@@ -35,9 +36,11 @@ More specificly MOAI has the ability to:
 - Serve many OAI feeds from one MOAI server, each with their own configuration
 - Turn metadata values into OAI sets on the fly, creating new collections
 - Use OAI sets to filter records shown in a feed, configurable for each feed
-- Work easily with relational data, (if author changes, publication should also change)
+- Work easily with relational data, (if author changes, publication should 
+  also change)
 - Simple and Robust authentication through integration with Apache webserver
-- Serve assets through Apache while still using configurable authentication rules.
+- Serve assets through Apache while still using configurable authentication 
+  rules.
 
 In the coming weeks when the first MOAI release is done, we will add more thorough explanation and examples.
 
