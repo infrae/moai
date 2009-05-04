@@ -1,5 +1,5 @@
-Welcome to the MOAI Project!
-============================
+MOAI, an Open Access Server Platform for Institutional Repositories
+===================================================================
 
 MOAI is a platform for aggregating content from different sources, and publishing it through the Open Archive Initiatives protocol for metadata harvesting.
 It's been built for academic institutional repositories dealing with relational metadata and asset files.
