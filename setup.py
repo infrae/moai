@@ -3,14 +3,14 @@ from os.path import join, dirname
 
 setup(
     name='MOAI',
-    version='1.1dev',
+    version='1.0',
     author='Infrae',
     author_email='jasper@infrae.com',
     description="MOAI, A Open Access Server Platform for Institutional Repositories",
     long_description=(open(join(dirname(__file__), 'README.txt')).read()+
                       '\n'+
                       open(join(dirname(__file__), 'HISTORY.txt')).read()),
-    classifiers=["Development Status :: 4 - Beta",
+    classifiers=["Development Status :: 5 - Production/Stable",
                  "Programming Language :: Python",
                  "License :: OSI Approved :: BSD License",
                  "Topic :: Software Development :: Libraries :: Python Modules",
