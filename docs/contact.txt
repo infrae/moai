@@ -1,15 +1,27 @@
 Community & Contact
 ===================
 
-Since the initial release of MOAI has not taken place yet,
-there have not been a lot of communication channels setup.
+The MOAI software is kept in a subversion repository at:
 
-We will setup a MOAI mailing list when we do the first public
-release.
+https://svn.infrae.com/MOAI
 
-For now you can always send an email to jasper@infrae.com
+Any questions regarding MOAI, bug reports or feature requests can be asked on the MOAI mailing list.
 
+You can subscribe to the mailing list at:
+
+http://lists.infrae.com/mailman/listinfo/moai-dev
+
+Please drop us a line if you're using MOAI or pyoai, we would love to know.
 Feedback is always appreciated!
 
+If you are interested in support contracts or development projects 
+regarding MOAI, please contact the author at jasper@infrae.com::
+
+  Infrae
+  Hoevestraat 10
+  3033 GC  Rotterdam
+  The Netherlands 
+
+  +31 10 243 7051
 
 

@@ -7,3 +7,7 @@ MOAI Database Module
       :members:
       :undoc-members:
    
+   .. autoclass:: moai.database.sqlite.SQLiteDatabase
+      :members:
+      :undoc-members:
+   

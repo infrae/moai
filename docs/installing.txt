@@ -1,13 +1,13 @@
 Installing MOAI
 ===============
 
-At the moment, there has not been an official release of the MOAI
-code. If we make a release, we will put tarballs on this website,
-or on pypi.
+You can download and install MOAI from the python package index:
 
-For now, you can grab a copy from the svn trunk here:
+http://pypi.python.org/pypi/MOAI
 
-http://svn.infrae.com/MOAI/trunk
+or grab it directly from Subversion:
+
+http://svn.infrae.com/MOAI
 
 Installation instructions
 -------------------------
@@ -18,6 +18,9 @@ Checkout MOAI and go into the checkout directory:
 
   > svn co http://svn.infrae.com/MOAI/trunk moai
   > cd moai
+
+You can also download a tarball from the python package index,
+and use that.
 
 Run the bootstrap script with a python interpreter:
 
@@ -31,7 +34,22 @@ Setup the project, and pull in dependencies by running the buildout script:
 
   > bin/buildout
 
-After the buildout has finished, a script 'update_database' has been created. This script is used to load the content into the MOAI database.
+Note that the buildout will take care of pulling in all the python dependencies, however some of those need to compile code, bacause of this the following packages need to be installed on your system::
+
+  a working c compiler
+  python devel package
+  sqlite3 devel package
+  libxml2 devel package
+  libxslt devel package
+
+After the buildout has finished, some scripts were created in the bin folder.
+First we'll run the unittests, to make sure everything is working
+
+.. code-block:: sh
+
+  > ./bin/test
+
+Also, a script 'update_database' has been created. This script is used to load the content into the MOAI database.
 
 .. code-block:: sh
 
@@ -48,5 +66,16 @@ After the buildout has finished, a script 'update_database' has been created. Th
     --config=CONFIG   do not use default config profile (example)
     --date=FROM_DATE  Only update databse from a specific date
 
-Another script 'start_server' is also available to start the OAI Server (if the default cherrypy server is used)
+Another script 'start_development_server' is also available to start the OAI development Server.
 
+To get a server running with the default example profile, issue the following commands:
+
+.. code-block:: sh
+
+
+  > ./bin/update_database
+  > ./bin/start_development_server
+
+Now you can visit the OAI feed at:
+
+http://localhost:8080/repo/example?verb=Identify
