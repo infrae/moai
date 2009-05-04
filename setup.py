@@ -3,11 +3,13 @@ from os.path import join, dirname
 
 setup(
     name='MOAI',
-    version='1.0b2',
+    version='1.0',
     author='Infrae',
     author_email='jasper@infrae.com',
     description="MOAI, A Open Access Server Platform for Institutional Repositories",
-    long_description=open(join(dirname(__file__), 'README.txt')).read(),
+    long_description=(open(join(dirname(__file__), 'README.txt')).read()+
+                      '\n'+
+                      open(join(dirname(__file__), 'HISTORY.txt')).read()),
     classifiers=["Development Status :: 4 - Beta",
                  "Programming Language :: Python",
                  "License :: OSI Approved :: BSD License",
@@ -26,7 +28,7 @@ setup(
       ]
     },
     install_requires=[
-    'pyoai',
+    'pyoai>=2.4',
     'martian',
     'sqlalchemy',
     'simplejson'

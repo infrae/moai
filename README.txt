@@ -1,6 +1,6 @@
 
-MOAI 
-====
+MOAI, an Open Access Server Platform for Institutional Repositories
+===================================================================
 
 MOAI is a platform for aggregating content from different sources, and publishing it through the Open Archive Initiatives protocol for metadata harvesting.
 It's been built for academic institutional repositories dealing with relational metadata and asset files.
@@ -15,7 +15,7 @@ The MOAI software has a very flexible system for combining records into sets, an
 Why MOAI
 --------
 
-MOAI has been specifically developed for universities, and contains a lot of hard-earned wisdom. The software has been in production use since 2007, and new features have been continually added. In late 2008, the software was completely refactored and packaged under the name "MOAI". You can read more about this on the :ref:`history` page.
+MOAI has been specifically developed for universities, and contains a lot of hard-earned wisdom. The software has been in production use since 2007, and new features have been continually added. In late 2008, the software was completely refactored and packaged under the name "MOAI". You can read more about this on the `MOAI History`_ page.
 
 MOAI is a standalone system, so it can be used in combination with any repository software that comes with an OAI feed such as `Fedora Commons`_, `EPrints`_ or `DSpace`_. It can also be used directly with an SQL database or just a folder of XML files.
 

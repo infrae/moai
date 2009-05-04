@@ -1,4 +1,5 @@
 from datetime import datetime
+import pkg_resources
 
 import oaipmh
 import oaipmh.metadata
@@ -22,7 +23,7 @@ class OAIServer(object):
         self.config = config
 
     def identify(self):
-        return oaipmh.common.Identify(
+        result = oaipmh.common.Identify(
             repositoryName=self.config.name,
             baseURL=self.config.url,
             protocolVersion='2.0',
@@ -30,7 +31,34 @@ class OAIServer(object):
             earliestDatestamp=datetime(2001, 1, 1, 10, 00),
             deletedRecord='transient',
             granularity='YYYY-MM-DDThh:mm:ssZ',
-            compression=['identity'])
+            compression=['identity'],
+            toolkit_description=False)
+
+        version = ''
+        pyoai_egg = pkg_resources.working_set.find(
+            pkg_resources.Requirement.parse('pyoai'))
+        moai_egg = pkg_resources.working_set.find(
+            pkg_resources.Requirement.parse('MOAI'))
+        
+        if moai_egg and pyoai_egg:
+            version = '<version>%s (using pyoai%s)</version>' % (
+                moai_egg.version,
+                pyoai_egg.version)
+        result.add_description(
+            '<toolkit xsi:schemaLocation='
+            '"http://oai.dlib.vt.edu/OAI/metadata/toolkit '
+            'http://oai.dlib.vt.edu/OAI/metadata/toolkit.xsd" '
+            'xmlns="http://oai.dlib.vt.edu/OAI/metadata/toolkit" '
+            'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
+            '<title>MOAI</title>'
+            '<author><name>Jasper Op de Coul</name>'
+            '<email>jasper@infrae.com / moai-dev@lists.infrae.com</email>'
+            '<institution>Infrae</institution></author>'
+            '%s'
+            '<URL>http://moai.infrae.com</URL>'
+            '</toolkit>' % version)
+            
+        return result
 
     def listMetadataFormats(self, identifier=None):
         result = []

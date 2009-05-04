@@ -50,7 +50,7 @@ class ExampleConfiguration(ConfigurationProfile):
                        metadata_prefixes=['oai_dc', 'mods', 'didl']))
         return server
                    
-    def start_server(self):
+    def start_development_server(self):
         start_server('127.0.0.1', self.config['port'], 10, 'repo', self.get_server())
 
         
