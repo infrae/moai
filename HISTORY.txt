@@ -4,6 +4,11 @@ MOAI changes
 MOAI 1.1 (unreleased)
 ---------------------
 
+Bugs Fixed
+~~~~~~~~~~
+
+- Fixed URL error in didl metadata prefix
+
 MOAI 1.0 (2009-05-04)
 -----------------------
 

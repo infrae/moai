@@ -75,19 +75,6 @@ class DIDL(MetaDataFormat):
               ),
              )
             )
-        if data['metadata'].get('url'):
-             item = DIDL.Item(
-                 DIDL.Descriptor(
-                  DIDL.Statement(
-                   DIP.ObjectType('info:eu-repo/semantics/humanStartPage'),
-                   mimeType="application/xml")
-                  ),
-                 DIDL.Component(
-                  DIDL.Resource(mimetype="text/html", ref=data['metadata']['url'][0])
-                 )
-                )
-             root_item.append(item)
-        
         for root_item in didl:
             for asset_id in data['metadata'].get('asset', []):
                 asset = self.db.get_metadata(asset_id)
@@ -108,6 +95,19 @@ class DIDL(MetaDataFormat):
                 root_item.append(item)
             break
         
+        
+        if data['metadata'].get('url'):
+             item = DIDL.Item(
+                 DIDL.Descriptor(
+                  DIDL.Statement(
+                   DIP.ObjectType('info:eu-repo/semantics/humanStartPage'),
+                   mimeType="application/xml")
+                  ),
+                 DIDL.Component(
+                  DIDL.Resource(mimetype="text/html", ref=data['metadata']['url'][0])
+                 )
+                )
+             root_item.append(item)
         
         didl.attrib['{%s}schemaLocation' % XSI_NS] = (
             '%s %s %s %s %s %s' % (self.ns['didl'],
