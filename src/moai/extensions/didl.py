@@ -40,7 +40,8 @@ class DIDL(MetaDataFormat):
         DCTERMS = ElementMaker(namespace=self.ns['dcterms'])
 
         oai_url = (self.config.url+'?verb=GetRecord&'
-                   'metadataPrefix=dare_didl&identifier=%s' % (
+                   'metadataPrefix=%s&identifier=%s' % (
+            self.prefix,
             self.config.get_oai_id(data['record']['id'])))
 
         # generate mods for this feed
@@ -51,11 +52,6 @@ class DIDL(MetaDataFormat):
         
         didl = DIDL.DIDL(
             DIDL.Item(
-             DIDL.Descriptor(
-              DIDL.Statement(
-               DII.Identifier(data['metadata'].get('dare_id', [''])[0]),
-              mimeType="application/xml")
-              ),
              DIDL.Descriptor(
               DIDL.Statement(
                DCTERMS.modified(data['record']['when_modified'].isoformat().split('.')[0]),

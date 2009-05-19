@@ -14,3 +14,17 @@ class DareDIDL(DIDL):
     name('nl_didl')
     def __call__(self, element, metadata):
         super(DareDIDL, self).__call__(element, metadata)
+        data = metadata.record
+
+        DIDL = ElementMaker(namespace=self.ns['didl'], nsmap=self.ns)
+        DII = ElementMaker(namespace=self.ns['dii'])
+        DIP = ElementMaker(namespace=self.ns['dip'])
+        
+        didl_item = element.getchildren()[0].getchildren()[0]
+
+        didl_item.insert(0, 
+           DIDL.Descriptor(
+            DIDL.Statement(
+            DII.Identifier(data['metadata'].get('dare_id', [''])[0]),
+            mimeType="application/xml")
+            ))
