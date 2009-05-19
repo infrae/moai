@@ -1,17 +1,14 @@
 MOAI changes
 ============
 
-MOAI 1.1 (unreleased)
----------------------
-
-New Features
-~~~~~~~~~~~~
-- Seperated darenet specific didl extensions in nl_didl prefix
+MOAI 1.0.1 (2009-05-19)
+-----------------------
 
 Bugs Fixed
 ~~~~~~~~~~
 
 - Fixed URL error in didl metadata prefix
+- Seperated darenet specific didl extensions in nl_didl prefix
 
 MOAI 1.0 (2009-05-04)
 -----------------------
