@@ -4,6 +4,10 @@ MOAI changes
 MOAI 1.1 (unreleased)
 ---------------------
 
+New Features
+~~~~~~~~~~~~
+- Seperated darenet specific didl extensions in nl_didl prefix
+
 Bugs Fixed
 ~~~~~~~~~~
 

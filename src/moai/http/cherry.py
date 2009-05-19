@@ -53,8 +53,10 @@ class MOAICherry(object):
         self.name = name
 
     @cherrypy.expose
-    def default(self, *args, **kw):        
-        if not args or args[0] != self.name:
+    def default(self, *args, **kw):
+        if not args:
+            raise HTTPRedirect('/%s' % self.name)
+        if args[0] != self.name:
             raise HTTPError(404)
         args = args[1:]
         url = self.server.base_url + '/'.join(args)

@@ -47,7 +47,8 @@ class ExampleConfiguration(ConfigurationProfile):
                        '%s/example' % server_url,
                        self.log,
                        sets_allowed=['public'],
-                       metadata_prefixes=['oai_dc', 'mods', 'didl']))
+                       metadata_prefixes=['oai_dc', 'mods',
+                                          'didl', 'nl_didl']))
         return server
                    
     def start_development_server(self):
