@@ -92,9 +92,21 @@ def handler(req):
     return result
 
 def generate_config(cfgfile, profile_name, extensions):
+    from moai.core import MOAI
+    import moai.utils
+    log = logging
+
+    config = moai.utils.parse_config_file(cfgfile, profile_name)
+    moai = MOAI(log)
+    for module_name in extensions:
+        moai.add_extension_module(module_name)
+
+    profile_class = moai.get_configuration(profile_name)
+    profile = profile_class(log, config)
+    server = profile.get_server()
 
     config = """
-<location /moai>
+<location %s>
 
   SetHandler mod_python
   
@@ -109,7 +121,8 @@ def generate_config(cfgfile, profile_name, extensions):
   PythonPath "%s"
 
 </location>    
-    """ % (profile_name,
+    """ % (server.base_url,
+           profile_name,
            cfgfile,
            ' '.join(extensions),
            os.path.join(os.path.dirname(cfgfile), '.python_eggs'),

@@ -1,6 +1,15 @@
 MOAI changes
 ============
 
+MOAI 1.0.2 (2009-05-20)
+-----------------------
+
+Bugs Fixed
+~~~~~~~~~~
+
+- Location in mod_python config is dynamicly extracted
+  from Metro Server class.
+
 MOAI 1.0.1 (2009-05-19)
 -----------------------
 
