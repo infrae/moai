@@ -38,7 +38,12 @@ class ExampleConfiguration(ConfigurationProfile):
         return SQLiteDatabase('/tmp/moai.db', 'r')
     
     def get_server(self):
-        server_url = 'http://localhost:%s/repo' % self.config['port']
+        server_url = 'http://%s:%s/repo' % (self.config['host'],
+                                            self.config['port'])
+        asset_path = os.path.join(os.path.dirname(__file__),
+                                  'example_data',
+                                  'assets')
+                                  
         server = Server(server_url,
                         self.get_database())
         server.add_config(
@@ -46,6 +51,7 @@ class ExampleConfiguration(ConfigurationProfile):
                        'An example OAI Server',
                        '%s/example' % server_url,
                        self.log,
+                       base_asset_path=asset_path,
                        sets_allowed=['public'],
                        metadata_prefixes=['oai_dc', 'mods',
                                           'didl', 'nl_didl']))
