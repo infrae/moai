@@ -53,6 +53,13 @@ class Plugin(object):
 class MetaDataFormat(object):
     martian.baseclass()
 
+    def get_namespace(self):
+        return self.ns[self.prefix]
+    
+    def get_schema_location(self):
+        return self.schemas[self.prefix]
+
+
 class name(martian.Directive):
     scope = martian.CLASS
     store = martian.ONCE

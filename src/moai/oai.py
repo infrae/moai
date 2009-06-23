@@ -64,8 +64,8 @@ class OAIServer(object):
         result = []
         for prefix in self.config.metadata_prefixes:
             writer = get_writer(prefix, self.config, self.db)
-            ns = writer.ns[prefix]
-            schema = writer.schemas[prefix]
+            ns = writer.get_namespace()
+            schema = writer.get_schema_location()
             result.append((prefix, schema, ns))
         return result
     
