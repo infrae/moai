@@ -12,6 +12,11 @@ class DareDIDL(DIDL):
     MOAI by default
     """    
     name('nl_didl')
+
+    def __init__(self, prefix, config, db):
+        super(DareDIDL, self).__init__(prefix, config, db)
+        self.prefix = 'didl'
+
     def __call__(self, element, metadata):
         super(DareDIDL, self).__call__(element, metadata)
         data = metadata.record
