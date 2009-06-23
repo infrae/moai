@@ -49,10 +49,13 @@ class ExampleContentObject(XMLContentObject):
             u'description': [
             self.xpath('ex:abstract/text()', 'abstract', unicode)],
             u'title': [self.label],
-            u'date': self.xpath('ex:issued/text()', 'subject', datetime, multi=True),
-            u'subject': self.xpath('ex:keyword/text()', 'subject', unicode, multi=True),
+            u'date': self.xpath('ex:issued/text()',
+                                'subject', datetime, multi=True),
+            u'subject': self.xpath('ex:keyword/text()',
+                                   'subject', unicode, multi=True),
             u'identifier': ['http://purl.example.org/%s' % self.id],
-            u'language': self.xpath('ex:abstract/@xml:lang', 'author', unicode, multi=True),
+            u'language': self.xpath('ex:abstract/@xml:lang',
+                                    'author', unicode, multi=True),
             u'type': [self.content_type]
         }
 
@@ -82,21 +85,23 @@ class ExampleContentObject(XMLContentObject):
         for el in self.root.xpath('ex:asset', namespaces=self.nsmap):
             asset = {}
             for child in el.xpath('*[text()]'):
-                asset[child.tag.split('}')[-1]] = child.text
+                asset[child.tag.split('}')[-1]] = unicode(child.text)
             assert u'filename' in asset, 'found asset without filename'
             assert u'mimetype' in asset, 'found asset without mimetype'
-            asset[u'url'] = u'http://example.org/repo/assets/%s/%s' % (self.id.replace(':', '_'),
-                                                                     asset['filename'])
+            asset[u'url'] = u'asset/%s/%s' % (
+                self.id,
+                asset['filename'])
             self._assets.append(asset)
-
+            
             path = os.path.join(os.path.dirname(__file__),
                                 'example_data',
-                                'assets', self.id.replace(':', '_'),
+                                'assets', self.id,
                                 asset['filename'])
             assert os.path.isfile(path), "Can not find asset: %s" % path
 
             asset[u'absolute_uri'] = u'file://%s' % path
-            assets[u'metadata'] = []
+            asset[u'md5'] = u''
+            asset[u'metadata'] = []
             self._assets.append(asset)
                 
             
@@ -110,9 +115,13 @@ class ExampleContentObject(XMLContentObject):
     def set_person_fields(self):
         fields = {
             u'name' : [self.label],
-            u'surname': self.xpath('ex:surname/text()', 'surname', unicode, multi=True),
-            u'firstname': self.xpath('ex:firstname/text()', 'firstname', unicode, multi=True),
-            u'initials': self.xpath('ex:initials/text()', 'initials', unicode, multi=True),
-            u'dai': self.xpath('ex:dai/text()', 'initials', unicode, multi=True),
+            u'surname': self.xpath('ex:surname/text()',
+                                   'surname', unicode, multi=True),
+            u'firstname': self.xpath('ex:firstname/text()',
+                                     'firstname', unicode, multi=True),
+            u'initials': self.xpath('ex:initials/text()',
+                                    'initials', unicode, multi=True),
+            u'dai': self.xpath('ex:dai/text()',
+                               'initials', unicode, multi=True),
             }
         return fields

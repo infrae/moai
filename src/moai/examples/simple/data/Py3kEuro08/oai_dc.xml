@@ -1,0 +1,21 @@
+<oai_dc:dc 
+ xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+ xmlns:dc="http://purl.org/dc/elements/1.1/"
+ xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+  <dc:title>Python 3000 and You</dc:title>
+  <dc:subject>python</dc:subject>
+  <dc:subject>py3k</dc:subject>
+  <dc:description>
+    The keynote held by Guido van Rossum at EuroPython 2008
+  </dc:description>
+  <dc:creator>Guido van Rossum</dc:creator>
+  <dc:type>Keynote</dc:type>
+  <dc:identifier>Py3kEuro08</dc:identifier>
+  <dc:identifier scheme="dcterms:URI">
+    http://www.europython2008.eu/Keynotes
+  </dc:identifier>
+  <dc:language>en</dc:language>
+  <dc:date>2008-07-10T12:36:00</dc:date>
+</oai_dc:dc>
+

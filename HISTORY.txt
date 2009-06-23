@@ -1,6 +1,13 @@
 MOAI changes
 ============
 
+MOAI 1.0.3 (2009-06-23)
+
+Bugs Fixed
+~~~~~~~~~~
+- Bug in ListMetadataFormats when using nl_didl prefix
+- Added simple dc example profile
+
 MOAI 1.0.2 (2009-05-20)
 -----------------------
 
