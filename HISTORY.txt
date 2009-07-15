@@ -1,7 +1,16 @@
 MOAI changes
 ============
 
+MOAI 1.0.4 (2009-07-15)
+-----------------------
+
+- Fixed misspelled mimeType attribute in DIDL metadata prefix
+
+Bugs Fixed
+~~~~~~~~~~
+
 MOAI 1.0.3 (2009-06-23)
+-----------------------
 
 Bugs Fixed
 ~~~~~~~~~~

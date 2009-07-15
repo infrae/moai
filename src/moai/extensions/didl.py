@@ -45,7 +45,7 @@ class DIDL(MetaDataFormat):
             self.config.get_oai_id(data['record']['id'])))
 
         # generate mods for this feed
-        mods_data = DIDL.Resource(mimetype="application/xml")
+        mods_data = DIDL.Resource(mimeType="application/xml")
         MODS('mods', self.config, self.db)(mods_data, metadata)
 
         asset_data = []
@@ -84,7 +84,7 @@ class DIDL(MetaDataFormat):
                       mimeType="application/xml")
                      ),
                     DIDL.Component(
-                     DIDL.Resource(mimetype=asset['mimetype'][0],
+                     DIDL.Resource(mimeType=asset['mimetype'][0],
                                    ref=url)
                      )
                     )
@@ -100,7 +100,7 @@ class DIDL(MetaDataFormat):
                    mimeType="application/xml")
                   ),
                  DIDL.Component(
-                  DIDL.Resource(mimetype="text/html", ref=data['metadata']['url'][0])
+                  DIDL.Resource(mimeType="text/html", ref=data['metadata']['url'][0])
                  )
                 )
              root_item.append(item)
