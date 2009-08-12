@@ -1,6 +1,12 @@
 MOAI changes
 ============
 
+MOAI 1.0.5 (unreleased)
+-----------------------
+
+- Added support for mods:location/url 
+  Make url prefered identifier in oai_dc:identifier instead of uri
+
 MOAI 1.0.4 (2009-07-15)
 -----------------------
 
