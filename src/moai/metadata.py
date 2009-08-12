@@ -45,6 +45,8 @@ class OAIDC(MetaDataFormat):
                       'relation', 'coverage', 'rights']:
             el = getattr(DC, field)
             for value in data['metadata'].get(field, []):
+                if field == 'identifier' and data['metadata'].get('url'):
+                    value = data['metadata']['url'][0]
                 oai_dc.append(el(value))
         
         element.append(oai_dc)
@@ -80,7 +82,9 @@ class MODS(MetaDataFormat):
             mods.append(MODS.identifier(data['metadata']['identifier'][0],
                                         type="uri"))
 
-                
+        if data['metadata'].get('url'):
+            mods.append(MODS.location(MODS.url(data['metadata']['url'][0])))
+
         if data['metadata'].get('title'):
             titleInfo = MODS.titleInfo(
                 MODS.title(data['metadata']['title'][0])
