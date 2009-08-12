@@ -1,6 +1,12 @@
 MOAI changes
 ============
 
+MOAI 1.0.6 (2009-08-12)
+-----------------------
+
+- Fixed metadataPrefix value in didl:Resource URL. This was using
+  `didl` instead of `nl_didl` 
+
 MOAI 1.0.5 (2009-08-12)
 -----------------------
 
