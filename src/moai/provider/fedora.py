@@ -43,7 +43,10 @@ class FOXMLFile(object):
         for child in contents[-1]:
             xml = etree.tostring(child, encoding='UTF8', pretty_print=True)
             break
-        return xml.strip().decode('utf8')
+        xml = xml.strip()
+        if not isinstance(xml, unicode):
+            xml = xml.decode('utf8')
+        return xml
 
     def get_location(self, id):
         locations = self._doc.xpath(
@@ -81,7 +84,10 @@ class FOXMLFile(object):
             namespaces={'foxml':self._ns})
         if not labels:
             return
-        return labels[-1].decode('utf8')
+        label = labels[-1]
+        if not isinstance(label, unicode):
+            label = label.decode('utf8')
+        return label
         
 
 class FedoraBasedContentProvider(OAIBasedContentProvider):
