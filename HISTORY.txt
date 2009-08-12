@@ -1,7 +1,7 @@
 MOAI changes
 ============
 
-MOAI 1.0.5 (unreleased)
+MOAI 1.0.5 (2009-08-12)
 -----------------------
 
 - Unicode bug in Fedora provider
