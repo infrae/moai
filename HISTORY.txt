@@ -7,6 +7,9 @@ MOAI 1.0.5 (unreleased)
 - Unicode bug in Fedora provider
 - Added support for mods:location/url 
   Make url prefered identifier in oai_dc:identifier instead of uri
+- Update method of Content Objects can now return False to prevent 
+  further processing of the object. The object will be logged as 
+  `ignored`
 
 MOAI 1.0.4 (2009-07-15)
 -----------------------

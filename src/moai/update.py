@@ -76,7 +76,10 @@ class DatabaseUpdater(object):
             try:
                 content_data = self._provider.get_content_by_id(content_id)
                 content = self._content_object_class()
-                content.update(content_data, self._provider)
+                stop = content.update(content_data, self._provider)
+                if stop is False:
+                    self._log.info('Ignoring %s' % content_id)
+                    continue
             except Exception, err:
                 if not supress_errors:
                     raise
