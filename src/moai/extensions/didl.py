@@ -21,7 +21,7 @@ class DIDL(MetaDataFormat):
 
         self.ns = {'didl': "urn:mpeg:mpeg21:2002:02-DIDL-NS",
                    'dii': "urn:mpeg:mpeg21:2002:01-DII-NS",
-                   'dip': "urn:mpeg:mpeg21:2002:01-DIP-NS",
+                   'dip': "urn:mpeg:mpeg21:2005:01-DIP-NS",
                    'dcterms': "http://purl.org/dc/terms/",
                    'xsi': "http://www.w3.org/2001/XMLSchema-instance",
                    'dc': 'http://purl.org/dc/elements/1.1/',
