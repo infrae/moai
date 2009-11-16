@@ -1,9 +1,22 @@
-MOAI changes
+MOAI Changes
 ============
+
+MOAI 1.0.7 (2009-16-11) 
+-----------------------
+
+Changes
+~~~~~~~
+
+- Changed DIP namespace in didl metadata extension
+- Fixed bug in ListMetadataFormats verb
+- Uses pyoai 2.4.1, which when specifying a date (not a datetime) 
+  for the until parameter, defaults to 23:59:59 instead of 00:00:00.
 
 MOAI 1.0.6 (2009-08-12)
 -----------------------
 
+Changes
+~~~~~~~
 - Fixed metadataPrefix value in didl:Resource URL. This was using
   `didl` instead of `nl_didl` 
 
@@ -20,24 +33,24 @@ MOAI 1.0.5 (2009-08-12)
 MOAI 1.0.4 (2009-07-15)
 -----------------------
 
-- Fixed misspelled mimeType attribute in DIDL metadata prefix
+Changes
+~~~~~~~
 
-Bugs Fixed
-~~~~~~~~~~
+- Fixed misspelled mimeType attribute in DIDL metadata prefix
 
 MOAI 1.0.3 (2009-06-23)
 -----------------------
 
-Bugs Fixed
-~~~~~~~~~~
+Changes
+~~~~~~~
 - Bug in ListMetadataFormats when using nl_didl prefix
 - Added simple dc example profile
 
 MOAI 1.0.2 (2009-05-20)
 -----------------------
 
-Bugs Fixed
-~~~~~~~~~~
+Changes
+~~~~~~~
 
 - Location in mod_python config is dynamicly extracted
   from Metro Server class.
@@ -45,8 +58,8 @@ Bugs Fixed
 MOAI 1.0.1 (2009-05-19)
 -----------------------
 
-Bugs Fixed
-~~~~~~~~~~
+Changes
+~~~~~~~
 
 - Fixed URL error in didl metadata prefix
 - Seperated darenet specific didl extensions in nl_didl prefix
@@ -54,8 +67,8 @@ Bugs Fixed
 MOAI 1.0 (2009-05-04)
 -----------------------
 
-New Features
-~~~~~~~~~~~~
+Changes
+~~~~~~~
 
 - Improved documentation
 - Added description to Identify header
@@ -66,8 +79,8 @@ New Features
 MOAI 0.9.x (2009-02-01)
 -----------------------
 
-New Features
-~~~~~~~~~~~~
+Changes
+~~~~~~~
 - Added Apache mod_python backend
 - Added basic authentication for fedora provider
 - Made fedora provider datastream argument optional,
@@ -78,8 +91,8 @@ New Features
 - Added documentation website (more info in README.txt)
 - Made Fedora provider not write all files in same directory
 
-Bugs Fixed
-~~~~~~~~~~
+Changes
+~~~~~~~
 - OAI ListRecords with from and until dateparams where not inclusive in SQLite engine
 - OAI ListSets did not return dynamic sets (added test)
 - OAI GetRecord returning the same record (added test) 

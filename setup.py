@@ -3,7 +3,7 @@ from os.path import join, dirname
 
 setup(
     name='MOAI',
-    version='1.0.6',
+    version='1.0.7',
     author='Infrae',
     author_email='jasper@infrae.com',
     description="MOAI, A Open Access Server Platform for Institutional Repositories",

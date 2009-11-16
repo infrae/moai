@@ -17,6 +17,9 @@ class DareDIDL(DIDL):
         super(DareDIDL, self).__init__(prefix, config, db)
         self.prefix = 'nl_didl'
 
+        self.ns['nl_didl'] = self.ns['didl']
+        self.schemas['nl_didl'] = self.schemas['didl']
+
     def __call__(self, element, metadata):
         super(DareDIDL, self).__call__(element, metadata)
         data = metadata.record
