@@ -1,6 +1,15 @@
 MOAI Changes
 ============
 
+MOAI 1.0.8 (2009-16-18) 
+-----------------------
+
+Changes
+~~~~~~~
+
+- Added a MANIFEST.in file to make sure all files are included
+  in the python package.
+
 MOAI 1.0.7 (2009-16-11) 
 -----------------------
 
