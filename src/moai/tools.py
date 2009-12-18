@@ -37,6 +37,7 @@ def update_database(configfile, configname, extension_modules):
 
     if not options.quiet and not options.verbose:
         progress.write('')
+        print
         print >> sys.stderr, ('Content provider returned %s '
                               'new/modified objects' % count)
         print >> sys.stderr
