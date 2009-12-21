@@ -86,6 +86,12 @@ class IContentValidator(Interface):
         """
     
 class IDatabaseUpdater(Interface):
+
+    flush_limit = Attribute('''
+        Flush database after processing n records. 
+        Defaults to -1, which only flushes the database
+        at the end''')
+
     def set_database(database):
         """Make the updater use a specific (new) database
         (will probably be set automaticly in __init__)

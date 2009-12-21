@@ -29,41 +29,37 @@ class DictBasedContentObject(object):
         
     def _extract_id(self, data):
         id = data.pop('id')
-        assert (isinstance(id, unicode), 'id should be a unicode value')
+        assert isinstance(id, unicode), 'id should be a unicode value'
         return id
 
     def _extract_label(self, data):
         label = data.pop('label')
-        assert (isinstance(label, unicode), 'label should be a unicode value')
+        assert isinstance(label, unicode), 'label should be a unicode value'
         return label
 
     def _extract_content_type(self, data):
         content_type = data.pop('content_type')
-        assert (isinstance(content_type, unicode),
-                          'content_type should be a unicode value')
+        assert isinstance(content_type, unicode), 'content_type should be a unicode value'
         return content_type
 
     def _extract_when_modified(self, data):
         when_modified = data.pop('when_modified')
-        assert (isinstance(when_modified, datetime.datetime),
-                'when_modified should be a datetime object')
+        assert isinstance(when_modified, datetime.datetime), 'when_modified should be a datetime object'
         return when_modified
 
     def _extract_deleted(self, data):        
         deleted = data.pop('deleted')
-        assert (isinstance(deleted, bool),
-                 'deleted should be a boolean object')
+        assert isinstance(deleted, bool), 'deleted should be a boolean object'
         return deleted
 
     def _extract_sets(self, data):
         sets = data.pop('sets')
-        assert (isinstance(sets, list),
-                'sets should be a list object')
+        assert isinstance(sets, list), 'sets should be a list object'
         return sets
 
     def _extract_is_set(self, data):
         is_set = data.pop('is_set')
-        assert (isinstance(is_set, bool), 'is_set should be a boolean')
+        assert isinstance(is_set, bool), 'is_set should be a boolean'
         return is_set
 
     def _extract_assets(self, data):
@@ -142,45 +138,41 @@ class XMLContentObject(object):
         id = root.xpath('id/text()')
         assert id, 'id field is missing'
         id = unicode(id[0])
-        assert (isinstance(id, unicode), 'id should be a unicode value')
+        assert isinstance(id, unicode), 'id should be a unicode value'
         return id
 
     def _extract_label(self, root):
         label = unicode(root.xpath('label/text()'))
         assert label, 'label field is missing'
         label = unicode(label[0])
-        assert (isinstance(label, unicode), 'label should be a unicode value')
+        assert isinstance(label, unicode), 'label should be a unicode value'
         return label
 
     def _extract_content_type(self, root):
         content_type = unicode(root.xpath('content_type/text()')[0])
-        assert (isinstance(content_type, unicode),
-                          'content_type should be a unicode value')
+        assert isinstance(content_type, unicode), 'content_type should be a unicode value'
         return content_type
 
     def _extract_when_modified(self, root):
         when_modified = unicode(root.xpath('when_modified')[0])
         when_modified = datetime.datetime(*time.strptime(when_modified,
                                                          '%Y-%m-%dT%H:%M:%S')[:6])
-        assert (isinstance(when_modified, datetime.datetime),
-                'when_modified should be a datetime object')
+        assert isinstance(when_modified, datetime.datetime), 'when_modified should be a datetime object'
         return when_modified
 
     def _extract_deleted(self, root):        
         deleted = unicode(root.xpath('deleted/text()')[0]).lower == 'true'
-        assert (isinstance(deleted, bool),
-                 'when_modified should be a datetime object')
+        assert isinstance(deleted, bool),  'when_modified should be a datetime object'
         return deleted
 
     def _extract_sets(self, root):
         sets = [unicode(s) for s in root.xpath('set')]
-        assert (isinstance(sets, list),
-                'sets should be a list object')
+        assert isinstance(sets, list), 'sets should be a list object'
         return sets
 
     def _extract_is_set(self, root):
         is_set = unicode(root.xpath('is_set/text()')[0]).lower == 'true'
-        assert (isinstance(is_set, bool), 'is_set should be a boolean')
+        assert isinstance(is_set, bool), 'is_set should be a boolean'
         return is_set
 
     def _extract_fields(self, root):

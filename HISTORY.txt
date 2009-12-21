@@ -1,6 +1,17 @@
 MOAI Changes
 ============
 
+MOAI 1.0.9 (unreleased)
+
+Changes
+~~~~~~~
+
+- Added a flush_threshold attribute to the DatabaseUpdater. This can be
+  used to make the database flush after n records. By default the value
+  is -1, and flushing only happens at the end of the update.
+- Fixed assertion statements in content.py (gave warnings in python2.6)
+
+
 MOAI 1.0.8 (2009-16-18) 
 -----------------------
 

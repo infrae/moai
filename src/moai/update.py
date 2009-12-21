@@ -14,11 +14,12 @@ class DatabaseUpdater(object):
 
     implements(IDatabaseUpdater)
 
-    def __init__(self, content, content_class, database, log):
+    def __init__(self, content, content_class, database, log, flush_threshold=-1):
         self.set_database(database)
         self.set_content_provider(content)
         self.set_content_object_class(content_class)
         self.set_logger(log)
+        self.flush_threshold = flush_threshold
 
     def set_database(self, database):
         self.db = database
@@ -89,6 +90,9 @@ class DatabaseUpdater(object):
                        ContentError(self._content_object_class, content_id))
                 continue
             
+            if self.flush_threshold != -1 and count % self.flush_threshold == 0:
+                self.db.flush_update()
+
             if content.is_set:
                 try:
                     self.db.add_set(content.id, content.label, content.get_values('description'))
