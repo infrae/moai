@@ -90,12 +90,13 @@ class DatabaseUpdater(object):
                        ContentError(self._content_object_class, content_id))
                 continue
             
-            if self.flush_threshold != -1 and count % self.flush_threshold == 0:
+            if self.flush_threshold > -1 and count % self.flush_threshold == 0:
                 self.db.flush_update()
 
             if content.is_set:
                 try:
-                    self.db.add_set(content.id, content.label, content.get_values('description'))
+                    self.db.add_set(content.id, content.label, 
+                                            content.get_values('description'))
                 except Exception:
                     if not supress_errors:
                         raise
@@ -137,3 +138,4 @@ class DatabaseUpdater(object):
             
             yield count, total, content.id, None
         self.db.flush_update()
+

@@ -41,8 +41,7 @@ class SQLiteDatabase(object):
                   sql.Column('content_type', sql.Unicode),
                   sql.Column('is_set', sql.Boolean),
                   sql.Column('is_asset', sql.Boolean),
-                  sql.Column('sets', sql.Unicode),
-                  
+                  sql.Column('sets', sql.Unicode)
                   )
         
         sql.Table('metadata', db,

@@ -89,7 +89,6 @@ def update_database(configfile, configname, extension_modules):
     
     if len(plugin_names) == 0:
         sys.exit(0)
-        
 
     for num, name in enumerate(plugin_names):
         num += 1
@@ -100,6 +99,7 @@ def update_database(configfile, configname, extension_modules):
             print >> sys.stderr, msg
         profile.log.info(msg)
         config = parse_config_file(configfile, name)
+
         plugin = moai.get_plugin(name)(updater.db,
                                        profile.log,
                                        config)
@@ -138,7 +138,7 @@ def initialize(script, configfile, configname, extension_modules):
     
     if script == 'update_database':
         parser.add_option("", "--date", dest="from_date",
-                      help="Only update databse from a specific date",
+                      help="Only update database from a specific date",
                       action="store")
         
     options, args = parser.parse_args()

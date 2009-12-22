@@ -1,6 +1,6 @@
 import os
 import urllib2
-import md5
+import hashlib
 
 from lxml import etree
 from zope.interface import implements
