@@ -82,14 +82,13 @@ def update_database(configfile, configname, extension_modules):
         if not options.verbose and not options.quiet:
             print >> sys.stderr, msg
 
-
     plugin_names = moai.get_plugin_names()
     configured_plugins = profile.config.get('plugins', [])
     plugin_names = [n for n in plugin_names if n in configured_plugins]
-    
+   
     if len(plugin_names) == 0:
         sys.exit(0)
-
+    
     for num, name in enumerate(plugin_names):
         num += 1
         msg = 'Running plugin %s/%s: %s' % (num,

@@ -230,6 +230,7 @@ class IDatabase(Interface):
 
     def flush_update():
         """Called once by the database updater at the end of the update proces
+        (depending on the flush_threshold attribute in DatabaseUpdater)
         This allows the database to implement a batching strategy
         """
         
@@ -254,6 +255,11 @@ class IDatabase(Interface):
     def remove_set(id):
         """Remove set from the database
         Returns a boolean to indicate if the removal was succesful
+        """
+
+    def empty_database():
+        """Removes all data from the database, but doesn't remove the 
+        table structures. Mainly used for testing.
         """
 
         

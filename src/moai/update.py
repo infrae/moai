@@ -24,8 +24,8 @@ class DatabaseUpdater(object):
     def set_database(self, database):
         self.db = database
 
-    def set_content_provider(self, content_provider):
-        self._provider = content_provider
+    def set_content_provider(self, content):
+        self._provider = content
 
     def set_content_object_class(self, content_class):
         self._content_object_class = content_class
@@ -55,11 +55,11 @@ class DatabaseUpdater(object):
             
     def update_database(self, validate=True, supress_errors=False):
         errors = 0
-        for count, total, content_id, error in self.update_database_iterate(validate,
-                                                                            supress_errors):
+        for count, total, content_id, error in self.update_database_iterate(
+                                                    validate, supress_errors):
             if not error is None:
                 errors += 1
-                
+               
         return errors
 
     def update_database_iterate(self, validate=True, supress_errors=False):    
@@ -90,8 +90,12 @@ class DatabaseUpdater(object):
                        ContentError(self._content_object_class, content_id))
                 continue
             
-            if self.flush_threshold > -1 and count % self.flush_threshold == 0:
-                self.db.flush_update()
+            if self.flush_threshold > -1 and count > 1 and (count-1) % self.flush_threshold == 0:
+                try:
+                    self.db.flush_update()
+                except Exception, err:
+                    if not supress_errors:
+                        raise
 
             if content.is_set:
                 try:
@@ -100,7 +104,8 @@ class DatabaseUpdater(object):
                 except Exception:
                     if not supress_errors:
                         raise
-                    yield count, total, content.id, DatabaseError(content.id, 'set')
+                    yield (count, total, content.id, DatabaseError(content.id, 
+                           'set'))
                     continue
                 yield count, total, content.id, None
                 continue
@@ -137,5 +142,10 @@ class DatabaseUpdater(object):
                 continue
             
             yield count, total, content.id, None
-        self.db.flush_update()
+        
+        try:
+            self.db.flush_update()
+        except Exception, err:
+            if not supress_errors:
+                raise
 

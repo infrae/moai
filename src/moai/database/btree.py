@@ -244,4 +244,12 @@ class BTreeDatabase(object):
 
         for id in ids:
             yield eval(self._content[id])
-    
+   
+    def empty_database(self):
+        for id in self._content.keys():
+            self._content.pop(id)
+        for id in self._sets.keys():
+            self._sets.pop(id)
+        for id in self._dates.keys():
+            self._dates.pop(id)
+

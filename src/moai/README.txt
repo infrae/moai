@@ -94,7 +94,7 @@ A date is supplied so the provider only has to look for new objects younger
 then that date. The update call will return a list of new found ids
 
 >>> p.update(datetime.datetime.now())
-[0, 1]
+[1]
 
 Now we create a new fresh database. We can use all sorts of databases, as long
 as it implements the IDatabase interface. The btree database stores everything in

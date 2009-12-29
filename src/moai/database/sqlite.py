@@ -22,7 +22,7 @@ class SQLiteDatabase(object):
         self._record_cache = []
         self._metadata_cache = []
         self._set_ids = set(self._get_set_ids())
-        
+    
     def _connect(self, dbpath):
         if dbpath is None:
             dburi = 'sqlite:///:memory:'
@@ -31,7 +31,6 @@ class SQLiteDatabase(object):
             
         engine = sql.create_engine(dburi)
         db = sql.MetaData(engine)
-
 
         sql.Table('records', db,
                   sql.Column('record_id', sql.Integer, primary_key=True),
@@ -53,7 +52,6 @@ class SQLiteDatabase(object):
                   sql.Column('reference', sql.Integer)
                   )
 
-        
         db.create_all()
         return db
 
@@ -74,8 +72,6 @@ class SQLiteDatabase(object):
         for record in self.records.select(
             self.records.c.name == id).execute():
 
-            
-            
             result = {'id': record['name'],
                       'deleted': record['deleted'],
                       'is_set': record['is_set'],
@@ -333,4 +329,13 @@ class SQLiteDatabase(object):
                    'sets': record['sets'],
                    'metadata': self.get_metadata(row['name']) or {},
                    'assets':{}}
-        
+       
+    def empty_database(self):
+        self.records.delete().execute()
+        self.metadata.delete().execute()
+
+        self._record_id = 0
+        self._record_cache = []
+        self._metadata_cache = []
+        #self._set_ids = set(self._get_set_ids())
+
