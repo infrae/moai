@@ -1,6 +1,17 @@
 MOAI Changes
 ============
 
+MOAI 1.0.10 (unreleased)
+
+Changes
+~~~~~~~
+
+- Added checking on XML compatibility in update.py, update_database_iterate().
+  This prevents the OAI server from crashing on invalid data. 
+- Fixed a minor bug in tools.py. The -d (debug) flag for the update_database 
+  script didn't halt on errors.
+
+
 MOAI 1.0.9 (unreleased)
 
 Changes

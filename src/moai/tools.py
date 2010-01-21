@@ -44,7 +44,14 @@ def update_database(configfile, configname, extension_modules):
     
     total = 0
     updated = []
-    for count, total, id, error in updater.update_database_iterate(supress_errors=True):
+#    for count, total, id, error in updater.update_database_iterate(supress_errors=False):
+    if options.debug:
+        supress_errors = False
+    else:
+        supress_errors = True
+    for count, total, id, error in updater.update_database_iterate(
+                                                supress_errors=supress_errors):
+
         msg_count = ('%%0.%sd/%%s' % len(str(total))) % (count, total)
         if not error is None:
             error_count += 1

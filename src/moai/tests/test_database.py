@@ -252,6 +252,7 @@ DATA = [{'id': u'id:1',
          'deleted': False,
          'sets': [],
          'is_set': True,
+         'abstract': [u'A test publication']
          },
         {'id': u'datasets',
          'label': u'datasets',

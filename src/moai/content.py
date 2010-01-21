@@ -1,10 +1,11 @@
 import time
 import datetime
+import re
 
 from zope.interface import implements
 from lxml import etree
-
 from moai.interfaces import IContentObject
+
 
 class DictBasedContentObject(object):
     """Simple Content object that gets its
@@ -26,7 +27,6 @@ class DictBasedContentObject(object):
         self._assets = self._extract_assets(data)
         self._fields = self._extract_fields(data)
 
-        
     def _extract_id(self, data):
         id = data.pop('id')
         assert isinstance(id, unicode), 'id should be a unicode value'
@@ -79,7 +79,10 @@ class DictBasedContentObject(object):
         return result
 
     def get_assets(self):
-        return self._assets
+         return self._assets
+
+    def _sanitize(self):
+        sanitize_content(self)
 
 class XMLContentObject(object):
     """Content object that gets an xml string,
@@ -88,8 +91,6 @@ class XMLContentObject(object):
     """
     implements(IContentObject)
 
-
-    
     def xpath(self, xpath, name, pytype, required=False, multi=False):
         values = self.root.xpath(xpath, namespaces=self.nsmap)
         if required:
@@ -187,7 +188,6 @@ class XMLContentObject(object):
     def _extract_assets(self, root):
         return []
 
-
     def field_names(self):
         return self._fields.keys()
 
@@ -198,3 +198,7 @@ class XMLContentObject(object):
 
     def get_assets(self):
         return self._assets
+
+    def _sanitize(self):
+        sanitize_content(self)
+

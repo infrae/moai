@@ -1,7 +1,10 @@
-from datetime import datetime
-from unittest import TestCase, TestSuite, makeSuite, main
 import logging
 import os
+import tempfile
+import StringIO
+import copy
+from datetime import datetime
+from unittest import TestCase, TestSuite, makeSuite, main
 
 from moai.provider.list import ListBasedContentProvider
 from moai.content import DictBasedContentObject
@@ -9,23 +12,61 @@ from moai.update import DatabaseUpdater
 from moai.database.sqlite import SQLiteDatabase
 from moai.database.btree import BTreeDatabase
 from sqlalchemy.exc import IntegrityError
+from moai.tests.test_database import DATA
+from moai.server import Server, FeedConfig
+from moai.http.cgi import CGIRequest
+from moai.core import MOAI
+
 
 class UpdaterTest(TestCase):
 
     def setUp(self):
+        self.test_data = copy.deepcopy(DATA)
         self.db = SQLiteDatabase()
-        self.provider = ListBasedContentProvider(DATA)
+        self.provider = ListBasedContentProvider(self.test_data)
         self.updater = DatabaseUpdater(self.provider, DictBasedContentObject, 
                                        self.db, logging)
+        self.updater.flush_threshold = -1
 
     def tearDown(self):
         del self.db
+
+    def request(self, url, **kwargs):
+        req = CGIRequest('http://localhost/repo/test' + url, **kwargs)
+        req.stream = StringIO.StringIO()
+        self.server.handle_request(req)
+        req.stream.seek(0)
+        return req.stream.read()
+
+    def setup_server(self):
+        # init moai, so metadata formats get registered
+        m = MOAI(logging, debug=True)
+        
+        config = FeedConfig('test', 'A test Repository',
+                            'http://localhost/repo/test',
+                            logging)
+        self.server = Server('http://localhost/repo', self.db)
+        self.server.add_config(config)
+
+    def setup_test_provider(self, data, supress_errors=True):
+        if 'server' not in dir(self):
+            self.setup_server()
+
+        self.db.empty_database()
+
+        provider = ListBasedContentProvider(data)
+        self.updater = DatabaseUpdater(provider, DictBasedContentObject, self.db, logging)
+        self.updater.update_provider()
+        if supress_errors:
+            self.updater.update_database(supress_errors=True)
+        else:
+            self.assertRaises(Exception, self.updater.update_database)
 
     def test_update_provider(self):
         # Check updating provider
         result = self.updater.update_provider()
         expRes = [0, 1, 2, 3, 4, 5, 6]
-        self.assertEquals(result, expRes)
+        self.assertEqual(result, expRes)
 
         # Check updating database 
         result = self.updater.update_database_iterate()
@@ -33,18 +74,17 @@ class UpdaterTest(TestCase):
         for line in result:
             update_list1.append(line)
 
-        # Modify DATA for tests below, remember changes 
-        store_data = (DATA[5]['when_modified'], DATA[6]['when_modified'])
-        DATA[5]['when_modified'] = ''
-        DATA[6].pop('when_modified')
+        # Modify data for tests below
+        self.test_data[5]['when_modified'] = ''
+        self.test_data[6].pop('when_modified')
 
-        # Check updating provider with modified DATA and from_date 
+        # Check updating provider with modified data and from_date 
         from_date = datetime(2006, 01, 01) 
         result = self.updater.update_provider(from_date)
         expRes = [0, 2, 3, 4]
-        self.assertEquals(result, expRes)
+        self.assertEqual(result, expRes)
 
-        # Check updating the database with modified DATA
+        # Update the database with failing data, fails last 2 records
         result = self.updater.update_database_iterate()
         update_list2 = []
         try:
@@ -52,35 +92,79 @@ class UpdaterTest(TestCase):
                 update_list2.append(line)
         except AssertionError:
             pass
-        self.assertEquals(update_list1[:-2], update_list2)
+        self.assertEqual(update_list1[:-2], update_list2)
 
-        # Restore DATA for other tests
-        DATA[5]['when_modified'] = store_data[0] 
-        DATA[6]['when_modified'] = store_data[1]
-
+        # The same, but continue on errors
+        result = self.updater.update_database_iterate(supress_errors=True)
+        update_list2 = []
+        for line in result:
+            update_list2.append(line)
+        self.assertEqual(update_list1[:-2], update_list2[:-2])
+        self.assertNotEqual(update_list1[-2:], update_list2[-2:])
 
     def test_update_database(self):
-        # The first database-update succeeds
         self.updater.update_provider()
+
+        # Normal update works, but fails on non-uique ids
         self.updater.update_database()
-        
-        # The second fails on non-unique ids 
         self.assertRaises(IntegrityError, self.updater.update_database)
-
-        # No errors if the db is emptied
-        self.db.empty_database()
-        self.updater.update_database()
-
-        # Check if a flush_threshold of 1 fails
-        self.db.empty_database()
-        self.updater.flush_threshold = 1 
-        self.updater.update_database()
-        self.updater.flush_threshold = -1
-
-        # Check the supress_error variable
+        # But suppress errors works, and emptying the db works
         self.updater.update_database(supress_errors=True)
+        self.db.empty_database()
+        self.updater.update_database()
 
-      
+        # Same tests with threshold = 1
+        self.updater.flush_threshold = 1
+        self.db.empty_database()
+
+        # Normal update works, but fails on non-uique ids
+        self.updater.update_database()
+        self.assertRaises(IntegrityError, self.updater.update_database)
+        # But suppress errors works, and emptying the db works
+        self.updater.update_database(supress_errors=True)
+        self.db.empty_database()
+        self.updater.update_database()
+
+    def test_xml_compatibility(self):
+        # These fail when the content is sanatized in the IContentObject implementation
+
+        # Failure in metadata
+        test_data = copy.deepcopy(DATA)
+        test_data[0]['abstract'] = [u'A test publi\u000bcation']
+        self.setup_test_provider(test_data)
+        
+        response = self.request('', verb='ListRecords', metadataPrefix='oai_dc')
+        self.assertFalse('<identifier>oai:id:1</identifier>' in response)
+        self.assertTrue('<identifier>oai:id:2</identifier>' in response)
+        self.assertTrue('<identifier>oai:id:3</identifier>' in response)
+
+        # Failure in record
+        test_data = copy.deepcopy(DATA)
+        test_data[1]['id'] = u"i\u000bd:2" 
+        self.setup_test_provider(test_data)
+        
+        response = self.request('', verb='ListRecords', metadataPrefix='oai_dc')
+        self.assertTrue('<identifier>oai:id:1</identifier>' in response)
+        self.assertFalse('<identifier>oai:id:2</identifier>' in response)
+        self.assertFalse(u'<identifier>oai:i\u000bd:2</identifier>' in response)
+        self.assertTrue('<identifier>oai:id:3</identifier>' in response)
+
+        # Failure in sets
+        test_data = copy.deepcopy(DATA)
+        test_data[2]['sets'][0] = u"st\u000buff"
+        self.setup_test_provider(test_data)
+
+        response = self.request('', verb='ListRecords', metadataPrefix='oai_dc')
+        self.assertTrue('<identifier>oai:id:1</identifier>' in response)
+        self.assertTrue('<identifier>oai:id:2</identifier>' in response)
+        self.assertFalse('<identifier>oai:id:3</identifier>' in response)
+
+        # Check the supress_errors on _xml_comp_error()
+        test_data = copy.deepcopy(DATA)
+        test_data[0]['abstract'] = [u'A test publi\u000bcation'] 
+        self.setup_test_provider(test_data, False)
+
+
 def test_suite():
     suite = TestSuite()
     suite.addTest(makeSuite(UpdaterTest))
@@ -91,69 +175,3 @@ if __name__ == '__main__':
     main(defaultTest='test_suite')
 
 
-DATA = [{'id': u'id:1',
-         'label': u'Publication 1',
-         'content_type': u'publication',
-         'when_modified': datetime(2008, 01, 01, 14, 30, 00),
-         'deleted': False,
-         'sets': [u'stuff', u'publications', u'top'],
-         'is_set': False,
-         'abstract': [u'A test publication']
-         },
-        {'id': u'id:2',
-         'label': u'Dataset 1',
-         'content_type': u'dataset',
-         'when_modified': datetime(2004, 01, 01, 14, 30, 00),
-         'deleted': False,
-         'sets': [u'stuff', u'datasets', u'dynamic'],
-         'is_set': False,
-         'assets': [{
-             u'filename': u'test.txt',
-             u'url': u'http://example.org/assets/test.txt',
-             u'mimetype': u'text/plain',
-             u'md5': u'730652c70a12db042b8842f5049390d4',
-             u'absolute_uri': u'file:///tmp/test.txt',
-             u'metadata': {u'access': [u'public'],
-                           u'type': [u'preprint']}}]
-         },
-        {'id': u'id:3',
-         'label': u'Publication 2',
-         'content_type': u'publication',
-         'when_modified': datetime(2006, 01, 01, 14, 30, 00),
-         'deleted': False,
-         'sets': [u'stuff', u'publications'],
-         'is_set': False,
-         },
-        {'id': u'stuff',
-         'label': u'Stuff',
-         'content_type': u'collection',
-         'when_modified': datetime(2006, 01, 01, 14, 30, 00),
-         'deleted': False,
-         'sets': [],
-         'is_set': True,
-         },
-        {'id': u'publications',
-         'label': u'publication set',
-         'content_type': u'collection',
-         'when_modified': datetime(2006, 01, 01, 14, 30, 00),
-         'deleted': False,
-         'sets': [],
-         'is_set': True,
-         },
-        {'id': u'datasets',
-         'label': u'datasets',
-         'content_type': u'collection',
-         'when_modified': datetime(2006, 01, 01, 14, 31, 00),
-         'deleted': False,
-         'sets': [],
-         'is_set': True,
-         },
-        {'id': u'top',
-         'label': u'top publications',
-         'content_type': u'collection',
-         'when_modified': datetime(2006, 01, 01, 14, 32, 00),
-         'deleted': False,
-         'sets': [],
-         'is_set': True,
-         },
-        ]

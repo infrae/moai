@@ -36,6 +36,10 @@ class ExampleContentObject(XMLContentObject):
         else:
             self._fields = self.set_publication_fields()
 
+        # Instead of letting the updater fail the record on not-valid XML,
+        # remove the conflicting characters 
+        #self._sanitize()
+
     def set_set_fields(self):
         return {u'name': [self.label],
                 u'description': self.xpath(
@@ -104,7 +108,6 @@ class ExampleContentObject(XMLContentObject):
             asset[u'metadata'] = []
             self._assets.append(asset)
                 
-            
         #fields[u'asset'] = assets
         
         return fields
