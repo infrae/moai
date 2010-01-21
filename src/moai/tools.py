@@ -44,7 +44,6 @@ def update_database(configfile, configname, extension_modules):
     
     total = 0
     updated = []
-#    for count, total, id, error in updater.update_database_iterate(supress_errors=False):
     if options.debug:
         supress_errors = False
     else:
