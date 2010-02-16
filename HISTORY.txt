@@ -1,7 +1,8 @@
 MOAI Changes
 ============
 
-MOAI 1.0.10 (unreleased)
+MOAI 1.0.9 (2010-02-16)
+-----------------------
 
 Changes
 ~~~~~~~
@@ -10,12 +11,6 @@ Changes
   This prevents the OAI server from crashing on invalid data. 
 - Fixed a minor bug in tools.py. The -d (debug) flag for the update_database 
   script didn't halt on errors.
-
-
-MOAI 1.0.9 (unreleased)
-
-Changes
-~~~~~~~
 
 - Added a flush_threshold attribute to the DatabaseUpdater. This can be
   used to make the database flush after n records. By default the value

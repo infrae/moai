@@ -6,6 +6,7 @@ setup(
     version='1.0.8',
     author='Infrae',
     author_email='jasper@infrae.com',
+    url='http://moai.infrae.com',
     description="MOAI, A Open Access Server Platform for Institutional Repositories",
     long_description=(open(join(dirname(__file__), 'README.txt')).read()+
                       '\n'+
