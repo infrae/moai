@@ -3,7 +3,7 @@ from os.path import join, dirname
 
 setup(
     name='MOAI',
-    version='1.0.9',
+    version='1.0.10dev',
     author='Infrae',
     author_email='jasper@infrae.com',
     url='http://moai.infrae.com',
