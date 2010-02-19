@@ -150,7 +150,7 @@ class IDatabaseUpdater(Interface):
         implement a batching strategy
         """
 
-class IDatabase(Interface):
+class IReadOnlyDatabase(Interface):
 
     def oai_sets(offset=0, batch_size=20):
         """Used by queries from the OAI server. Format returned should be the
@@ -227,6 +227,8 @@ class IDatabase(Interface):
         
         Where metadata is a dictionary with additional lists of string values
         """
+
+class IDatabase(IReadOnlyDatabase):
 
     def flush_update():
         """Called once by the database updater at the end of the update proces
