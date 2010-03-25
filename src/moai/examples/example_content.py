@@ -95,7 +95,6 @@ class ExampleContentObject(XMLContentObject):
             asset[u'url'] = u'asset/%s/%s' % (
                 self.id,
                 asset['filename'])
-            self._assets.append(asset)
             
             path = os.path.join(os.path.dirname(__file__),
                                 'example_data',
@@ -105,7 +104,13 @@ class ExampleContentObject(XMLContentObject):
 
             asset[u'absolute_uri'] = u'file://%s' % path
             asset[u'md5'] = u''
-            asset[u'metadata'] = []
+            asset[u'metadata'] = {}
+            if asset[u'access']:
+                asset[u'metadata'][u'access'] = [asset[u'access']]
+                del asset[u'access']
+            if asset[u'modified']:
+                asset[u'metadata'][u'modified'] = [asset[u'modified']]
+                del asset[u'modified']
             self._assets.append(asset)
                 
         #fields[u'asset'] = assets

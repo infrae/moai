@@ -1,12 +1,16 @@
 MOAI Changes
 ============
 
-MOAI 1.0.10 (unreleased)
+MOAI 1.0.10 (2010-03-25)
 -----------------------
 
 Changes
 ~~~~~~~
 
+- Changed DIP:objectType to rdf:type in the didl metadata format, 
+  as required by darenet/driver/didl 3.0 format
+- Added support for modification dates and accessrights in the didl format
+ 
 
 MOAI 1.0.9 (2010-02-16)
 -----------------------

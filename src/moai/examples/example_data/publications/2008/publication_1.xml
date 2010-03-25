@@ -13,5 +13,7 @@
     <asset>
       <filename>test.txt</filename>
       <mimetype>text/plain</mimetype>
+      <access>open</access>
+      <modified>2010-04-25T12:36:00</modified>
     </asset>
 </publication>
