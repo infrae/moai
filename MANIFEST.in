@@ -1,2 +1,2 @@
-recursive-include src/moai
+recursive-include src
 include *
