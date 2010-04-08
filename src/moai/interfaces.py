@@ -285,8 +285,11 @@ class IFeedConfig(Interface):
     sets_disallowed = Attribute(
         u"Objects served must not have one of these sets")
     filter_sets = Attribute(
-        u"Objects served must have one of these sets, besides the"
+        u"Objects served must have one of these sets, besides the "
         "conforming to the (dis-)allowed sets")
+    sets_deleted = Attribute(
+        u"Records in this set will always be served as deleted OAI records "
+        "this can be used as an alternative to sets_dissallowed.")
     delay = Attribute(u"number of miliseconds to delay the feed")
 
 

@@ -1,8 +1,21 @@
 MOAI Changes
 ============
 
-MOAI 1.0.11 (unreleased)
+MOAI 1.1.0 (2010-04-08)
 -----------------------
+
+Changes
+~~~~~~~
+
+- Added new config option `deleted_sets` which can be used to make all 
+  resources within a specific set `oai deleted` within the context of a 
+  specific feed. In many cases this is preferable compared to `disallowed_sets`
+  since resources will just dissapear when they are not allowed without
+  leaving a proper deleted resource behind.
+- Disable ranged HTTP requests in Apache mod_python backend. This was giving
+  problems with acrobat plugin and its "Fast Web View" feature.
+- Show records sorted on descending datestamp, instead of ascending record id,
+  in sqlite backend.
 
 Changes
 ~~~~~~~

@@ -159,6 +159,7 @@ class FeedConfig(object):
                  content_type = None,
                  sets_allowed = [],
                  sets_disallowed = [],
+                 sets_deleted = [],
                  filter_sets = [],
                  delay = 0,
                  base_asset_path=None):
@@ -173,6 +174,7 @@ class FeedConfig(object):
         self.content_type = content_type
         self.sets_allowed = sets_allowed
         self.sets_disallowed = sets_disallowed
+        self.sets_deleted = sets_deleted
         self.filter_sets = filter_sets
         self.delay = delay
         self.base_asset_path = base_asset_path or tempfile.gettempdir()

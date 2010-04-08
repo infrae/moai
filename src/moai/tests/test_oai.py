@@ -102,7 +102,7 @@ class OAIBtreeTest(TestCase):
                                 metadataPrefix=u'oai_dc')
         self.assertTrue('code="idDoesNotExist"' in response)
 
-    def test_disallowed_record(self):
+    def test_disallowed_set_record(self):
         config = FeedConfig('test', 'A test Repository',
                             'http://localhost/repo/test',
                             logging,
@@ -116,6 +116,20 @@ class OAIBtreeTest(TestCase):
                                 metadataPrefix=u'oai_dc')
         self.assertTrue('<error code="idDoesNotExist">oai:id:2</error>' in response)
 
+    def test_deleted_set_record(self):
+        config = FeedConfig('test', 'A test Repository',
+                            'http://localhost/repo/test',
+                            logging,
+                            sets_deleted=[u'datasets'])
+        self.server = Server('http://localhost/repo', self.db)
+        self.server.add_config(config)
+        # identifier 2 should be in the identifier list
+        response = self.request(verb=u'ListIdentifiers', metadataPrefix=u'oai_dc')
+        self.assertTrue('<identifier>oai:id:2</identifier>' in response)
+        response = self.request(verb=u'GetRecord', identifier=u'oai:id:2',
+                                metadataPrefix=u'oai_dc')
+        self.assertTrue('<header status="deleted">' in response)
+        self.assertFalse('<metadata>' in response)
 
 class OAISQLiteTest(OAIBtreeTest):
     

@@ -274,8 +274,10 @@ class SQLiteDatabase(object):
             until_date = datetime.datetime.now()
 
 
-        query = self.records.select(sql.and_(self.records.c.is_set == False,
-                                             self.records.c.is_asset == False))
+        query = self.records.select(
+            sql.and_(self.records.c.is_set == False,
+                     self.records.c.is_asset == False),
+            order_by = [sql.desc(self.records.c.when_modified)])
 
         # filter dates
         query.append_whereclause(self.records.c.when_modified <= until_date)

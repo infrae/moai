@@ -36,6 +36,7 @@ class ModPythonRequest(object):
         """Send the file located at 'path' back to the user
         """
         self.req.content_type = mimetype
+        self.req.headers_out['Accept-Ranges'] = 'none'
         self.req.sendfile(path)
         return apache.OK
     
