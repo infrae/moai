@@ -1,6 +1,14 @@
 MOAI Changes
 ============
 
+MOAI 1.1.1 (unreleased)
+-----------------------
+
+Changes
+~~~~~~~
+
+- Fixed ZeroDivisionError in progressbar drawing of updatedb script
+
 MOAI 1.1.0 (2010-04-08)
 -----------------------
 

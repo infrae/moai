@@ -53,7 +53,10 @@ class ProgressBar(object):
         self.out.flush()
 
     def tick(self, count, total):
-        perc = '%0.1f' % (count / (total/100.0))
+        if total:
+            perc = '%0.1f' % (count / (total/100.0))
+        else:
+            perc = '0.0'
         if perc == self.oldperc and not count == total:
             return
         self.oldperc = perc
