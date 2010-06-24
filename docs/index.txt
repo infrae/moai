@@ -17,7 +17,7 @@ Why MOAI
 
 MOAI has been specifically developed for universities, and contains a lot of hard-earned wisdom. The software has been in production use since 2007, and new features have been continually added. In late 2008, the software was completely refactored and packaged under the name "MOAI". You can read more about this on the :ref:`history` page.
 
-The MOAI project takes the philosophy that every repository is different and unique, and that an institutional repository is a living thing. It is therefore never finished. Metadata is always changes, improving, and evolves. We think this is healthy. 
+The MOAI project takes the philosophy that every repository is different and unique, and that an institutional repository is a living thing. It is therefore never finished. Metadata is always changing, improving, and evolving. We think this is healthy. 
 
 Because of this viewpoint, the MOAI software makes it as easy as possible to add or modify parts of your repository (OAI) services stack. It tries to do this without sacrificing power, and encouraging the re-use of components.
 
