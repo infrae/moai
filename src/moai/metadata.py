@@ -122,7 +122,7 @@ class MODS(MetaDataFormat):
                 name = MODS.name(
                     MODS.displayForm(contributor['name'][0]),
                     type='personal',
-                    id=unique_id
+                    ID=unique_id
                     )
                 surname = contributor.get('surname')
                 if surname:
@@ -152,7 +152,7 @@ class MODS(MetaDataFormat):
                 for id, dai in dai_list:
                     daiList.append(DAI.identifier(
                         dai[0],
-                        IDRef=id,
+                        IDref=id,
                         authority='info:eu-repo/dai/nl'))
                 
                 mods.append(MODS.extension(daiList))
