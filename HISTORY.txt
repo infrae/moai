@@ -1,12 +1,13 @@
 MOAI Changes
 ============
 
-MOAI 1.1.1 (unreleased)
+MOAI 1.1.1 (2010-09-02)
 -----------------------
 
 Changes
 ~~~~~~~
 
+- Fixed ID/IDref attributes in MODS format
 - Fixed ZeroDivisionError in progressbar drawing of updatedb script
 
 MOAI 1.1.0 (2010-04-08)
