@@ -16,7 +16,7 @@ Checkout MOAI and go into the checkout directory:
 
 .. code-block:: sh
 
-  > svn co http://svn.infrae.com/MOAI/trunk moai
+  > svn co https://svn.infrae.com/MOAI/trunk moai
   > cd moai
 
 You can also download a tarball from the python package index,
