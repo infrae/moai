@@ -53,7 +53,7 @@ class OAIServer(object):
             'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
             '<title>MOAI</title>'
             '<author><name>Jasper Op de Coul</name>'
-            '<email>jasper@infrae.com / moai-dev@lists.infrae.com</email>'
+            '<email>info@infrae.com / moai-dev@lists.infrae.com</email>'
             '<institution>Infrae</institution></author>'
             '%s'
             '<URL>http://moai.infrae.com</URL>'
