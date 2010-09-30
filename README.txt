@@ -29,6 +29,7 @@ Features
 MOAI has some interesting features not found in most OAI servers. 
 Besides serving OAI, it can also harvest OAI. This makes it possible for MOAI to work as a pipe, where the OAI data can be reconfigured, cached, and enriched while it passes through the MOAI processing.
 
+
 More specifically MOAI has the ability to:
 
 - Harvest data from different kinds of sources
