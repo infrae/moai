@@ -3,9 +3,9 @@ from os.path import join, dirname
 
 setup(
     name='MOAI',
-    version='1.1.2dev',
+    version='1.1.2',
     author='Infrae',
-    author_email='jasper@infrae.com',
+    author_email='info@infrae.com',
     url='http://moai.infrae.com',
     description="MOAI, A Open Access Server Platform for Institutional Repositories",
     long_description=(open(join(dirname(__file__), 'README.txt')).read()+

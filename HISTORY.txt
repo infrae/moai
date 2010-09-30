@@ -1,8 +1,11 @@
 MOAI Changes
 ============
 
-MOAI 1.1.2 (unreleased)
------------------------
+1.1.2 (2010-09-30)
+------------------
+
+- Changed contact info, and switched repository from svn to mercurial
+  this release has no code changes
 
 Changes
 ~~~~~~~
