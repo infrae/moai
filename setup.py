@@ -38,7 +38,7 @@ setup(
      ],
     'moai.format':[
          'oai_dc=moai.metadata:OAIDC',
-         'mods=moai.metadata:Mods'
+         'mods=moai.metadata:MODS'
      ],
     },
     install_requires=[

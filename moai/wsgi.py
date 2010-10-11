@@ -1,16 +1,15 @@
+import os
 from pkg_resources import iter_entry_points
 
-from zope.interface import implements
 from webob import Request, Response
 
-from moai.interfaces import IServerRequest
+from moai.server import Server, FeedConfig
+from moai.database import Database
 
 class WSGIRequest(object):
     """This is a request object that can be used in a WSGI environment.
     It implements :ref:`IServerRequest` interface.
     """
-    implements(IServerRequest)
-
     def __init__(self, request):
         self._req = request
 
@@ -62,16 +61,18 @@ class WSGIRequest(object):
 
 class MOAIWSGIApp(object):
     # the wsgi app, calls the IServer with the IServerRequest 
-    def __init__(self, name, server):
-        self.name = name
+    def __init__(self, server):
         self.server = server
-
+        
     def __call__(self, environ, start_response):
         request = Request(environ)
-        return self.server.handle_request(WSGIRequest(request))
+        response = self.server.handle_request(WSGIRequest(request))
+        return response(environ, start_response)
 
 def app_factory(global_config,
                 name,
+                url,
+                admin_email,
                 content,
                 provider,
                 database,
@@ -79,24 +80,22 @@ def app_factory(global_config,
                 **kwargs):
     # WSGI APP Factory
     formats = formats.split()
-    for provider_point in iter_entry_points(group='moai.provider',
-                                            name=provider.split(':', 1)[0]):
-        provider_class = provider_point.load()
-        break
-    else:
-        raise ValueError(
-            'No such provider profile: %s' % provider.split(':', 1)[0])
+    admin_email = admin_email.split()
+
     for content_point in iter_entry_points(group='moai.content', name=content):
         content_class = content_point.load()
         break
     else:
         raise ValueError('No such content profile: %s' % content)
 
-    print provider_class, content_class
-    import ipdb; ipdb.set_trace()
-    
-    
-    return MOAIWSGIApp(name, server)
+    database = Database(database)
+    feedconfig = FeedConfig(name,
+                            url,
+                            admin_emails=admin_email,
+                            metadata_prefixes=formats)
+    content = content_class()
+    server = Server(url, database, feedconfig, content_class)
+    return MOAIWSGIApp(server)
 
 class FileIterable(object):
     # Helper objects to stream asset files

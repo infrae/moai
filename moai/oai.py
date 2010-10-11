@@ -1,3 +1,5 @@
+from pkg_resources import iter_entry_points
+
 from datetime import datetime
 import pkg_resources
 import time
@@ -7,11 +9,12 @@ import oaipmh.metadata
 import oaipmh.server
 import oaipmh.error
 
-from moai.core import get_metadata_format
-
 def get_writer(prefix, config, db):
-    writer = get_metadata_format(prefix)
-    return writer(prefix, config, db)
+    for writer in iter_entry_points(group='moai.format', name=prefix):
+        return writer.load()(prefix, config, db)
+    else:
+        raise ValueError('No such metadata format registered: %s' % prefix)
+
 
 class OAIServer(object):
     """An OAI-2.0 compliant oai server.

@@ -25,22 +25,11 @@ class Server(object):
 
     implements(IServer)
 
-    def __init__(self, base_url, db):
+    def __init__(self, base_url, db, config, content):
         self.base_url = base_url
         self._db = db
-        self._configs = {}
-
-    def add_config(self, config):
-        """Add a feedconfig object to this server
-        Each config will generate an OAI Feed at a 
-        seperate url.
-        """
-        self._configs[config.id] = config
-
-    def get_config(self, id):
-        """Returns an object implementing IFeedConfig
-        """
-        return self._configs.get(id)
+        self._config = config
+        self._content = content
 
     def download_asset(self, req, url, config):
         """Download an asset
@@ -122,23 +111,17 @@ class Server(object):
             return req.send_status('500 Internal Server Error',
                  'No server was selected, please append server name to url.')
         
-        config_name = urlparts.pop(0)
-        config = self.get_config(config_name)
-
-        if config is None:
-            return req.send_status('404 File Not Found',
-                 'No server with name "%s" exists' % config_name)
             
         url = '/'.join(urlparts)
 
-        if self.is_asset_url(url, config):
-            if self.allow_download(url, config):
-                return self.download_asset(req, url, config)
+        if self.is_asset_url(url, self._config):
+            if self.allow_download(url, self._config):
+                return self.download_asset(req, url, self._config)
             else:
                 return req.send_status('403 Forbidden',
                                        'You are not allowed to download this asset')
 
-        oai_server = OAIServerFactory(self._db, config)
+        oai_server = OAIServerFactory(self._db, self._config)
         return req.write(oai_server.handleRequest(req.query_dict()), 'text/xml')
 
 class FeedConfig(object):
@@ -149,10 +132,8 @@ class FeedConfig(object):
     implements(IFeedConfig)
 
     def __init__(self,
-                 id,
                  repository_name,
                  base_url,
-                 log,
                  admin_emails = [],
                  metadata_prefixes = ['oai_dc'],
                  batch_size = 100,
@@ -164,10 +145,8 @@ class FeedConfig(object):
                  delay = 0,
                  base_asset_path=None):
         
-        self.id = id
         self.name = repository_name
         self.url = base_url
-        self.log = log
         self.admins = admin_emails
         self.metadata_prefixes = metadata_prefixes
         self.batch_size = batch_size

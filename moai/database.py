@@ -1,21 +1,16 @@
-import time
 import datetime
 
-from zope.interface import implements
 import sqlalchemy as sql
 
-from moai.interfaces import IDatabase
-
-class SQLiteDatabase(object):
-    """Sqlite implementation of a database backend
+class Database(object):
+    """Sql implementation of a database backend
     This implements the :ref:`IDatabase` interface, look there for
     more documentation.
     """
-    implements(IDatabase)
 
-    def __init__(self, dbpath=None, mode='w'):
-        self._path = dbpath
-        self.db = self._connect(dbpath)
+    def __init__(self, dburi=None):
+        self._uri = dburi
+        self.db = self._connect()
         self.records = self.db.tables['records']
         self.metadata = self.db.tables['metadata']
         self._record_id = 0
@@ -23,11 +18,10 @@ class SQLiteDatabase(object):
         self._metadata_cache = []
         self._set_ids = set(self._get_set_ids())
     
-    def _connect(self, dbpath):
-        if dbpath is None:
+    def _connect(self):
+        dburi = self._uri
+        if dburi is None:
             dburi = 'sqlite:///:memory:'
-        else:
-            dburi = 'sqlite:///%s' % dbpath
             
         engine = sql.create_engine(dburi)
         db = sql.MetaData(engine)
