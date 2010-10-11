@@ -2,3 +2,5 @@ lib
 bin
 MOAI.egg-info
 include
+
+\.pyc$
