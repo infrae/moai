@@ -26,10 +26,26 @@ setup(
       ],
     'paste.app_factory':[
         'main=moai.wsgi:app_factory'
-     ]
+     ],
+    'moai.content':[
+        'moai_example=moai.example:ExampleContent'
+     ],
+    'moai.provider':[
+        'file=moai.provider.file:FileBasedContentProvider',
+        'list=moai.provider.list:ListBasedContentProvider',
+        'oai=moai.provider.oai:OAIBasedContentProvider',
+        'fedora=moai.provider.feadora:FedoraBasedContentProvider'
+     ],
+    'moai.format':[
+         'oai_dc=moai.metadata:OAIDC',
+         'mods=moai.metadata:Mods'
+     ],
     },
     install_requires=[
     'pyoai',
+    'WSGIUtils',
+    'webob',
+    'pasteScript',
     'sqlalchemy',
     'simplejson'
     ],

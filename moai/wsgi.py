@@ -1,4 +1,4 @@
-from StringIO import StringIO
+from pkg_resources import iter_entry_points
 
 from zope.interface import implements
 from webob import Request, Response
@@ -70,8 +70,32 @@ class MOAIWSGIApp(object):
         request = Request(environ)
         return self.server.handle_request(WSGIRequest(request))
 
-def app_factory(global_config, name, server):
+def app_factory(global_config,
+                name,
+                content,
+                provider,
+                database,
+                formats,
+                **kwargs):
     # WSGI APP Factory
+    formats = formats.split()
+    for provider_point in iter_entry_points(group='moai.provider',
+                                            name=provider.split(':', 1)[0]):
+        provider_class = provider_point.load()
+        break
+    else:
+        raise ValueError(
+            'No such provider profile: %s' % provider.split(':', 1)[0])
+    for content_point in iter_entry_points(group='moai.content', name=content):
+        content_class = content_point.load()
+        break
+    else:
+        raise ValueError('No such content profile: %s' % content)
+
+    print provider_class, content_class
+    import ipdb; ipdb.set_trace()
+    
+    
     return MOAIWSGIApp(name, server)
 
 class FileIterable(object):

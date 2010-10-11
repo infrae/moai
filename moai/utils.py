@@ -4,7 +4,6 @@ import time
 import logging
 from ConfigParser import ConfigParser
 
-
 def get_moai_log():
     log = logging.getLogger('moai')
     log.setLevel(logging.DEBUG)
