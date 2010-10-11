@@ -5,6 +5,8 @@ MOAI Changes
 ------------------
 
 - Nothing changed yet.
+- Moved code to stable MOAI-1.x branch, development on trunk will continue
+  with MOAI-2.x code
 
 
 1.1.2 (2010-09-30)
