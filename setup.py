@@ -22,14 +22,14 @@ setup(
     license='BSD',
     entry_points= {
     'console_scripts': [
-    'update_database = moai.tools:update_database',
-    'start_development_server = moai.tools:start_development_server',
-    'generate_modpython_config = moai.http.apache:generate_config'
-      ]
+        'update_moai = moai.tools:update_moai',
+      ],
+    'paste.app_factory':[
+        'main=moai.wsgi:app_factory'
+     ]
     },
     install_requires=[
-    'pyoai>=2.4',
-    'martian',
+    'pyoai',
     'sqlalchemy',
     'simplejson'
     ],
