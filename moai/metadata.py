@@ -2,20 +2,15 @@
 from lxml.builder import ElementMaker
 import simplejson
 
-from moai import MetaDataFormat, name
-from moai.meta import METADATA_FORMATS
-
 XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
-
-class OAIDC(MetaDataFormat):
+  
+class OAIDC(object):
     """The standard OAI Dublin Core metadata format.
     
     Every OAI feed should at least provide this format.
 
     It is registered under the name 'oai_dc'
     """
-    
-    name('oai_dc')
     
     def __init__(self, prefix, config, db):
         self.prefix = prefix
@@ -26,6 +21,12 @@ class OAIDC(MetaDataFormat):
                    'dc':'http://purl.org/dc/elements/1.1/'}
         self.schemas = {'oai_dc': 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd'}
         
+    def get_namespace(self):
+        return self.ns[self.prefix]
+
+    def get_schema_location(self):
+        return self.schemas[self.prefix]
+    
     def __call__(self, element, metadata):
 
         data = metadata.record
@@ -51,13 +52,11 @@ class OAIDC(MetaDataFormat):
         
         element.append(oai_dc)
 
-class MODS(MetaDataFormat):
+class MODS(object):
     """This is the minimods formats as defined by DARE.
 
     It is registered as prefix 'mods'.'
     """
-    
-    name('mods')
     
     def __init__(self, prefix, config, db):
         self.prefix = prefix
@@ -71,6 +70,13 @@ class MODS(MetaDataFormat):
         self.schemas = {
            'mods': 'http://www.loc.gov/standards/mods/v3/mods-3-2.xsd'}
         
+        
+    def get_namespace(self):
+        return self.ns[self.prefix]
+
+    def get_schema_location(self):
+        return self.schemas[self.prefix]
+    
     def __call__(self, element, metadata):
 
         data = metadata.record
