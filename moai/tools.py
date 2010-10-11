@@ -1,18 +1,74 @@
 import sys
+import os
 import time
 import logging
 import logging.handlers
 import datetime
+import pkg_resources
+import ConfigParser
+
 from optparse import OptionParser
 
-from moai.core import MOAI, __version__                   
-from moai.utils import (get_moai_log,
-                        parse_config_file,
+from moai.utils import (parse_config_file,
                         get_duration,
                         ProgressBar)
+
+VERSION = pkg_resources.working_set.by_key['moai'].version
                  
-def update_database(configfile, configname, extension_modules):
-    profile, options, moai = initialize('update_database', configfile, configname, extension_modules)
+def update_moai():
+    usage = "usage: %prog [options] profilename"
+    version = "%%prog %s" % VERSION
+
+    parser = OptionParser(usage, version=version)
+
+    parser.add_option("-v", "--verbose", dest="verbose",
+                      help="print logging at info level",
+                      action="store_true")
+    parser.add_option('-d', '--debug', dest='debug',
+                      help="print traceback and quit on error",
+                      action='store_true')
+    parser.add_option("-q", "--quiet", dest="quiet",
+                      help="be quiet, do not output and info",
+                      action="store_true")
+    parser.add_option("", "--config", dest="config",
+                      help="specify settings file",
+                      action="store")
+    parser.add_option("", "--date", dest="from_date",
+                      help="Only update database from a specific date",
+                      action="store")
+        
+    options, args = parser.parse_args()
+    if not len(args):
+        sys.stderr.write('No profile name specified, use --help for more info\n')
+        sys.exit(1)
+    profile_name = args[0]
+    if options.config:
+        config_path = options.config
+    else:
+        config_path = os.path.join(
+            os.path.dirname(os.path.abspath(os.path.dirname(sys.argv[0]))),
+            'settings.ini')
+    if not os.path.isfile(config_path):
+        sys.stderr.write('No config_path file found at %s,\n'
+                         'Start script from other directory '
+                         'or use --config_path option\n''' % config_path)
+        sys.exit(1)
+    configfile = ConfigParser.ConfigParser()
+    configfile.read(config_path)
+    for section in configfile.sections():
+        if section == 'app:%s' % profile_name:
+            break
+    else:
+        sys.stderr.write('unknown profile: %s\n' % profile_name)
+        sys.exit(1)
+        raise ValueError('No such profile found: %s' % profile_name)
+
+    config = {}
+    for option in configfile.options(section):
+        config[option] = configfile.get(section, option)
+
+        
+    import ipdb; ipdb.set_trace()
     
     updater = profile.get_database_updater()
     progress = ProgressBar()
@@ -117,58 +173,3 @@ def update_database(configfile, configname, extension_modules):
             profile.log.error('Error while running plugin %s:\n%s' % (name, err))
             if options.debug:
                 raise
-            
-def start_development_server(configfile, configname, extension_modules):
-    profile, options, moai = initialize('start_server', configfile, configname, extension_modules)
-    profile.start_development_server()
-
-def initialize(script, configfile, configname, extension_modules):
-    usage = "usage: %prog [options]"
-    version = "%%proc %s" % __version__
-
-    parser = OptionParser(usage, version=version)
-
-    parser.add_option("-v", "--verbose", dest="verbose",
-                      help="print logging at info level",
-                      action="store_true")
-    parser.add_option('-d', '--debug', dest='debug',
-                      help="print traceback and quit on error",
-                      action='store_true')
-    parser.add_option("-q", "--quiet", dest="quiet",
-                      help="be quiet, do not output and info",
-                      action="store_true")
-    parser.add_option("", "--config", dest="config",
-                      help="do not use default config profile (%s)" % configname,
-                      action="store")
-    
-    if script == 'update_database':
-        parser.add_option("", "--date", dest="from_date",
-                      help="Only update database from a specific date",
-                      action="store")
-        
-    options, args = parser.parse_args()
-
-    if options.config:
-        configname = options.config
-        
-    log = get_moai_log()
-
-    moai = MOAI(log,
-                options.verbose,
-                options.debug)
-
-    for module_name in extension_modules:
-        moai.add_extension_module(module_name)
-    config = moai.get_configuration(configname)
-    if config is None:
-        msg = 'Unknown configuration: "%s", exiting..' % configname
-        log.error(msg)
-        print >> sys.stderr, msg
-        sys.exit(1)
-
-    log.info('Initializing configuration profile "%s"' % configname)
-    profile = config(log,
-                     parse_config_file(configfile, configname))
-    return profile, options, moai
-
-    
