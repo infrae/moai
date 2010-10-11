@@ -236,12 +236,12 @@ class MODS(object):
 
         
         classifications = data['metadata'].get('classification', [])
-        for classification in data['metadata'].get('classification', []):
+        for classification in classifications:
             if classification.count('#') == 1:
                 authority, value = classification.split('#')
                 mods.append(MODS.classification(value, authority=authority))
             else:
-                mods.append(MODS.classification(classsification))
+                mods.append(MODS.classification(classification))
         
         subjects = data['metadata'].get('subject', [])
         if subjects:
