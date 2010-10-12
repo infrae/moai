@@ -125,11 +125,6 @@ class OAIServer(object):
     
     def _listQuery(self, set=None, from_=None, until=None, 
                    cursor=0, batch_size=10, identifier=None):
-
-        if identifier:
-            identifier = self.config.get_internal_id(identifier)
-        if set:
-            set = self.config.get_internal_set_id(set)
             
         now = datetime.now()
         if until != None and until > now:

@@ -111,7 +111,7 @@ class Database(object):
             
     def update_record(self, oai_id, modified, deleted, sets, data):
         # adds a record, call flush to actually store in db
-        data['sets'] = sets.keys()
+        data['sets'] = sets
         data = json.dumps(data)
         self._cache['records'][oai_id] = (dict(modified=modified,
                                                deleted=deleted,

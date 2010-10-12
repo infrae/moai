@@ -15,14 +15,15 @@ class ExampleContent(XMLContentObject):
         doc = etree.parse(path)
         self.root = doc.getroot()
 
-        self.id = self.xpath('ex:id/text()', 'id', unicode, required=True)
+        id = self.xpath('ex:id/text()', 'id', unicode, required=True)
+        self.id = 'oai:example-%s' % id
         self.modified = datetime(*time.gmtime(os.path.getmtime(path))[:6])
         self.deleted = False
         self.sets = {}
         self.sets[u'example'] = {'name':u'example',
                                  'description':u'An Example Set'}
         
-        self.data = {}
+        self.data = {'uri': 'http://example.org/data/%s' % id}
         for el in self.root:
             tagname = el.tag.split('}', 1)[-1]
             if tagname in ['author', 'asset']:
@@ -32,7 +33,10 @@ class ExampleContent(XMLContentObject):
                     value[s_el.tag.split('}', 1)[-1]] = text
             else:
                 value = el.text.strip().decode('utf8')
-            self.data.setdefault(tagname,[]).append(value)
+            self.data.setdefault(
+                {'abstract': 'description',
+                 'issued': 'date',
+                 }.get(tagname, tagname),[]).append(value)
 
 
         if 'public' in self.data['access']:
