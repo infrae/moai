@@ -5,13 +5,17 @@ import logging
 import logging.handlers
 import datetime
 import pkg_resources
+from pkg_resources import iter_entry_points
 import ConfigParser
 
 from optparse import OptionParser
 
 from moai.utils import (parse_config_file,
                         get_duration,
+                        get_moai_log,
                         ProgressBar)
+from moai.update import DatabaseUpdater
+from moai.database import Database
 
 VERSION = pkg_resources.working_set.by_key['moai'].version
                  
@@ -55,22 +59,39 @@ def update_moai():
         sys.exit(1)
     configfile = ConfigParser.ConfigParser()
     configfile.read(config_path)
-    for section in configfile.sections():
-        if section == 'app:%s' % profile_name:
-            break
-    else:
-        sys.stderr.write('unknown profile: %s\n' % profile_name)
-        sys.exit(1)
-        raise ValueError('No such profile found: %s' % profile_name)
-
+    profiles = []
     config = {}
-    for option in configfile.options(section):
-        config[option] = configfile.get(section, option)
+    for section in configfile.sections():
+        if not configfile.has_option(section, 'use'):
+            continue
+        if configfile.get(section, 'use') == 'egg:moai':
+            profiles.append(section.split(':', 1)[1])
+        if profile_name == section.split(':', 1)[1]:
+            for option in configfile.options(section):
+                config[option] = configfile.get(section, option)
+            
+    if not profile_name in profiles:
+        sys.stderr.write('unknown profile: %s\n' % profile_name)
+        sys.stderr.write('known profiles are: %s\n' % ', '.join(profiles))
+        sys.exit(1)
 
-        
-    import ipdb; ipdb.set_trace()
+    database = Database(config['database'])
+    for content_point in iter_entry_points(group='moai.content',
+                                           name=config['content']):
+        content_class = content_point.load()
+
+    provider_name = config['provider'].split(':', 1)[0]
+    for provider_point in iter_entry_points(group='moai.provider',
+                                           name=provider_name):
+        provider = provider_point.load()(config['provider'])
+
+    log = get_moai_log()
+    updater = DatabaseUpdater(provider,
+                              content_class,
+                              database,
+                              log,
+                              flush_threshold=-1)
     
-    updater = profile.get_database_updater()
     progress = ProgressBar()
     error_count = 0
     starttime = time.time()
@@ -110,7 +131,7 @@ def update_moai():
         msg_count = ('%%0.%sd/%%s' % len(str(total))) % (count, total)
         if not error is None:
             error_count += 1
-            profile.log.error('%s %s' % (msg_count, error.logmessage()))
+            log.error('%s %s' % (msg_count, error.logmessage()))
             if options.debug:
                 print >> sys.stderr, '\n'
                 import traceback
@@ -121,7 +142,7 @@ def update_moai():
         elif options.quiet:
             pass
         elif options.verbose:
-            profile.log.info('%s Added %s'  % (msg_count, id))
+            log.info('%s Added %s'  % (msg_count, id))
         else:
             progress.tick(count, total)
         updated.append(id)
@@ -131,7 +152,7 @@ def update_moai():
 
     duration = get_duration(starttime)
     msg = 'Updating database with %s objects took %s' % (total, duration)
-    profile.log.info(msg)
+    log.info(msg)
     if not options.verbose and not options.quiet:
         print >> sys.stderr, msg
 
@@ -140,36 +161,7 @@ def update_moai():
         if error_count > 1:
             multi = 's'
         msg = '%s error%s occurred during updating' % (error_count, multi)
-        profile.log.warning(msg)
+        log.warning(msg)
         if not options.verbose and not options.quiet:
             print >> sys.stderr, msg
 
-    plugin_names = moai.get_plugin_names()
-    configured_plugins = profile.config.get('plugins', [])
-    plugin_names = [n for n in plugin_names if n in configured_plugins]
-   
-    if len(plugin_names) == 0:
-        sys.exit(0)
-    
-    for num, name in enumerate(plugin_names):
-        num += 1
-        msg = 'Running plugin %s/%s: %s' % (num,
-                                            len(plugin_names),
-                                            name)
-        if not options.verbose and not options.quiet:
-            print >> sys.stderr, msg
-        profile.log.info(msg)
-        config = parse_config_file(configfile, name)
-
-        plugin = moai.get_plugin(name)(updater.db,
-                                       profile.log,
-                                       config)
-        try:
-            plugin.run(updated)
-        except Exception, err:
-            errname = type(err).__name__
-            if not options.quiet:
-                print >> sys.stderr, '-> %s: %s' % (errname, err)
-            profile.log.error('Error while running plugin %s:\n%s' % (name, err))
-            if options.debug:
-                raise

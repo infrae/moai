@@ -12,8 +12,15 @@ class FileBasedContentProvider(object):
     """
     implements(IContentProvider)
 
-    def __init__(self, path, content_filter="*"):
-        self._path = path
+    def __init__(self, uri, content_filter="*"):
+        assert uri.startswith('file://'), 'unknown uri format'
+        path = uri[7:]
+        basedir, filename = os.path.split(path)
+        if '*' in filename or '?' in filename:
+            content_filter = filename
+            self._path = basedir
+        else:
+            self._path = path
         self._filter = content_filter
         self._content = {}
 

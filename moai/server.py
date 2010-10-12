@@ -25,11 +25,10 @@ class Server(object):
 
     implements(IServer)
 
-    def __init__(self, base_url, db, config, content):
+    def __init__(self, base_url, db, config):
         self.base_url = base_url
         self._db = db
         self._config = config
-        self._content = content
 
     def download_asset(self, req, url, config):
         """Download an asset

@@ -1,5 +1,4 @@
 import os
-from pkg_resources import iter_entry_points
 
 from webob import Request, Response
 
@@ -82,19 +81,12 @@ def app_factory(global_config,
     formats = formats.split()
     admin_email = admin_email.split()
 
-    for content_point in iter_entry_points(group='moai.content', name=content):
-        content_class = content_point.load()
-        break
-    else:
-        raise ValueError('No such content profile: %s' % content)
-
     database = Database(database)
     feedconfig = FeedConfig(name,
                             url,
                             admin_emails=admin_email,
                             metadata_prefixes=formats)
-    content = content_class()
-    server = Server(url, database, feedconfig, content_class)
+    server = Server(url, database, feedconfig)
     return MOAIWSGIApp(server)
 
 class FileIterable(object):

@@ -75,8 +75,7 @@ class OAIServer(object):
     
     def listSets(self, cursor=0, batch_size=20):
         for set in self.db.oai_sets(cursor, batch_size):
-            oai_id = self.config.get_setspec_id(set['id'])
-            yield [oai_id, set['name'], set['description']]
+            yield [set['id'], set['name'], set['description']]
 
     def listRecords(self, metadataPrefix, set=None, from_=None, until=None,
                     cursor=0, batch_size=10):
@@ -109,8 +108,8 @@ class OAIServer(object):
 
     def _createHeader(self, record):
         oai_id = self.config.get_oai_id(record['record']['id'])
-        datestamp = record['record']['when_modified']
-        sets = [self.config.get_setspec_id(s) for s in record['sets']]
+        datestamp = record['record']['modified']
+        sets = record['sets']
         deleted = record['record']['deleted']
         for deleted_set in self.config.sets_deleted:
             if deleted_set in record['sets']:

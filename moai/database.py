@@ -1,4 +1,5 @@
 import datetime
+import json
 
 import sqlalchemy as sql
 
@@ -10,14 +11,12 @@ class Database(object):
 
     def __init__(self, dburi=None):
         self._uri = dburi
-        self.db = self._connect()
-        self.records = self.db.tables['records']
-        self.metadata = self.db.tables['metadata']
-        self._record_id = 0
-        self._record_cache = []
-        self._metadata_cache = []
-        self._set_ids = set(self._get_set_ids())
-    
+        self._db = self._connect()
+        self._records = self._db.tables['records']
+        self._sets = self._db.tables['sets']
+        self._setrefs = self._db.tables['setrefs']
+        self._reset_cache()
+        
     def _connect(self):
         dburi = self._uri
         if dburi is None:
@@ -25,231 +24,144 @@ class Database(object):
             
         engine = sql.create_engine(dburi)
         db = sql.MetaData(engine)
-
-        sql.Table('records', db,
-                  sql.Column('record_id', sql.Integer, primary_key=True),
-                  sql.Column('name', sql.Unicode, unique=True, index=True),
-                  sql.Column('when_modified', sql.DateTime, index=True),
-                  sql.Column('deleted', sql.Boolean),
-                  sql.Column('content_type', sql.Unicode),
-                  sql.Column('is_set', sql.Boolean),
-                  sql.Column('is_asset', sql.Boolean),
-                  sql.Column('sets', sql.Unicode)
-                  )
         
-        sql.Table('metadata', db,
-                  sql.Column('metadata_id', sql.Integer, primary_key=True),
-                  sql.Column('record_id', sql.Integer,
-                             sql.ForeignKey('records.record_id'), index=True),
-                  sql.Column('field', sql.String),
-                  sql.Column('value', sql.Unicode),
-                  sql.Column('reference', sql.Integer)
-                  )
+        sql.Table('records', db,
+                  sql.Column('record_id', sql.Unicode, primary_key=True),
+                  sql.Column('modified', sql.DateTime, index=True),
+                  sql.Column('deleted', sql.Boolean),
+                  sql.Column('data', sql.String))
+        
+        sql.Table('sets', db,
+                  sql.Column('set_id', sql.Unicode, primary_key=True),
+                  sql.Column('hidden', sql.Boolean),
+                  sql.Column('name', sql.Unicode),
+                  sql.Column('description', sql.Unicode))
 
+        sql.Table('setrefs', db,
+                  sql.Column('record_id', sql.Integer, 
+                             sql.ForeignKey('records.record_id'),
+                             index=True, primary_key=True),
+                  sql.Column('set_id', sql.Integer,
+                             sql.ForeignKey('sets.set_id'),
+                             index=True, primary_key=True))
+        
         db.create_all()
         return db
 
-    def _get_set_ids(self):
-        for record in self.records.select(
-            self.records.c.is_set == True).execute():
-            yield record.name
-        
-    def _get_record_id(self, id):
-        result = None
-        for record in self.records.select(
-            self.records.c.name == id).execute():
-            result = record['record_id']
-        return result
-    
-    def get_record(self, id):
-        result = None
-        for record in self.records.select(
-            self.records.c.name == id).execute():
+    def flush(self):
+        oai_ids = set()
+        for row in sql.select([self._records.c.record_id]).execute():
+            oai_ids.add(row[0])
+        for row in sql.select([self._sets.c.set_id]).execute():
+            oai_ids.add(row[0])
 
-            result = {'id': record['name'],
-                      'deleted': record['deleted'],
-                      'is_set': record['is_set'],
-                      'content_type': record['content_type'],
-                      'when_modified': record['when_modified'],
-                      }
-            break
+        deleted_records = []
+        deleted_sets = []
+        deleted_setrefs = []
+
+        inserted_records = []
+        inserted_sets = []
+        inserted_setrefs = []
+
         
-        return result
+        for oai_id, item in self._cache['records'].items():
+            if oai_id in oai_ids:
+                # record allready exists
+                deleted_records.append(oai_id)
+            item['record_id'] = oai_id
+            inserted_records.append(item)
                 
-    def get_metadata(self, id):
-        result = {}
-        for record in self.metadata.select(
-            sql.and_(self.records.c.name == id,
-                     self.metadata.c.record_id == self.records.c.record_id)).execute():
+        for oai_id, item in self._cache['sets'].items():
+            if oai_id in oai_ids:
+                # set allready exists
+                deleted_sets.append(oai_id)
+            item['set_id'] = oai_id
+            inserted_sets.append(item)
 
-            result.setdefault(record['field'], []).append(record['value'])
+        for record_id, set_ids in self._cache['setrefs'].items():
+            deleted_setrefs.append(record_id)
+            for set_id in set_ids:
+                inserted_setrefs.append(
+                    {'record_id':record_id, 'set_id': set_id})
 
-        return result or None
+        # delete all processed records before inserting
+        if deleted_records:
+            self._records.delete().execute(
+                [{'record_id': rid} for rid in deleted_records])
+        if deleted_sets:
+            self._sets.delete().execute(
+                [{'set_id': sid} for sid in deleted_sets])
+        if deleted_setrefs:
+            self._setrefs.delete().execute(
+                [{'record_id': rid} for rid in deleted_setrefs])
 
-    def get_sets(self, id):
-        result = []
+        # batch inserts
+        if inserted_records:
+            self._records.insert().execute(inserted_records)
+        if inserted_sets:
+            self._sets.insert().execute(inserted_sets)
+        if inserted_setrefs:
+            self._setrefs.insert().execute(inserted_setrefs)
 
-        for record in self.records.select(
-            self.records.c.name == id).execute():
-            result = record['sets'].strip().split(' ')
+        self._reset_cache()
+
+    def _reset_cache(self):
+        self._cache = {'records': {}, 'sets': {}, 'setrefs': {}}
         
-        return result
-
-    def get_assets(self, id):
-        assets = self.get_metadata(id)
-        if assets is None:
-            return []
-        assets = assets.get('asset', [])
-        result = []
-        for asset_id in assets:
-            md = self.get_metadata(asset_id)
-            data = {}
-            data['mimetype'] = md.pop('mimetype')[0]
-            data['url'] = md.pop('url')[0]
-            data['absolute_uri'] = md.pop('absolute_uri')[0]
-            data['filename'] = md.pop('filename')[0]
-            data['md5'] = md.pop('md5')[0]
-            data['metadata'] = md
-            result.append(data)
-        
-        return result
-    
-    def get_set(self, id):
-        md = self.get_metadata(id)
-        if not md:
+            
+    def update_record(self, oai_id, modified, deleted, sets, data):
+        # adds a record, call flush to actually store in db
+        data['sets'] = sets.keys()
+        data = json.dumps(data)
+        self._cache['records'][oai_id] = (dict(modified=modified,
+                                               deleted=deleted,
+                                               data=data))
+        self._cache['setrefs'][oai_id] = []
+        for set_id in sets:
+            self._cache['sets'][set_id] = dict(
+                name = sets[set_id]['name'],
+                description = sets[set_id].get('description'),
+                hidden = sets[set_id].get('hidden', False))
+            self._cache['setrefs'][oai_id].append(set_id)
+            
+    def get_record(self, oai_id):
+        row = self.records.select(
+            self._records.c.record_id == oai_id).execute().fetch_one()
+        if row is None:
             return {}
-        result = {'name': md['name'][0],
-                  'description': md['description'][0],
-                  'id': id}
-        return result
+        return dict(row)
 
-    def remove_content(self, id):
-        rid = self._get_record_id(id)
-        for result in self.records.delete(self.records.c.record_id == rid).execute():
+    def get_set(self, oai_id):
+        row = self.records.select(
+            self._sets.c.set_id == oai_id).execute().fetch_one()
+        if row is None:
+            return {}
+        return dict(row)
+
+    def remove_record(self, oai_id):
+        for result in self._records.delete(
+            self._records.c.record_id == oai_id).execute():
             pass
-        self._remove_metadata(rid)
-        return True
+        for result in self._setrefs.delete(
+            self._setrefs.c.record_id == oai_id).execute():
+            pass
 
-    def flush_update(self):
-        self.records.insert().execute(self._record_cache)
-        self._record_cache = []
-        self.metadata.insert().execute(self._metadata_cache)
-        self._metadata_cache = []
-        
-    def add_content(self, id, sets, record_data, meta_data, assets_data):
-        record_id = self._add_record(record_data, sets)
-        self._add_metadata(record_id, meta_data)
-
-        for num, asset_data in enumerate(assets_data):
-            asset_name = u'%s:asset:%s' % (id, num)
-            self._add_asset(record_id, asset_name, asset_data)
-        
-        return record_id
-
-    def _add_record(self, record_data, sets):
-        self._record_id += 1
-        record_id = self._record_id
-        rowdata = {'record_id': record_id,
-                   'name': record_data['id'],
-                   'deleted': record_data['deleted'],
-                   'is_set': record_data['is_set'],
-                   'is_asset': record_data.get('is_asset', False),
-                   'sets': u' %s ' % ' '.join(sets),
-                   'content_type': record_data['content_type'],
-                   'when_modified': record_data['when_modified']}
-        
-        self._record_cache.append(rowdata)
-
-        for set in sets:
-            # add dynamic sets
-            if not set in self._set_ids:
-                self.add_set(set, set)
-        
-        return record_id
-
-    def _add_metadata(self, record_id, meta_data):
-        for key, vals in meta_data.items():
-            for val in vals:
-                self._metadata_cache.append({'field': key,
-                                             'value': val,
-                                             'record_id': record_id})
-
-    def _remove_metadata(self, record_id):
-        asset_ids = []
-        self.metadata.delete(self.metadata.c.record_id == record_id).execute()
-
-    def _add_asset(self, record_id, asset_name, asset_data):
-
-        # an asset is just a record with is_asset == True
-        record_data = {'id': asset_name,
-                       'deleted': False,
-                       'is_set': False,
-                       'is_asset': True,
-                       'content_type': u'',
-                       'when_modified': datetime.datetime.now()
-                       }
-
-        asset_id = self._add_record(record_data, [])
-
-        # assets have required metadata        
-        meta_data = {'filename': [asset_data['filename']],
-                    'url': [asset_data['url']],
-                    'absolute_uri': [asset_data['absolute_uri']],
-                    'md5': [asset_data['md5']],
-                    'mimetype': [asset_data['mimetype']],
-                   }
-        
-        # additional metada can be provided
-        meta_data.update(asset_data['metadata'])
-        
-        self._add_metadata(asset_id, meta_data)
-        # relate the asset record to the publication record
-        self._add_metadata(record_id, {u'asset': [asset_name]})
-
-    def add_set(self, set_id, name, description=None):
-        
-        if description is None:
-            description = [u'']
-        elif not isinstance(description, list):
-            description = [description]
-
-        record_data = {'id': set_id,
-                       'content_type': u'set',
-                       'deleted': False,
-                       'sets': u'',
-                       'is_set': True,
-                       'is_asset': False,
-                       'when_modified': datetime.datetime.now()}
-        
-        meta_data  =  {'id':[set_id],
-                       'name': [name],
-                       'description': description}
-
-
-        if not set_id in self._set_ids:
-            # add a new set
-            record_id = self.add_content(set_id, [], record_data, meta_data, {})
-            self._set_ids.add(set_id)
-        else:
-            # set is allready there, update the metadata
-            record_id = self._get_record_id(set_id)
-            self._remove_metadata(record_id)
-            self._add_metadata(record_id, meta_data)
-
-        return record_id
-                         
-    def remove_set(self, id):
-        self.remove_content(id)
+    def remove_set(self, oai_id):
+        for result in self._sets.delete(
+            self._sets.c.set_id == oai_id).execute():
+            pass
+        for result in self._setrefs.delete(
+            self._setrefs.c.set_id == oai_id).execute():
+            pass
 
     def oai_sets(self, offset=0, batch_size=20):
-        for row in self.records.select(self.records.c.is_set==True
+        for row in self._sets.select(
+              self._sets.c.hidden == False
             ).offset(offset).limit(batch_size).execute():
-            result = {}
-            for data in self.metadata.select(
-                self.metadata.c.record_id==row['record_id']).execute():
-                result[data.field] = data.value
-            yield result
-
+            yield {'id': row.set_id,
+                   'name': row.name,
+                   'description': row.description}
+            
     def oai_query(self,
                   offset=0,
                   batch_size=20,
@@ -268,26 +180,26 @@ class Database(object):
             until_date = datetime.datetime.now()
 
 
-        query = self.records.select(
-            sql.and_(self.records.c.is_set == False,
-                     self.records.c.is_asset == False),
-            order_by = [sql.desc(self.records.c.when_modified)])
+        query = self._records.select(
+            order_by=[sql.desc(self._records.c.modified)])
 
         # filter dates
-        query.append_whereclause(self.records.c.when_modified <= until_date)
+        query.append_whereclause(self._records.c.modified <= until_date)
 
         if not identifier is None:
-            query.append_whereclause(self.records.c.name == identifier)
+            query.append_whereclause(self._records.c.record_id == identifier)
 
         if not from_date is None:
-            query.append_whereclause(self.records.c.when_modified >= from_date)
+            query.append_whereclause(self._records.c.modified >= from_date)
 
         # filter sets
 
         setclauses = []
         for set_id in sets:
             setclauses.append(
-                self.records.c.sets.like(u'%% %s %%' % set_id))
+                sql.and_(
+                self._setrefs.c.set_id == set_id,
+                self._setrefs.c.record_id == self._records.c.record_id))
             
         if setclauses:
             query.append_whereclause(sql.or_(*setclauses))
@@ -297,7 +209,9 @@ class Database(object):
         filter_setclauses = []
         for set_id in filter_sets:
             filter_setclauses.append(
-                self.records.c.sets.like(u'%% %s %%' % set_id))
+                sql.and_(
+                self._setrefs.c.set_id == set_id,
+                self._setrefs.c.record_id == self._records.c.record_id))
             
         if filter_setclauses:
             query.append_whereclause(sql.or_(*filter_setclauses))
@@ -307,31 +221,25 @@ class Database(object):
         not_setclauses = []
         for set_id in not_sets:
             not_setclauses.append(
-                self.records.c.sets.like(u'%% %s %%' % set_id))
-
+                sql.and_(
+                self._setrefs.c.set_id == set_id,
+                self._setrefs.c.record_id == self._records.c.record_id))
             
         if not_setclauses:
-            query.append_whereclause(sql.not_(
-                sql.or_(*not_setclauses)))
+            query.append_whereclause(sql.not_(sql.or_(*not_setclauses)))
 
         for row in query.distinct().offset(offset).limit(batch_size).execute():
-            record = dict(row)
-            record['id'] = record['name']
-            del record['name']
-            record['sets'] = record['sets'].strip().split(' ')
-            if record['sets'] == [u'']:
-                record['sets'] = []
+            record = {'id': row.record_id,
+                      'deleted': row.deleted,
+                      'modified': row.modified,
+                      'data': json.loads(row.data)}
             yield {'record': record,
-                   'sets': record['sets'],
-                   'metadata': self.get_metadata(row['name']) or {},
+                   'sets': record['data']['sets'],
+                   'metadata': record['data'],
                    'assets':{}}
        
     def empty_database(self):
-        self.records.delete().execute()
-        self.metadata.delete().execute()
-
-        self._record_id = 0
-        self._record_cache = []
-        self._metadata_cache = []
-        #self._set_ids = set(self._get_set_ids())
+        self._records.delete().execute()
+        self._sets.delete().execute()
+        self._setrefs.delete().execute()
 

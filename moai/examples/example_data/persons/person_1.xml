@@ -1,8 +1,0 @@
-<person xmlns="http://example.org">
-    <id>person:1</id>
-    <name>Doe, J.</name>
-    <surname>Doe</surname>
-    <firstname>Joe</firstname>
-    <initials>J.</initials>
-    <dai>12345</dai>
-</person>
