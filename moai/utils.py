@@ -112,11 +112,11 @@ class XPath(object):
         result = []
         for value in self.strings(xpath):
             try:
-                value = float(value)
+                value = int(value)
                 result.append(value)
             except:
                 try:
-                    value = int(value)
+                    value = float(value)
                     result.append(value)
                 except:
                     raise ValueError('Unknown number format: %s' % value)
@@ -128,9 +128,9 @@ class XPath(object):
     def booleans(self, xpath):
         result = []
         for value in self.strings(xpath):
-            if value in ['true', 'True', 'yes']:
+            if value.lower() in ['true', 'yes']:
                 result.append(True)
-            elif value in ['false', 'False', 'no']:
+            elif value.lower() in ['false', 'no']:
                 result.append(False)
             else:
                 raise ValueError('Unknown boolean format: %s' % value)
@@ -171,7 +171,8 @@ class XPath(object):
                     result.append(stuff.tag.split('}', 1)[1].decode('utf8'))
                 else:
                     result.append(stuff.tag.decode('utf8'))
-
+        return result
+    
     def __call__(self, xpath):
         result = self.doc.xpath(xpath, namespaces=self.nsmap)
         return result

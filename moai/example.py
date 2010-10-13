@@ -37,7 +37,7 @@ class ExampleContent(object):
                      'title': [xpath.string('//x:title')],
                      'subject': xpath.strings('//x:subject'),
                      'description': [xpath.string('//x:abstract')],
-                     'creator': [d['name'] for d in author_data],
+                     'creator': [d['name'][0] for d in author_data],
                      'author_data': author_data,
                      'language': [u'en'],
                      'date': [xpath.string('//x:issued')]}

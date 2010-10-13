@@ -49,6 +49,7 @@ setup(
     'sqlalchemy',
     'simplejson'
     ],
+    test_suite='moai.test.suite'
 )
 
 

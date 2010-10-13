@@ -138,7 +138,6 @@ class Database(object):
                    prefix="record %s" % oai_id,
                    suffix='for parameter "dict"')
         
-        data['sets'] = sets
         data = json.dumps(data)
         self._cache['records'][oai_id] = (dict(modified=modified,
                                                deleted=deleted,
@@ -152,34 +151,60 @@ class Database(object):
             self._cache['setrefs'][oai_id].append(set_id)
             
     def get_record(self, oai_id):
-        row = self.records.select(
-            self._records.c.record_id == oai_id).execute().fetch_one()
+        row = self._records.select(
+            self._records.c.record_id == oai_id).execute().fetchone()
         if row is None:
-            return {}
-        return dict(row)
+            return
+        record = {'id': row.record_id,
+                  'deleted': row.deleted,
+                  'modified': row.modified,
+                  'data': json.loads(row.data),
+                  'sets': self.get_setrefs(oai_id)}
+        return record
 
     def get_set(self, oai_id):
-        row = self.records.select(
-            self._sets.c.set_id == oai_id).execute().fetch_one()
+        row = self._sets.select(
+            self._sets.c.set_id == oai_id).execute().fetchone()
         if row is None:
-            return {}
-        return dict(row)
+            return
+        return {'id': row.set_id,
+                'name': row.name,
+                'description': row.description,
+                'hidden': row.hidden}
 
+    def get_setrefs(self, oai_id, include_hidden_sets=False):
+        set_ids = []
+        query = sql.select([self._setrefs.c.set_id])
+        query.append_whereclause(self._setrefs.c.record_id == oai_id)
+        if include_hidden_sets == False:
+            query.append_whereclause(
+                sql.and_(self._sets.c.set_id == self._setrefs.c.set_id,
+                         self._sets.c.hidden == include_hidden_sets))
+        
+        for row in query.execute():
+            set_ids.append(row[0])
+        set_ids.sort()
+        return set_ids
+
+    def record_count(self):
+        return sql.select([sql.func.count('*')],
+                          from_obj=[self._records]).execute().fetchone()[0]
+
+    def set_count(self):
+        return sql.select([sql.func.count('*')],
+                          from_obj=[self._sets]).execute().fetchone()[0]
+        
     def remove_record(self, oai_id):
-        for result in self._records.delete(
-            self._records.c.record_id == oai_id).execute():
-            pass
-        for result in self._setrefs.delete(
-            self._setrefs.c.record_id == oai_id).execute():
-            pass
+        self._records.delete(
+            self._records.c.record_id == oai_id).execute()
+        self._setrefs.delete(
+            self._setrefs.c.record_id == oai_id).execute()
 
     def remove_set(self, oai_id):
-        for result in self._sets.delete(
-            self._sets.c.set_id == oai_id).execute():
-            pass
-        for result in self._setrefs.delete(
-            self._setrefs.c.set_id == oai_id).execute():
-            pass
+        self._sets.delete(
+            self._sets.c.set_id == oai_id).execute()
+        self._setrefs.delete(
+            self._setrefs.c.set_id == oai_id).execute()
 
     def oai_sets(self, offset=0, batch_size=20):
         for row in self._sets.select(
@@ -259,9 +284,11 @@ class Database(object):
             record = {'id': row.record_id,
                       'deleted': row.deleted,
                       'modified': row.modified,
-                      'data': json.loads(row.data)}
+                      'data': json.loads(row.data),
+                      'sets': self.get_setrefs(row.record_id)
+                      }
             yield {'record': record,
-                   'sets': record['data']['sets'],
+                   'sets': record['sets'],
                    'metadata': record['data'],
                    'assets':{}}
        
