@@ -32,7 +32,7 @@ class OAIServer(object):
             baseURL=self.config.url,
             protocolVersion='2.0',
             adminEmails=self.config.admins,
-            earliestDatestamp=datetime(2001, 1, 1, 10, 00),
+            earliestDatestamp=self.db.oai_earliest_datestamp(),
             deletedRecord='transient',
             granularity='YYYY-MM-DDThh:mm:ssZ',
             compression=['identity'],
@@ -55,9 +55,6 @@ class OAIServer(object):
             'xmlns="http://oai.dlib.vt.edu/OAI/metadata/toolkit" '
             'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
             '<title>MOAI</title>'
-            '<author><name>Jasper Op de Coul</name>'
-            '<email>info@infrae.com / moai-dev@lists.infrae.com</email>'
-            '<institution>Infrae</institution></author>'
             '%s'
             '<URL>http://moai.infrae.com</URL>'
             '</toolkit>' % version)

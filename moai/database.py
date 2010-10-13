@@ -213,7 +213,15 @@ class Database(object):
             yield {'id': row.set_id,
                    'name': row.name,
                    'description': row.description}
-            
+
+    def oai_earliest_datestamp(self):
+        row = sql.select([self._records.c.modified],
+                         order_by=[sql.asc(self._records.c.modified)]
+                         ).limit(1).execute().fetchone()
+        if row:
+            return row[0]
+        return datetime.datetime(1970, 1, 1)
+    
     def oai_query(self,
                   offset=0,
                   batch_size=20,
