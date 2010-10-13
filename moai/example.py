@@ -4,44 +4,41 @@ from datetime import datetime
 
 from lxml import etree
 
-from moai.content import XMLContentObject
+from moai.utils import XPath
 
-class ExampleContent(XMLContentObject):
-
-    def update(self, path, provider):
+class ExampleContent(object):
+    def __init__(self, provider):
         self.provider = provider
-
-        self.nsmap = {'ex':'http://example.org/data'}
+        self.id = None
+        self.modified = None
+        self.deleted = None
+        self.data = None
+        self.sets = None
+        
+    def update(self, path):
         doc = etree.parse(path)
+        xpath = XPath(doc, nsmap={'x':'http://example.org/data'})
+        
         self.root = doc.getroot()
 
-        id = self.xpath('ex:id/text()', 'id', unicode, required=True)
+        id = xpath.string('//x:id')
         self.id = 'oai:example-%s' % id
-        self.modified = datetime(*time.gmtime(os.path.getmtime(path))[:6])
+        self.modified = xpath.date('//x:modified')
         self.deleted = False
-        self.sets = {}
-        self.sets[u'example'] = {'name':u'example',
-                                 'description':u'An Example Set'}
         
-        self.data = {'uri': 'http://example.org/data/%s' % id}
-        for el in self.root:
-            tagname = el.tag.split('}', 1)[-1]
-            if tagname in ['author', 'asset']:
-                value = {}
-                for s_el in el:
-                    text = s_el.text.strip().decode('utf8')
-                    value[s_el.tag.split('}', 1)[-1]] = text
-            else:
-                value = el.text.strip().decode('utf8')
-            self.data.setdefault(
-                {'abstract': 'description',
-                 'issued': 'date',
-                 }.get(tagname, tagname),[]).append(value)
+        self.sets = {u'example': {u'name':u'example',
+                                  u'description':u'An Example Set'}}
 
+        access = xpath.string('//x:access')
+        if access == 'public':
+            self.sets[u'public'] = {u'name':u'public',
+                                    u'description':u'Public access'}
+        elif access == 'private':
+            self.sets[u'private'] = {u'name':u'private',
+                                     u'description':u'Private access'}
 
-        if 'public' in self.data['access']:
-            self.sets[u'public'] = {'name':u'public',
-                                    'description':u'Public access'}
-        elif 'private' in self.data['access']:
-            self.sets[u'private'] = {'name':u'private',
-                                     'description':u'Private access'}
+        self.data = {'identifier': [u'http://example.org/data/%s' % id],
+                     'title': [xpath.string('//x:title')],
+                     'subject': xpath.strings('//x:subject'),
+                     'description': [xpath.string('//x:abstract')],
+                     'date': [xpath.string('//x:issued')]}

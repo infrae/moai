@@ -10,11 +10,9 @@ import ConfigParser
 
 from optparse import OptionParser
 
-from moai.utils import (parse_config_file,
-                        get_duration,
+from moai.utils import (get_duration,
                         get_moai_log,
                         ProgressBar)
-from moai.update import DatabaseUpdater
 from moai.database import Database
 
 VERSION = pkg_resources.working_set.by_key['moai'].version
@@ -43,9 +41,9 @@ def update_moai():
         
     options, args = parser.parse_args()
     if not len(args):
-        sys.stderr.write('No profile name specified, use --help for more info\n')
-        sys.exit(1)
-    profile_name = args[0]
+        profile_name = 'default'
+    else:
+        profile_name = args[0]
     if options.config:
         config_path = options.config
     else:
@@ -71,43 +69,44 @@ def update_moai():
                 config[option] = configfile.get(section, option)
             
     if not profile_name in profiles:
-        sys.stderr.write('unknown profile: %s\n' % profile_name)
-        sys.stderr.write('known profiles are: %s\n' % ', '.join(profiles))
+        if profile_name == 'default':
+            sys.stderr.write(
+                'No profile name specified, use --help for more info\n')
+        else:
+            sys.stderr.write('unknown profile: %s\n' % profile_name)
+        sys.stderr.write('(known profiles are: %s)\n' % ', '.join(profiles))
         sys.exit(1)
 
+    if options.from_date:
+        if 'T' in options.from_date:
+            fmt = '%Y-%m-%dT%H:%M:%S'
+        else:
+            fmt = '%Y-%m-%d'
+        from_date = datetime.datetime(
+            *time.strptime(options.from_date, fmt)[:6])
+    else:
+        from_date = None
+        
     database = Database(config['database'])
     for content_point in iter_entry_points(group='moai.content',
                                            name=config['content']):
-        content_class = content_point.load()
+        ContentClass = content_point.load()
 
     provider_name = config['provider'].split(':', 1)[0]
     for provider_point in iter_entry_points(group='moai.provider',
                                            name=provider_name):
         provider = provider_point.load()(config['provider'])
 
+
     log = get_moai_log()
-    updater = DatabaseUpdater(provider,
-                              content_class,
-                              database,
-                              log,
-                              flush_threshold=-1)
     
     progress = ProgressBar()
     error_count = 0
     starttime = time.time()
 
-    from_date = None
-    if options.from_date:
-        if 'T' in options.from_date:
-            from_date = datetime.datetime(*time.strptime(options.from_date,
-                                                         '%Y-%m-%dT%H:%M:%S')[:6])
-        else:
-            from_date = datetime.datetime(*time.strptime(options.from_date,
-                                                         '%Y-%m-%d')[:3])
-
     sys.stderr.write('Updating content provider..')
     count = 0    
-    for id in updater.update_provider_iterate(from_date):
+    for id in provider.update(from_date):
         if not options.quiet and not options.verbose:
             progress.animate('Updating content provider: %s' % id)
             count += 1
@@ -119,48 +118,76 @@ def update_moai():
                               'new/modified objects' % count)
         print >> sys.stderr
     
-    total = 0
-    updated = []
-    if options.debug:
-        supress_errors = False
-    else:
-        supress_errors = True
-    for count, total, id, error in updater.update_database_iterate(
-                                                supress_errors=supress_errors):
+    total = provider.count()
 
-        msg_count = ('%%0.%sd/%%s' % len(str(total))) % (count, total)
-        if not error is None:
-            error_count += 1
-            log.error('%s %s' % (msg_count, error.logmessage()))
+    count = 0
+    ignore_count = 0
+    error_count = 0
+    flush_threshold = 10000
+    for content_id in provider.get_content_ids():
+        count += 1
+        try:
+            raw_data = provider.get_content_by_id(content_id)
+        except Exception, err:
             if options.debug:
-                print >> sys.stderr, '\n'
-                import traceback
-                traceback.print_tb(error.tb)
-                print error.err, error.detail
-                sys.exit(1)
-            continue
-        elif options.quiet:
-            pass
-        elif options.verbose:
-            log.info('%s Added %s'  % (msg_count, id))
-        else:
+                raise
+            log.error('Error retrieving data %s from provider: %s' % (
+                content_id, str(err)))
+            error_count += 1
             progress.tick(count, total)
-        updated.append(id)
+            continue
 
-    if not options.quiet and not options.verbose:
-        print >> sys.stderr, '\n'
-
+        try:
+            content = ContentClass(provider)
+            success = content.update(raw_data)
+        except Exception, err:
+            if options.debug:
+                raise
+            log.error('Error converting data %s to content: %s' % (
+                content_id, str(err)))
+            error_count += 1
+            progress.tick(count, total)
+            continue
+        
+        if success is False:
+            log.warning('Ignoring %s' % content_id)
+            ignore_count += 1
+            progress.tick(count, total)
+            continue
+        
+        try:
+            database.update_record(content.id,
+                                   content.modified,
+                                   content.deleted,
+                                   content.sets,
+                                   content.data)
+        except Exception, err:
+            if options.debug:
+                raise
+            log.error('Error inserting %s into database: %s' % (
+                content.id, str(err)))
+            error_count += 1
+            progress.tick(count, total)
+            continue
+            
+        if count % flush_threshold == 0:
+            log.info('Flushing database')
+            database.flush()
+        progress.tick(count, total)
+        
+    log.info('Flushing database')
+    database.flush()
     duration = get_duration(starttime)
+    print >> sys.stderr, ''
     msg = 'Updating database with %s objects took %s' % (total, duration)
     log.info(msg)
     if not options.verbose and not options.quiet:
         print >> sys.stderr, msg
 
     if error_count:
-        multi = ''
-        if error_count > 1:
-            multi = 's'
-        msg = '%s error%s occurred during updating' % (error_count, multi)
+        msg = '%s error%s occurred during updating' % (
+            error_count,
+            {1: ''}.get(error_count, 's'))
         log.warning(msg)
         if not options.verbose and not options.quiet:
             print >> sys.stderr, msg

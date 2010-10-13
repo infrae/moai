@@ -3,6 +3,8 @@ import json
 
 import sqlalchemy as sql
 
+from moai.utils import check_type
+
 class Database(object):
     """Sql implementation of a database backend
     This implements the :ref:`IDatabase` interface, look there for
@@ -70,7 +72,7 @@ class Database(object):
                 deleted_records.append(oai_id)
             item['record_id'] = oai_id
             inserted_records.append(item)
-                
+
         for oai_id, item in self._cache['sets'].items():
             if oai_id in oai_ids:
                 # set allready exists
@@ -111,6 +113,31 @@ class Database(object):
             
     def update_record(self, oai_id, modified, deleted, sets, data):
         # adds a record, call flush to actually store in db
+
+        check_type(oai_id,
+                   unicode,
+                   prefix="record %s" % oai_id,
+                   suffix='for parameter "oai_id"')
+        check_type(modified,
+                   datetime.datetime,
+                   prefix="record %s" % oai_id,
+                   suffix='for parameter "modified"')
+        check_type(deleted,
+                   bool,
+                   prefix="record %s" % oai_id,
+                   suffix='for parameter "deleted"')
+        check_type(sets,
+                   dict,
+                   unicode_keys=True,
+                   unicode_values=True,
+                   recursive=True,
+                   prefix="record %s" % oai_id,
+                   suffix='for parameter "sets"')
+        check_type(data,
+                   dict,
+                   prefix="record %s" % oai_id,
+                   suffix='for parameter "dict"')
+        
         data['sets'] = sets
         data = json.dumps(data)
         self._cache['records'][oai_id] = (dict(modified=modified,

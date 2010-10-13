@@ -1,5 +1,6 @@
 import sys
 import os
+import datetime
 import time
 import logging
 from ConfigParser import ConfigParser
@@ -38,6 +39,157 @@ def get_duration(starttime):
     if h:
         duration = '%s hour%s, %s' % (int(h), {1:''}.get(h, 's'), duration)
     return duration
+
+def check_type(object,
+               expected_type,
+               unicode_keys=False,
+               unicode_values=False,
+               recursive=False,
+               prefix='',
+               suffix=''):
+
+    object_type = type(object)
+    if not isinstance(object, expected_type):
+        
+        raise TypeError(('%s expected "%s", got "%s" %s' % (
+            prefix,
+            expected_type.__name__,
+            object.__class__.__name__,
+            suffix)).strip())
+    if unicode_keys and object_type is dict:
+        check_type(object.keys(),
+                   list,
+                   unicode_values=True,
+                   prefix=prefix,
+                   suffix=suffix)
+    if unicode_values and object_type is dict:
+        check_type(object.values(),
+                   list,
+                   unicode_keys=unicode_keys,
+                   unicode_values=True,
+                   recursive=recursive,
+                   prefix=prefix,
+                   suffix=suffix)
+    if unicode_values and object_type is list:
+        for stuff in object:
+            if isinstance(stuff, str):
+                raise TypeError(('%s contains non unicode string "%s" %s' % (
+                    prefix,
+                    stuff,
+                    suffix)).strip())
+            if recursive:
+                if isinstance(stuff, list):
+                    check_type(stuff,
+                               list,
+                               unicode_keys=unicode_keys,
+                               unicode_values=True,
+                               recursive=True,
+                               prefix=prefix,
+                               suffix=suffix)
+                if isinstance(stuff, dict):
+                    check_type(stuff,
+                               dict,
+                               unicode_keys=unicode_keys,
+                               unicode_values=True,
+                               recursive=True,
+                               prefix=prefix,
+                               suffix=suffix)
+
+class XPath(object):
+    def __init__(self, doc, nsmap={}):
+        self.doc = doc
+        self.nsmap = nsmap
+
+    def string(self, xpath):
+        return (self.strings(xpath) or [None])[0]
+
+    def strings(self, xpath):
+        result = []
+        for stuff in self.doc.xpath(xpath, namespaces=self.nsmap):
+            if isinstance(stuff, str):
+                result.append(stuff.strip().decode('utf8'))
+            elif isinstance(stuff, unicode):
+                # convert to real unicode object, not lxml proxy
+                result.append(unicode(stuff.strip()))
+            elif hasattr(stuff, 'text'):
+                if isinstance(stuff.text, str):
+                    result.append(stuff.text.strip().decode('utf8'))
+                elif isinstance(stuff.text, unicode):
+                    # convert to real unicode object, not lxml proxy
+                    result.append(unicode(stuff.text.strip()))
+        return result
+    
+    def number(self, xpath):
+        return (self.numbers(xpath) or [None])[0]
+
+    def numbers(self, xpath):
+        result = []
+        for value in self.strings(xpath):
+            try:
+                value = float(value)
+                result.append(value)
+            except:
+                try:
+                    value = int(value)
+                    result.append(value)
+                except:
+                    raise ValueError('Unknown number format: %s' % value)
+        return result
+
+    def boolean(self, xpath):
+        return (self.booleans(xpath) or [None])[0]
+
+    def booleans(self, xpath):
+        result = []
+        for value in self.strings(xpath):
+            if value in ['true', 'True', 'yes']:
+                result.append(True)
+            elif value in ['false', 'False', 'no']:
+                result.append(False)
+            else:
+                raise ValueError('Unknown boolean format: %s' % value)
+        return result
+
+    def date(self, xpath):
+        return (self.dates(xpath) or [None])[0]
+
+    def dates(self, xpath):
+        result = []
+        for value in self.strings(xpath):
+            if 'T' in value:
+                if value.endswith('Z'):
+                    value = value[:-1] + ' UTC'
+                    fmt = '%Y-%m-%dT%H:%M:%S %Z'
+                else:
+                    fmt = '%Y-%m-%dT%H:%M:%S'
+            elif value.count('-') == 2:
+                fmt = '%Y-%m-%d'
+            elif value.count('/') == 2:
+                fmt = '%Y/%m/%d'
+            else:
+                fmt = '%Y%m%d'
+            try:
+                result.append(datetime.datetime.strptime(value, fmt))
+            except ValueError:
+                raise ValueError('Unknown date format: %s' % value)
+        return result
+
+    def tag(self, xpath):
+        return (self.tags(xpath) or [None])[0]
+
+    def tags(self, xpath):
+        result = []
+        for stuff in self.doc.xpath(xpath, namespaces=self.nsmap):
+            if hasattr(stuff, 'tag'):
+                if '}' in stuff.tag:
+                    result.append(stuff.tag.split('}', 1)[1].decode('utf8'))
+                else:
+                    result.append(stuff.tag.decode('utf8'))
+
+    def __call__(self, xpath):
+        result = self.doc.xpath(xpath, namespaces=self.nsmap)
+        return result
+
 
 class ProgressBar(object):
     def __init__(self, stream=sys.stderr, width=80):
