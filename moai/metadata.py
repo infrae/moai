@@ -1,6 +1,5 @@
 
 from lxml.builder import ElementMaker
-import simplejson
 
 XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
   
@@ -111,8 +110,8 @@ class MODS(object):
                 contributor_data.append(contributor)
 
             if data['metadata'].get('%s_data' % ctype):
-                contributor_data = [simplejson.loads(s) for s in data[
-                    'metadata']['%s_data' % ctype]]
+                contributor_data = [s for s in data['metadata'][
+                    '%s_data' % ctype]]
         
             if not contributor_data:            
                 contributor_data = [{'name':[a]} for a in data[

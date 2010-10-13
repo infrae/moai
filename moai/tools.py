@@ -1,8 +1,6 @@
 import sys
 import os
 import time
-import logging
-import logging.handlers
 import datetime
 import pkg_resources
 from pkg_resources import iter_entry_points

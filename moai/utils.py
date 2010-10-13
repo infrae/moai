@@ -1,35 +1,21 @@
 import sys
-import os
 import datetime
 import time
 import logging
-from ConfigParser import ConfigParser
+import logging.handlers
 
 def get_moai_log():
     log = logging.getLogger('moai')
     log.setLevel(logging.DEBUG)
     handler = logging.handlers.RotatingFileHandler('moai.log')
-    handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+    handler.setFormatter(logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
     log.addHandler(handler)
     return log
 
-def parse_config_file(filename, section):
-    config = ConfigParser()
-    config.read(filename)
-
-    buildout_dir = os.path.dirname(filename)
-
-    if not section in config.sections():
-        return {}
-    result = {}
-    for option in config.options(section):
-        value = config.get(section, option)
-        result[option] = value.replace('${buildout:directory}',
-                                       buildout_dir)
-    return result
-
 def get_duration(starttime):
-    h,m,s = time.asctime(time.gmtime(time.time() - starttime)).split(' ')[-2].split(':')
+    h,m,s = time.asctime(
+        time.gmtime(time.time() - starttime)).split(' ')[-2].split(':')
     s = int(s)
     m = int(m)
     h = int(h)
