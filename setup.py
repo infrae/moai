@@ -44,6 +44,7 @@ setup(
     install_requires=[
     'pyoai',
     'WSGIUtils',
+    'wsgi_intercept',
     'webob',
     'pasteScript',
     'sqlalchemy',

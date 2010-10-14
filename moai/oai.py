@@ -136,20 +136,17 @@ class OAIServer(object):
             ut = time.mktime(until)-self.filter_data.delay
             until = datetime.fromtimestamp(ut)
             
-        if set is None:
-            filtersets = []
-        else:
-            filtersets = [set]
-
-        sets = self.config.sets_allowed
-        filtersets += self.config.filter_sets
-        notsets = self.config.sets_disallowed    
+        needed_sets = self.config.sets_needed
+        if not set is None:
+            needed_sets.append(set)
+        allowed_sets = self.config.sets_allowed
+        disallowed_sets = self.config.sets_disallowed    
         
         return self.db.oai_query(offset=cursor,
                                  batch_size=batch_size,
-                                 sets=sets,
-                                 not_sets=notsets,
-                                  filter_sets=filtersets,
+                                 needed_sets=needed_sets,
+                                 disallowed_sets=disallowed_sets,
+                                 allowed_sets=allowed_sets,
                                  from_date=from_,
                                  until_date=until,
                                  identifier=identifier

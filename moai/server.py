@@ -137,6 +137,7 @@ class FeedConfig(object):
                  metadata_prefixes = ['oai_dc'],
                  batch_size = 100,
                  content_type = None,
+                 sets_needed = [],
                  sets_allowed = [],
                  sets_disallowed = [],
                  sets_deleted = [],
@@ -150,27 +151,10 @@ class FeedConfig(object):
         self.metadata_prefixes = metadata_prefixes
         self.batch_size = batch_size
         self.content_type = content_type
+        self.sets_needed = sets_needed
         self.sets_allowed = sets_allowed
         self.sets_disallowed = sets_disallowed
         self.sets_deleted = sets_deleted
         self.filter_sets = filter_sets
         self.delay = delay
         self.base_asset_path = base_asset_path or tempfile.gettempdir()
-
-    def get_oai_id(self, internal_id):
-        return 'oai:%s' % internal_id
-
-    def get_internal_id(self, oai_id):
-        return oai_id[4:]
-
-    def get_setspec_id(self, internal_set_id):
-        return 'set_%s' % internal_set_id
-
-    def get_internal_set_id(self, oai_setspec_id):
-        return oai_setspec_id[4:]
-
-    def get_asset_path(self, internal_id, asset):
-        return os.path.abspath(
-            os.path.join(self.base_asset_path,
-                         internal_id,
-                         asset['filename']))

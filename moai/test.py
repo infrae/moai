@@ -2,11 +2,18 @@
 from unittest import TestCase, TestSuite, makeSuite
 import doctest
 import datetime
+import urllib2
 
 from lxml import etree
+import wsgi_intercept
+from wsgi_intercept.urllib2_intercept import install_opener
 
 from moai.utils import XPath
 from moai.database import Database
+from moai.server import Server, FeedConfig
+from moai.wsgi import MOAIWSGIApp
+
+install_opener()
 
 FLAGS = doctest.NORMALIZE_WHITESPACE + doctest.ELLIPSIS
 GLOBS = {}
@@ -292,14 +299,14 @@ class DatabaseTest(TestCase):
         self.assertEquals([r['id'] for r in self.db.oai_query()],
                           [u'oai:ham', u'oai:spam', u'oai:spamspamspam'])
         # only set ham
-        self.assertEquals([r['id'] for r in self.db.oai_query(sets=[u'ham'])],
-                          [u'oai:ham'])
+        self.assertEquals([r['id'] for r in self.db.oai_query(
+            needed_sets=[u'ham'])], [u'oai:ham'])
         # only set spam
-        self.assertEquals([r['id'] for r in self.db.oai_query(sets=[u'spam'])],
-                          [u'oai:spam', u'oai:spamspamspam'])
+        self.assertEquals([r['id'] for r in self.db.oai_query(
+            needed_sets=[u'spam'])], [u'oai:spam', u'oai:spamspamspam'])
         # records in spam set and test set
         self.assertEquals([r['id'] for r in self.db.oai_query(
-            sets=[u'test', u'spam'])], [u'oai:spam'])
+            needed_sets=[u'test', u'spam'])], [u'oai:spam'])
         # only allow records from certain sets
         self.assertEquals([r['id'] for r in self.db.oai_query(
             allowed_sets=[u'test'])], [u'oai:ham', u'oai:spam'])
@@ -308,10 +315,10 @@ class DatabaseTest(TestCase):
                           [u'oai:ham', u'oai:spam', u'oai:spamspamspam'])
         # only allow records from certain sets, combined with set
         self.assertEquals([r['id'] for r in self.db.oai_query(
-            allowed_sets=[u'test'], sets=['spam'])],
+            allowed_sets=[u'test'], needed_sets=['spam'])],
                           [u'oai:spam'])
         self.assertEquals([r['id'] for r in self.db.oai_query(
-            allowed_sets=[u'spam'], sets=['test'])],
+            allowed_sets=[u'spam'], needed_sets=['test'])],
                           [u'oai:spam'])
         # certain records should always be disallowed
         self.assertEquals([r['id'] for r in self.db.oai_query(
@@ -343,10 +350,34 @@ class DatabaseTest(TestCase):
         self.assertEquals([r['id'] for r in self.db.oai_query(
             batch_size=1, offset=2)], [u'oai:spamspamspam'])
         
-
+class ServerTest(TestCase):
+    def setUp(self):
+        self.database = Database()
+        self.config = FeedConfig('Test Server',
+                                 'http://test',
+                                 admin_emails=['testuser@localhost'],
+                                 metadata_prefixes=['oai_dc', 'mods'])
+        self.server = Server('http://test', self.database, self.config)
+        wsgi_intercept.add_wsgi_intercept('test', 80,
+                                          lambda : MOAIWSGIApp(self.server))
         
+    def tearDown(self):
+        del self.database
+        del self.config
+        del self.server
+        wsgi_intercept.remove_wsgi_intercept('test', 80)
+        
+    def test_identify(self):
+        xml = urllib2.urlopen('http://test?verb=Identify').read()
+        doc = etree.fromstring(xml)
+        xpath = XPath(doc, nsmap=
+                      {"oai" :"http://www.openarchives.org/OAI/2.0/"})
+        self.assertEquals(xpath.string('//oai:repositoryName'),u'Test Server')
+        
+    
 def suite():
     test_suite = TestSuite()
     test_suite.addTest(makeSuite(XPathUtilTest))
     test_suite.addTest(makeSuite(DatabaseTest))
+    test_suite.addTest(makeSuite(ServerTest))
     return test_suite

@@ -224,7 +224,7 @@ class Database(object):
     def oai_query(self,
                   offset=0,
                   batch_size=20,
-                  sets=[],
+                  needed_sets=[],
                   disallowed_sets=[],
                   allowed_sets=[],
                   from_date=None,
@@ -254,7 +254,7 @@ class Database(object):
         # filter sets
 
         setclauses = []
-        for set_id in sets:
+        for set_id in needed_sets:
             alias = self._setrefs.alias()
             setclauses.append(
                 sql.and_(
