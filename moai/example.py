@@ -33,15 +33,15 @@ class ExampleContent(object):
                                 'firstname': [first],
                                 'role': [u'aut']})
 
-        self.data = {'identifier': [u'http://example.org/data/%s' % id],
-                     'title': [xpath.string('//x:title')],
-                     'subject': xpath.strings('//x:subject'),
-                     'description': [xpath.string('//x:abstract')],
-                     'creator': [d['name'][0] for d in author_data],
-                     'author_data': author_data,
-                     'language': [u'en'],
-                     'date': [xpath.string('//x:issued')]}
-
+        self.metadata = {'identifier': [u'http://example.org/data/%s' % id],
+                         'title': [xpath.string('//x:title')],
+                         'subject': xpath.strings('//x:subject'),
+                         'description': [xpath.string('//x:abstract')],
+                         'creator': [d['name'][0] for d in author_data],
+                         'author_data': author_data,
+                         'language': [u'en'],
+                         'date': [xpath.string('//x:issued')]}
+        
         self.sets = {u'example': {u'name':u'example',
                                   u'description':u'An Example Set'}}
 
@@ -49,9 +49,9 @@ class ExampleContent(object):
         if access == 'public':
             self.sets[u'public'] = {u'name':u'public',
                                     u'description':u'Public access'}
-            self.data['rights'] = [u'open access']
+            self.metadata['rights'] = [u'open access']
         elif access == 'private':
             self.sets[u'private'] = {u'name':u'private',
                                      u'description':u'Private access'}
-            self.data['rights'] = [u'restricted access']
+            self.metadata['rights'] = [u'restricted access']
 

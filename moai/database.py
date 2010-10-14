@@ -31,7 +31,7 @@ class Database(object):
                   sql.Column('record_id', sql.Unicode, primary_key=True),
                   sql.Column('modified', sql.DateTime, index=True),
                   sql.Column('deleted', sql.Boolean),
-                  sql.Column('data', sql.String))
+                  sql.Column('metadata', sql.String))
         
         sql.Table('sets', db,
                   sql.Column('set_id', sql.Unicode, primary_key=True),
@@ -111,7 +111,7 @@ class Database(object):
         self._cache = {'records': {}, 'sets': {}, 'setrefs': {}}
         
             
-    def update_record(self, oai_id, modified, deleted, sets, data):
+    def update_record(self, oai_id, modified, deleted, sets, metadata):
         # adds a record, call flush to actually store in db
 
         check_type(oai_id,
@@ -128,20 +128,19 @@ class Database(object):
                    suffix='for parameter "deleted"')
         check_type(sets,
                    dict,
-                   unicode_keys=True,
                    unicode_values=True,
                    recursive=True,
                    prefix="record %s" % oai_id,
                    suffix='for parameter "sets"')
-        check_type(data,
+        check_type(metadata,
                    dict,
                    prefix="record %s" % oai_id,
-                   suffix='for parameter "dict"')
+                   suffix='for parameter "metadata"')
         
-        data = json.dumps(data)
+        metadata = json.dumps(metadata)
         self._cache['records'][oai_id] = (dict(modified=modified,
                                                deleted=deleted,
-                                               data=data))
+                                               metadata=metadata))
         self._cache['setrefs'][oai_id] = []
         for set_id in sets:
             self._cache['sets'][set_id] = dict(
@@ -158,7 +157,7 @@ class Database(object):
         record = {'id': row.record_id,
                   'deleted': row.deleted,
                   'modified': row.modified,
-                  'data': json.loads(row.data),
+                  'metadata': json.loads(row.metadata),
                   'sets': self.get_setrefs(oai_id)}
         return record
 
@@ -226,8 +225,8 @@ class Database(object):
                   offset=0,
                   batch_size=20,
                   sets=[],
-                  not_sets=[],
-                  filter_sets=[],
+                  disallowed_sets=[],
+                  allowed_sets=[],
                   from_date=None,
                   until_date=None,
                   identifier=None):
@@ -256,52 +255,43 @@ class Database(object):
 
         setclauses = []
         for set_id in sets:
+            alias = self._setrefs.alias()
             setclauses.append(
                 sql.and_(
-                self._setrefs.c.set_id == set_id,
-                self._setrefs.c.record_id == self._records.c.record_id))
+                alias.c.set_id == set_id,
+                alias.c.record_id == self._records.c.record_id))
             
         if setclauses:
-            query.append_whereclause(sql.or_(*setclauses))
+            query.append_whereclause((sql.and_(*setclauses)))
             
-        # extra filter sets
-        
-        filter_setclauses = []
-        for set_id in filter_sets:
-            filter_setclauses.append(
+        allowed_setclauses = []
+        for set_id in allowed_sets:
+            alias = self._setrefs.alias()
+            allowed_setclauses.append(
                 sql.and_(
-                self._setrefs.c.set_id == set_id,
-                self._setrefs.c.record_id == self._records.c.record_id))
+                alias.c.set_id == set_id,
+                alias.c.record_id == self._records.c.record_id))
             
-        if filter_setclauses:
-            query.append_whereclause(sql.or_(*filter_setclauses))
+        if allowed_setclauses:
+            query.append_whereclause(sql.or_(*allowed_setclauses))
 
-        # filter not_sets
-
-        not_setclauses = []
-        for set_id in not_sets:
-            not_setclauses.append(
-                sql.and_(
-                self._setrefs.c.set_id == set_id,
-                self._setrefs.c.record_id == self._records.c.record_id))
+        disallowed_setclauses = []
+        for set_id in disallowed_sets:
+            alias = self._setrefs.alias()
+            disallowed_setclauses.append(
+                sql.exists([self._records.c.record_id],
+                           sql.and_(
+                alias.c.set_id == set_id,
+                alias.c.record_id == self._records.c.record_id)))
             
-        if not_setclauses:
-            query.append_whereclause(sql.not_(sql.or_(*not_setclauses)))
-
+        if disallowed_setclauses:
+            query.append_whereclause(sql.not_(sql.or_(*disallowed_setclauses)))
+            
         for row in query.distinct().offset(offset).limit(batch_size).execute():
-            record = {'id': row.record_id,
-                      'deleted': row.deleted,
-                      'modified': row.modified,
-                      'data': json.loads(row.data),
-                      'sets': self.get_setrefs(row.record_id)
-                      }
-            yield {'record': record,
-                   'sets': record['sets'],
-                   'metadata': record['data'],
-                   'assets':{}}
-       
-    def empty_database(self):
-        self._records.delete().execute()
-        self._sets.delete().execute()
-        self._setrefs.delete().execute()
+            yield {'id': row.record_id,
+                   'deleted': row.deleted,
+                   'modified': row.modified,
+                   'metadata': json.loads(row.metadata),
+                   'sets': self.get_setrefs(row.record_id)
+                   }
 

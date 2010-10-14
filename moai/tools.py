@@ -158,7 +158,7 @@ def update_moai():
                                    content.modified,
                                    content.deleted,
                                    content.sets,
-                                   content.data)
+                                   content.metadata)
         except Exception, err:
             if options.debug:
                 raise

@@ -104,19 +104,19 @@ class OAIServer(object):
             raise oaipmh.error.CannotDisseminateFormatError
 
     def _createHeader(self, record):
-        oai_id = record['record']['id']
-        datestamp = record['record']['modified']
-        sets = record['sets']
-        deleted = record['record']['deleted']
+        deleted = record['deleted']
         for deleted_set in self.config.sets_deleted:
             if deleted_set in record['sets']:
                 deleted = True
                 break
-        return oaipmh.common.Header(oai_id, datestamp, sets, deleted)
+        return oaipmh.common.Header(record['id'],
+                                    record['modified'],
+                                    record['sets'],
+                                    deleted)
 
     def _createHeaderAndMetadata(self, record):
         header = self._createHeader(record)
-        metadata = oaipmh.common.Metadata(record['metadata'])
+        metadata = oaipmh.common.Metadata(record)
         metadata.record = record
         return header, metadata
     
