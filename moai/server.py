@@ -133,28 +133,28 @@ class FeedConfig(object):
     def __init__(self,
                  repository_name,
                  base_url,
-                 admin_emails = [],
-                 metadata_prefixes = ['oai_dc'],
+                 admin_emails = None,
+                 metadata_prefixes = None,
                  batch_size = 100,
                  content_type = None,
-                 sets_needed = [],
-                 sets_allowed = [],
-                 sets_disallowed = [],
-                 sets_deleted = [],
-                 filter_sets = [],
+                 sets_needed = None,
+                 sets_allowed = None,
+                 sets_disallowed = None,
+                 sets_deleted = None,
+                 filter_sets = None,
                  delay = 0,
                  base_asset_path=None):
         
         self.name = repository_name
         self.url = base_url
-        self.admins = admin_emails
-        self.metadata_prefixes = metadata_prefixes
+        self.admins = admin_emails or []
+        self.metadata_prefixes = metadata_prefixes or ['oai_dc']
         self.batch_size = batch_size
         self.content_type = content_type
-        self.sets_needed = sets_needed
-        self.sets_allowed = sets_allowed
-        self.sets_disallowed = sets_disallowed
-        self.sets_deleted = sets_deleted
-        self.filter_sets = filter_sets
+        self.sets_needed = sets_needed or []
+        self.sets_allowed = sets_allowed or []
+        self.sets_disallowed = sets_disallowed or []
+        self.sets_deleted = sets_deleted or []
+        self.filter_sets = filter_sets or []
         self.delay = delay
         self.base_asset_path = base_asset_path or tempfile.gettempdir()

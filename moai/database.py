@@ -88,13 +88,19 @@ class Database(object):
 
         # delete all processed records before inserting
         if deleted_records:
-            self._records.delete().execute(
+            self._records.delete(
+                self._records.c.record_id == sql.bindparam('record_id')
+                ).execute(
                 [{'record_id': rid} for rid in deleted_records])
         if deleted_sets:
-            self._sets.delete().execute(
+            self._sets.delete(
+                self._sets.c.set_id == sql.bindparam('set_id')
+                ).execute(
                 [{'set_id': sid} for sid in deleted_sets])
         if deleted_setrefs:
-            self._setrefs.delete().execute(
+            self._setrefs.delete(
+                self._setrefs.c.record_id == sql.bindparam('record_id')
+                ).execute(
                 [{'record_id': rid} for rid in deleted_setrefs])
 
         # batch inserts

@@ -1,4 +1,5 @@
 # coding=utf8
+import os
 from unittest import TestCase, TestSuite, makeSuite
 import doctest
 import datetime
@@ -12,7 +13,8 @@ from moai.utils import XPath
 from moai.database import Database
 from moai.server import Server, FeedConfig
 from moai.wsgi import MOAIWSGIApp
-
+from moai.provider.file import FileBasedContentProvider
+from moai.example import ExampleContent
 install_opener()
 
 FLAGS = doctest.NORMALIZE_WHITESPACE + doctest.ELLIPSIS
@@ -349,23 +351,71 @@ class DatabaseTest(TestCase):
             batch_size=1, offset=1)], [u'oai:spam'])
         self.assertEquals([r['id'] for r in self.db.oai_query(
             batch_size=1, offset=2)], [u'oai:spamspamspam'])
+
+class ProviderTest(TestCase):
+    def setUp(self):
+        path = os.path.abspath(os.path.dirname(__file__))
+        self.provider = FileBasedContentProvider(
+            'file://%s/example*.xml' % path)
+        self.db = Database()
+        
+    def tearDown(self):
+        del self.provider
+        del self.db
+        
+    def test_provider_update(self):
+        self.assertEquals([id for id in self.provider.update()],
+                          ['example-1234.xml', 'example-2345.xml'])
+
+    def test_provider_content(self):
+        self.assertEquals([id for id in self.provider.update()],
+                          ['example-1234.xml', 'example-2345.xml'])
+        for content_id in self.provider.get_content_ids():
+            raw_data = self.provider.get_content_by_id(content_id)
+            content = ExampleContent(self.provider)
+            content.update(raw_data)
+            self.db.update_record(content.id,
+                                  content.modified,
+                                  content.deleted,
+                                  content.sets,
+                                  content.metadata)
+        self.db.flush()
+        self.assertEquals(self.db.record_count(), 2)
+        
         
 class ServerTest(TestCase):
     def setUp(self):
-        self.database = Database()
+        self.db = Database()
+        self.db.update_record(u'oai:spam',
+                              datetime.datetime(2009, 10, 13, 12, 30, 00),
+                              False, {u'spam': dict(name=u'spamset'),
+                                      u'test': dict(name=u'testset')},
+                              {'title': [u'Spam!']})
+        self.db.update_record(u'oai:spamspamspam',
+                              datetime.datetime(2009, 06, 13, 12, 30, 00),
+                              False, {u'spam': dict(name=u'spamset')},
+                              {'title': [u'Spam Spam Spam!']})
+        self.db.update_record(u'oai:ham',
+                              datetime.datetime(2010, 10, 13, 12, 30, 00),
+                              False, {u'ham': dict(name=u'hamset'),
+                                      u'test': dict(name=u'testset')},
+                              {'title': [u'Ham!']})
+        self.db.flush()
         self.config = FeedConfig('Test Server',
                                  'http://test',
                                  admin_emails=['testuser@localhost'],
                                  metadata_prefixes=['oai_dc', 'mods'])
-        self.server = Server('http://test', self.database, self.config)
-        wsgi_intercept.add_wsgi_intercept('test', 80,
-                                          lambda : MOAIWSGIApp(self.server))
+        self.server = Server('http://test', self.db, self.config)
+        self.app = MOAIWSGIApp(self.server)
+        wsgi_intercept.add_wsgi_intercept('test', 80, lambda : self.app)
         
     def tearDown(self):
-        del self.database
-        del self.config
-        del self.server
+        
         wsgi_intercept.remove_wsgi_intercept('test', 80)
+        del self.app
+        del self.server
+        del self.db
+        del self.config
         
     def test_identify(self):
         xml = urllib2.urlopen('http://test?verb=Identify').read()
@@ -374,10 +424,93 @@ class ServerTest(TestCase):
                       {"oai" :"http://www.openarchives.org/OAI/2.0/"})
         self.assertEquals(xpath.string('//oai:repositoryName'),u'Test Server')
         
-    
-def suite():
+    def test_list_identifiers(self):
+        xml = urllib2.urlopen('http://test?verb=ListIdentifiers'
+                              '&metadataPrefix=oai_dc').read()
+        doc = etree.fromstring(xml)
+        xpath = XPath(doc, nsmap=
+                      {"oai": "http://www.openarchives.org/OAI/2.0/"})
+        self.assertEquals(xpath.strings('//oai:identifier'),
+                          [u'oai:ham', u'oai:spam', u'oai:spamspamspam'])
+
+    def test_list_with_dates(self):
+        xml = urllib2.urlopen('http://test?verb=ListIdentifiers'
+                              '&metadataPrefix=oai_dc&from=2010-01-01').read()
+        doc = etree.fromstring(xml)
+        xpath = XPath(doc, nsmap=
+                      {"oai": "http://www.openarchives.org/OAI/2.0/"})
+        self.assertEquals(xpath.strings('//oai:identifier'),
+                          [u'oai:ham'])
+        xml = urllib2.urlopen('http://test?verb=ListIdentifiers'
+                              '&metadataPrefix=oai_dc&until=2010-01-01').read()
+        doc = etree.fromstring(xml)
+        xpath = XPath(doc, nsmap=
+                      {"oai": "http://www.openarchives.org/OAI/2.0/"})
+        self.assertEquals(xpath.strings('//oai:identifier'),
+                          [u'oai:spam', u'oai:spamspamspam'])
+
+    def test_list_records(self):
+        xml = urllib2.urlopen('http://test?verb=ListRecords'
+                              '&metadataPrefix=oai_dc').read()
+        doc = etree.fromstring(xml)
+        xpath = XPath(doc, nsmap=
+                      {"oai": "http://www.openarchives.org/OAI/2.0/",
+                       "dc": "http://purl.org/dc/elements/1.1/"})
+        self.assertEquals(xpath.strings('//oai:identifier'),
+                          [u'oai:ham', u'oai:spam', u'oai:spamspamspam'])
+        self.assertEquals(xpath.strings('//dc:title'),
+                          [u'Ham!', u'Spam!', u'Spam Spam Spam!'])
+        xml = urllib2.urlopen('http://test?verb=ListRecords'
+                              '&metadataPrefix=mods').read()
+        doc = etree.fromstring(xml)
+        xpath = XPath(doc, nsmap=
+                      {"oai": "http://www.openarchives.org/OAI/2.0/",
+                       "mods": "http://www.loc.gov/mods/v3"})
+        self.assertEquals(xpath.strings('//mods:titleInfo/mods:title'),
+                          [u'Ham!', u'Spam!', u'Spam Spam Spam!'])
+        
+    def test_list_sets(self):
+        xml = urllib2.urlopen('http://test?verb=ListSets').read()
+        doc = etree.fromstring(xml)
+        xpath = XPath(doc, nsmap=
+                      {"oai": "http://www.openarchives.org/OAI/2.0/"})
+        self.assertEquals(sorted(xpath.strings('//oai:setName')),
+                          [u'hamset', u'spamset', u'testset'])
+
+    def test_list_hidden_sets(self):
+        self.db.update_record(u'oai:spam',
+                              datetime.datetime(2009, 10, 13, 12, 30, 00),
+                              False, {u'spam': dict(name=u'spamset'),
+                                      u'test': dict(name=u'testset',
+                                                    hidden=True)},
+                              {'title': [u'Spam!']})
+        # note that we change the set through the record. It is important
+        # that all the records have the same values for each set
+        self.db.flush()
+        xml = urllib2.urlopen('http://test?verb=ListSets').read()
+        doc = etree.fromstring(xml)
+        xpath = XPath(doc, nsmap=
+                      {"oai": "http://www.openarchives.org/OAI/2.0/"})
+        # a hidden set should not show up in a listSets request
+        self.assertEquals(sorted(xpath.strings('//oai:setName')),
+                          [u'hamset', u'spamset'])
+        
+        # however, we can use the hidden set to filter on
+        self.config.sets_disallowed.append(u'test')
+        xml = urllib2.urlopen('http://test?verb=ListIdentifiers'
+                              '&metadataPrefix=oai_dc').read()
+        doc = etree.fromstring(xml)
+        xpath = XPath(doc, nsmap=
+                      {"oai": "http://www.openarchives.org/OAI/2.0/"})
+        self.assertEquals(xpath.strings('//oai:identifier'),
+                          [u'oai:spamspamspam'])
+
+def suite():    
     test_suite = TestSuite()
     test_suite.addTest(makeSuite(XPathUtilTest))
     test_suite.addTest(makeSuite(DatabaseTest))
+    test_suite.addTest(makeSuite(ProviderTest))
     test_suite.addTest(makeSuite(ServerTest))
+    # note that tests of the oai protocol itself are done in the
+    # pyoai codebase
     return test_suite
