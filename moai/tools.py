@@ -121,7 +121,7 @@ def update_moai():
     count = 0
     ignore_count = 0
     error_count = 0
-    flush_threshold = 10000
+    flush_threshold = int(config.get('forcedflush', '10000'))
     for content_id in provider.get_content_ids():
         count += 1
         try:
