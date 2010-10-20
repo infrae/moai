@@ -37,8 +37,10 @@ setup(
         'fedora=moai.provider.feadora:FedoraBasedContentProvider'
      ],
     'moai.format':[
-         'oai_dc=moai.metadata:OAIDC',
-         'mods=moai.metadata:MODS'
+         'oai_dc=moai.metadata.oaidc:OAIDC',
+         'mods=moai.metadata.mods:MODS',
+         'didl=moai.metadata.didl:DIDL',
+         'nl_didl=moai.metadata.didl:DareDIDL'
      ],
     },
     install_requires=[

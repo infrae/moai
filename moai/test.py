@@ -404,7 +404,7 @@ class ServerTest(TestCase):
         self.config = FeedConfig('Test Server',
                                  'http://test',
                                  admin_emails=['testuser@localhost'],
-                                 metadata_prefixes=['oai_dc', 'mods'])
+                                 metadata_prefixes=['oai_dc', 'mods', 'didl'])
         self.server = Server('http://test', self.db, self.config)
         self.app = MOAIWSGIApp(self.server)
         wsgi_intercept.add_wsgi_intercept('test', 80, lambda : self.app)
@@ -461,7 +461,7 @@ class ServerTest(TestCase):
         self.assertEquals(xpath.strings('//dc:title'),
                           [u'Ham!', u'Spam!', u'Spam Spam Spam!'])
         xml = urllib2.urlopen('http://test?verb=ListRecords'
-                              '&metadataPrefix=mods').read()
+                              '&metadataPrefix=didl').read()
         doc = etree.fromstring(xml)
         xpath = XPath(doc, nsmap=
                       {"oai": "http://www.openarchives.org/OAI/2.0/",

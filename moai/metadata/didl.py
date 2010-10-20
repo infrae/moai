@@ -1,20 +1,16 @@
 
 from lxml.builder import ElementMaker
-import simplejson
 
-from moai import MetaDataFormat, name
-from moai.metadata import MODS, XSI_NS
+from moai.metadata.mods import MODS, XSI_NS
 
         
-class DIDL(MetaDataFormat):
+class DIDL(object):
     """A metadata prefix implementing the DARE DIDL metadata format
     this format is registered under the name "didl"
     Note that this format re-uses oai_dc and mods formats that come with
     MOAI by default
     """
-    
-    name('didl')
-    
+        
     def __init__(self, prefix, config, db):
         self.prefix = prefix
         self.config = config
@@ -33,6 +29,13 @@ class DIDL(MetaDataFormat):
                         'dii': 'http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/dii/dii.xsd',
                         'dip': 'http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/dip/dip.xsd'}
         
+    def get_namespace(self):
+        return self.ns[self.prefix]
+
+    def get_schema_location(self):
+        return self.schemas[self.prefix]
+
+        
     def __call__(self, element, metadata):
         data = metadata.record
         
@@ -45,7 +48,7 @@ class DIDL(MetaDataFormat):
         oai_url = (self.config.url+'?verb=GetRecord&'
                    'metadataPrefix=%s&identifier=%s' % (
             self.prefix,
-            self.config.get_oai_id(data['record']['id'])))
+            data['id']))
 
         # generate mods for this feed
         mods_data = DIDL.Resource(mimeType="application/xml")
@@ -61,7 +64,7 @@ class DIDL(MetaDataFormat):
             DIDL.Item(
              DIDL.Descriptor(
               DIDL.Statement(
-               DCTERMS.modified(data['record']['when_modified'].isoformat().split('.')[0]),
+               DCTERMS.modified(data['modified'].isoformat().split('.')[0]),
                mimeType="application/xml"
                )
               ),

@@ -1,9 +1,7 @@
 
 from lxml.builder import ElementMaker
 
-from moai import MetaDataFormat, name
-from moai.metadata import XSI_NS
-from moai.extensions.didl import DIDL
+from moai.metadata.didl import DIDL, XSI_NS
         
 class DareDIDL(DIDL):
     """A metadata prefix implementing the DARE DIDL metadata format
@@ -11,7 +9,6 @@ class DareDIDL(DIDL):
     Note that this format re-uses oai_dc and mods formats that come with
     MOAI by default
     """    
-    name('nl_didl')
 
     def __init__(self, prefix, config, db):
         super(DareDIDL, self).__init__(prefix, config, db)
