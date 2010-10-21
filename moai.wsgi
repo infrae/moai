@@ -1,6 +1,7 @@
 import sys
 import os
 import site
+import tempfile
 
 from paste.deploy import loadapp
 
