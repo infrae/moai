@@ -196,3 +196,7 @@ class FeedConfig(object):
             os.path.join(self.base_asset_path,
                          internal_id,
                          asset['filename']))
+
+    def get_identify_description(self):
+        pass
+    

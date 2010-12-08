@@ -58,7 +58,11 @@ class OAIServer(object):
             '%s'
             '<URL>http://moai.infrae.com</URL>'
             '</toolkit>' % version)
-            
+
+        if hasattr(self.config, 'get_identify_description'):
+            additional_description = self.config.get_identify_description()
+            if additional_description:
+                result.add_description(additional_description)
         return result
 
     def listMetadataFormats(self, identifier=None):
