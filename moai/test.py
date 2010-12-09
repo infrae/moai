@@ -358,17 +358,17 @@ class ProviderTest(TestCase):
         self.provider = FileBasedContentProvider(
             'file://%s/example*.xml' % path)
         self.db = Database()
-        
+
     def tearDown(self):
         del self.provider
         del self.db
-        
+
     def test_provider_update(self):
-        self.assertEquals([id for id in self.provider.update()],
+        self.assertEquals(sorted([id for id in self.provider.update()]),
                           ['example-1234.xml', 'example-2345.xml'])
 
     def test_provider_content(self):
-        self.assertEquals([id for id in self.provider.update()],
+        self.assertEquals(sorted([id for id in self.provider.update()]),
                           ['example-1234.xml', 'example-2345.xml'])
         for content_id in self.provider.get_content_ids():
             raw_data = self.provider.get_content_by_id(content_id)
@@ -381,8 +381,8 @@ class ProviderTest(TestCase):
                                   content.metadata)
         self.db.flush()
         self.assertEquals(self.db.record_count(), 2)
-        
-        
+
+
 class ServerTest(TestCase):
     def setUp(self):
         self.db = Database()
@@ -504,6 +504,7 @@ class ServerTest(TestCase):
                       {"oai": "http://www.openarchives.org/OAI/2.0/"})
         self.assertEquals(xpath.strings('//oai:identifier'),
                           [u'oai:spamspamspam'])
+
 
 def suite():    
     test_suite = TestSuite()
