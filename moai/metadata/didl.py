@@ -84,8 +84,7 @@ class DIDL(object):
         object_file.attrib['{%s}resource' % self.ns['rdf']] = (
             'info:eu-repo/semantics/objectFile')
         for root_item in didl:
-            for asset_id in data['metadata'].get('asset', []):
-                asset = self.db.get_metadata(asset_id)
+            for asset in data['metadata'].get('asset', []):
                 url = asset['url'][0]
                 if not url.startswith('http://'):
                     url = self.config.url.rstrip('/') + '/' + url.lstrip('/')
