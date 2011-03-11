@@ -3,7 +3,7 @@ import os
 from webob import Request, Response
 
 from moai.server import Server, FeedConfig
-from moai.database import Database
+from moai.database import get_database
 
 class WSGIRequest(object):
     """This is a request object that can be used in a WSGI environment.
@@ -55,7 +55,7 @@ class WSGIRequest(object):
         response.content_type = mimetype
         response.status = code
         response.body = msg
-        raise response
+        return response
 
 
 class MOAIWSGIApp(object):
@@ -72,20 +72,33 @@ def app_factory(global_config,
                 name,
                 url,
                 admin_email,
-                content,
-                provider,
                 database,
                 formats,
                 **kwargs):
     # WSGI APP Factory
     formats = formats.split()
     admin_email = admin_email.split()
-
-    database = Database(database)
+    sets_deleted = kwargs.get('deleted_sets') or []
+    if sets_deleted:
+        sets_deleted = sets_deleted.split()
+    sets_disallowed = kwargs.get('disallowed_sets', '') or []
+    if sets_disallowed:
+        sets_disallowed = sets_disallowed.split()
+    sets_allowed = kwargs.get('allowed_sets', '') or []
+    if sets_allowed:
+        sets_allowed = sets_allowed.split()
+    sets_needed = kwargs.get('needed_sets', '') or []
+    if sets_needed:
+        sets_needed = sets_needed.split()
+    database = get_database(database)
     feedconfig = FeedConfig(name,
                             url,
                             admin_emails=admin_email,
-                            metadata_prefixes=formats)
+                            metadata_prefixes=formats,
+                            sets_deleted=sets_deleted,
+                            sets_disallowed=sets_disallowed,
+                            sets_allowed=sets_allowed,
+                            sets_needed=sets_needed)
     server = Server(url, database, feedconfig)
     return MOAIWSGIApp(server)
 

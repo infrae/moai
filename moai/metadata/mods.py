@@ -71,7 +71,7 @@ class MODS(object):
 
             dai_list = []
             for contributor in contributor_data:
-                unique_id = data['record']['id'] + '_' + contributor.get(
+                unique_id = data['id'] + '_' + contributor.get(
                     'id', contributor['name'][0])
                 if unique_id[0].isdigit():
                     unique_id = '_'+unique_id

@@ -143,7 +143,8 @@ class FeedConfig(object):
                  sets_deleted = None,
                  filter_sets = None,
                  delay = 0,
-                 base_asset_path=None):
+                 base_asset_path=None,
+                 ):
         
         self.name = repository_name
         self.url = base_url
@@ -151,10 +152,10 @@ class FeedConfig(object):
         self.metadata_prefixes = metadata_prefixes or ['oai_dc']
         self.batch_size = batch_size
         self.content_type = content_type
-        self.sets_needed = sets_needed or []
-        self.sets_allowed = sets_allowed or []
-        self.sets_disallowed = sets_disallowed or []
-        self.sets_deleted = sets_deleted or []
-        self.filter_sets = filter_sets or []
+        self.sets_needed = set(sets_needed or [])
+        self.sets_allowed = set(sets_allowed or [])
+        self.sets_disallowed = set(sets_disallowed or [])
+        self.sets_deleted = set(sets_deleted or [])
+        self.filter_sets = set(filter_sets or [])
         self.delay = delay
         self.base_asset_path = base_asset_path or tempfile.gettempdir()
