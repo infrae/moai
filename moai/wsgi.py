@@ -40,7 +40,9 @@ class WSGIRequest(object):
         """Return a dictionary with QueryString values of the
         request
         """
-        return dict(self._req.GET)
+        args = dict(self._req.GET)
+        args.update(dict(self._req.POST))
+        return args
 
     def write(self, data, mimetype):
         """Write data back to the client
