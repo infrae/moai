@@ -1,3 +1,4 @@
+import uuid
 
 from lxml.builder import ElementMaker
 
@@ -71,13 +72,12 @@ class MODS(object):
 
             dai_list = []
             for contributor in contributor_data:
-                unique_id = data['id'] + '_' + contributor.get(
-                    'id', contributor['name'][0])
+                contributor_name = contributor.get('surname', [''])[0]
+                unique_id = uuid.uuid4().hex
                 if unique_id[0].isdigit():
                     unique_id = '_'+unique_id
-                unique_id = unique_id.replace(':', '')
                 name = MODS.name(
-                    MODS.displayForm(contributor['name'][0]),
+                    MODS.displayForm(contributor_name),
                     type='personal',
                     ID=unique_id
                     )
