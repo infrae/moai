@@ -136,11 +136,11 @@ class OAIServer(object):
             ut = time.mktime(until)-self.filter_data.delay
             until = datetime.fromtimestamp(ut)
             
-        needed_sets = self.config.sets_needed
+        needed_sets = self.config.sets_needed.copy()
         if not set is None:
             needed_sets.add(set)
-        allowed_sets = self.config.sets_allowed
-        disallowed_sets = self.config.sets_disallowed    
+        allowed_sets = self.config.sets_allowed.copy()
+        disallowed_sets = self.config.sets_disallowed.copy()    
         
         return self.db.oai_query(offset=cursor,
                                  batch_size=batch_size,
