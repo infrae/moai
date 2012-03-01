@@ -98,7 +98,7 @@ class OAIServer(object):
         if header is None:
             raise oaipmh.error.IdDoesNotExistError(identifier)
         return header, metadata, None
-
+        
     def _checkMetadataPrefix(self, metadataPrefix):
         if metadataPrefix not in self.config.metadata_prefixes:
             raise oaipmh.error.CannotDisseminateFormatError

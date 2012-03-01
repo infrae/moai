@@ -72,7 +72,7 @@ class MODS(object):
 
             dai_list = []
             for contributor in contributor_data:
-                contributor_name = contributor.get('surname', [''])[0]
+                contributor_name = contributor.get('name', [''])[0]
                 unique_id = uuid.uuid4().hex
                 if unique_id[0].isdigit():
                     unique_id = '_'+unique_id
@@ -83,10 +83,18 @@ class MODS(object):
                     )
                 surname = contributor.get('surname')
                 if surname:
-                    name.append(MODS.namePart(surname[0], type="family"))
-                firstname = contributor.get('firstname')
-                if firstname:
-                    name.append(MODS.namePart(firstname[0], type="given"))
+                    surname = surname[0]
+                    prefix = contributor.get('prefix')
+                    if prefix:
+                        surname = u'%s, %s' % (surname, prefix[0])
+                    name.append(MODS.namePart(surname, type="family"))
+                initials = contributor.get('initials')
+                if initials:
+                    initials = initials[0]
+                    firstname = contributor.get('firstname')
+                    if firstname:
+                        initials = u'%s (%s)' % (initials, firstname[0])
+                    name.append(MODS.namePart(initials, type="given"))
 
                 role = contributor.get('role')
                 if role:
