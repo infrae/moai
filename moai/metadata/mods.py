@@ -116,7 +116,7 @@ class MODS(object):
                 daiList = DAI.daiList()
                 for id, dai in dai_list:
                     daiList.append(DAI.identifier(
-                        dai[0],
+                        dai[0].split('/')[-1],
                         IDref=id,
                         authority='info:eu-repo/dai/nl'))
                 
@@ -191,7 +191,8 @@ class MODS(object):
 
         mods.append(MODS.typeOfResource('text'))        
         if data['metadata'].get('dare_type'):
-            mods.append(MODS.genre(data['metadata']['dare_type'][0]))
+            dt = 'info:eu-repo/semantics/%s' % data['metadata']['dare_type'][0]
+            mods.append(MODS.genre(dt))
 
         
         classifications = data['metadata'].get('classification', [])
