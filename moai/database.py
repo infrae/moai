@@ -1,11 +1,21 @@
 import datetime
 import json
+from pkg_resources import iter_entry_points
 
 import sqlalchemy as sql
 
 from moai.utils import check_type
 
-class Database(object):
+def get_database(uri):
+    prefix = uri.split(':')[0]
+    for entry_point in iter_entry_points(group='moai.database', name=prefix):
+        dbclass = entry_point.load()
+        return dbclass(uri)
+    else:
+        raise ValueError('No such database registered: %s' % prefix)
+
+
+class SQLDatabase(object):
     """Sql implementation of a database backend
     This implements the :ref:`IDatabase` interface, look there for
     more documentation.
@@ -230,19 +240,22 @@ class Database(object):
     def oai_query(self,
                   offset=0,
                   batch_size=20,
-                  needed_sets=[],
-                  disallowed_sets=[],
-                  allowed_sets=[],
+                  needed_sets=None,
+                  disallowed_sets=None,
+                  allowed_sets=None,
                   from_date=None,
                   until_date=None,
                   identifier=None):
 
+        needed_sets = needed_sets or []
+        disallowed_sets = disallowed_sets or []
+        allowed_sets = allowed_sets or []
         if batch_size < 0:
             batch_size = 0
 
         # make sure until date is set, and not in future
-        if until_date == None or until_date > datetime.datetime.now():
-            until_date = datetime.datetime.now()
+        if until_date == None or until_date > datetime.datetime.utcnow():
+            until_date = datetime.datetime.utcnow()
 
 
         query = self._records.select(

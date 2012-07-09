@@ -1,3 +1,4 @@
+import uuid
 
 from lxml.builder import ElementMaker
 
@@ -71,22 +72,29 @@ class MODS(object):
 
             dai_list = []
             for contributor in contributor_data:
-                unique_id = data['record']['id'] + '_' + contributor.get(
-                    'id', contributor['name'][0])
+                contributor_name = contributor.get('name', [''])[0]
+                unique_id = uuid.uuid4().hex
                 if unique_id[0].isdigit():
                     unique_id = '_'+unique_id
-                unique_id = unique_id.replace(':', '')
                 name = MODS.name(
-                    MODS.displayForm(contributor['name'][0]),
+                    MODS.displayForm(contributor_name),
                     type='personal',
                     ID=unique_id
                     )
                 surname = contributor.get('surname')
                 if surname:
-                    name.append(MODS.namePart(surname[0], type="family"))
-                firstname = contributor.get('firstname')
-                if firstname:
-                    name.append(MODS.namePart(firstname[0], type="given"))
+                    surname = surname[0]
+                    prefix = contributor.get('prefix')
+                    if prefix:
+                        surname = u'%s, %s' % (surname, prefix[0])
+                    name.append(MODS.namePart(surname, type="family"))
+                initials = contributor.get('initials')
+                if initials:
+                    initials = initials[0]
+                    firstname = contributor.get('firstname')
+                    if firstname:
+                        initials = u'%s (%s)' % (initials, firstname[0])
+                    name.append(MODS.namePart(initials, type="given"))
 
                 role = contributor.get('role')
                 if role:
@@ -108,7 +116,7 @@ class MODS(object):
                 daiList = DAI.daiList()
                 for id, dai in dai_list:
                     daiList.append(DAI.identifier(
-                        dai[0],
+                        dai[0].split('/')[-1],
                         IDref=id,
                         authority='info:eu-repo/dai/nl'))
                 
@@ -183,7 +191,8 @@ class MODS(object):
 
         mods.append(MODS.typeOfResource('text'))        
         if data['metadata'].get('dare_type'):
-            mods.append(MODS.genre(data['metadata']['dare_type'][0]))
+            dt = 'info:eu-repo/semantics/%s' % data['metadata']['dare_type'][0]
+            mods.append(MODS.genre(dt))
 
         
         classifications = data['metadata'].get('classification', [])

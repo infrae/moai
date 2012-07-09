@@ -50,6 +50,8 @@ class DIDL(object):
             self.prefix,
             data['id']))
 
+        id_url = data['metadata'].get('url', [None])[0]        
+
         # generate mods for this feed
         mods_data = DIDL.Resource(mimeType="application/xml")
         MODS('mods', self.config, self.db)(mods_data, metadata)
@@ -69,13 +71,16 @@ class DIDL(object):
                )
               ),
              DIDL.Component(
-              DIDL.Resource(ref=oai_url,mimeType="application/xml")
+              DIDL.Resource(ref=id_url or oai_url,mimeType="application/xml")
               ),
              DIDL.Item(
               DIDL.Descriptor(
                DIDL.Statement(descriptive_metadata, mimeType="application/xml")
                ),
-              DIDL.Component(mods_data)
+              DIDL.Component(
+                DIDL.Descriptor(
+                   DIDL.Statement("mods", mimeType="text/plain")),
+                mods_data)
               ),
              )
             )
@@ -84,9 +89,8 @@ class DIDL(object):
         object_file.attrib['{%s}resource' % self.ns['rdf']] = (
             'info:eu-repo/semantics/objectFile')
         for root_item in didl:
-            for asset_id in data['metadata'].get('asset', []):
-                asset = self.db.get_metadata(asset_id)
-                url = asset['url'][0]
+            for asset in data['metadata'].get('asset', []):
+                url = asset['url']
                 if not url.startswith('http://'):
                     url = self.config.url.rstrip('/') + '/' + url.lstrip('/')
                 item = DIDL.Item(
@@ -94,16 +98,17 @@ class DIDL(object):
                      DIDL.Statement(object_file, mimeType="application/xml")
                      )
                     )
-                for access in asset.get('access', []):
-                    if access == 'open':
-                        access = (
-                            'http://purl.org/eprint/accessRights/OpenAccess')
-                    elif access == 'restricted':
-                        access = (
-                            'http://purl.org/eprint/accessRights/RestrictedAccess')
-                    elif access == 'closed':
-                        access = (
-                            'http://purl.org/eprint/accessRights/ClosedAccess')
+                access = asset.get('access')
+                if access == 'open':
+                    access = (
+                        'http://purl.org/eprint/accessRights/OpenAccess')
+                elif access == 'restricted':
+                    access = (
+                        'http://purl.org/eprint/accessRights/RestrictedAccess')
+                elif access == 'closed':
+                    access = (
+                        'http://purl.org/eprint/accessRights/ClosedAccess')
+                if access:
                     item.append(
                         DIDL.Descriptor(
                         DIDL.Statement(DCTERMS.accessRights(access),
@@ -116,7 +121,7 @@ class DIDL(object):
                     
                 item.append(
                     DIDL.Component(
-                     DIDL.Resource(mimeType=asset['mimetype'][0],
+                     DIDL.Resource(mimeType=asset['mimetype'],
                                    ref=url)
                      )
                     )

@@ -98,15 +98,15 @@ class OAIServer(object):
         if header is None:
             raise oaipmh.error.IdDoesNotExistError(identifier)
         return header, metadata, None
-
+        
     def _checkMetadataPrefix(self, metadataPrefix):
         if metadataPrefix not in self.config.metadata_prefixes:
             raise oaipmh.error.CannotDisseminateFormatError
 
     def _createHeader(self, record):
         deleted = record['deleted']
-        for deleted_set in self.config.sets_deleted:
-            if deleted_set in record['sets']:
+        for setspec in record['sets']:
+            if setspec in self.config.sets_deleted:
                 deleted = True
                 break
         return oaipmh.common.Header(record['id'],
@@ -123,7 +123,7 @@ class OAIServer(object):
     def _listQuery(self, set=None, from_=None, until=None, 
                    cursor=0, batch_size=10, identifier=None):
             
-        now = datetime.now()
+        now = datetime.utcnow()
         if until != None and until > now:
             # until should never be in the future
             until = now
@@ -131,16 +131,16 @@ class OAIServer(object):
         if self.config.delay:
             # subtract delay from until_ param, if present
             if until is None:
-                until = datetime.now()
+                until = datetime.utcnow()
             until = until.timetuple()
             ut = time.mktime(until)-self.filter_data.delay
             until = datetime.fromtimestamp(ut)
             
-        needed_sets = self.config.sets_needed
+        needed_sets = self.config.sets_needed.copy()
         if not set is None:
-            needed_sets.append(set)
-        allowed_sets = self.config.sets_allowed
-        disallowed_sets = self.config.sets_disallowed    
+            needed_sets.add(set)
+        allowed_sets = self.config.sets_allowed.copy()
+        disallowed_sets = self.config.sets_disallowed.copy()    
         
         return self.db.oai_query(offset=cursor,
                                  batch_size=batch_size,

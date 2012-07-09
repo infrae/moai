@@ -1,14 +1,8 @@
 import time
 
-from zope.interface import implements
-
-from moai.interfaces import IContentProvider
-
 class ListBasedContentProvider(object):
     """Provides content from a python list,
     implementation of :ref:`IContentProvider`"""
-    
-    implements(IContentProvider)
 
     def __init__(self, content):
         self._content = content

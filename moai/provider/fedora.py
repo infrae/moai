@@ -3,10 +3,8 @@ import urllib2
 import hashlib
 
 from lxml import etree
-from zope.interface import implements
 
 from moai.provider.oai import OAIBasedContentProvider
-from moai.interfaces import IContentProvider
 
 class FOXMLFile(object):
 
@@ -97,9 +95,6 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
     Implements the :ref:`IContentProvider` interface
     """
     
-    implements(IContentProvider)
-    
-    
     def __init__(self, fedora_url, output_path,
                  datastream_name=None, username=None, password=None):
         oai_url = '%s/oai' % fedora_url
@@ -143,7 +138,7 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
             self._log.warning('HTTP %s -> Can not get Fedora data: %s' % (err.code, url))
             return False
 
-        directory = md5.new(fedora_id).hexdigest()[:3]
+        directory = hashlib.md5(fedora_id).hexdigest()[:3]
 
         path = os.path.join(self._path, directory)
         if not os.path.isdir(path):

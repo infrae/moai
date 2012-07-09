@@ -11,7 +11,7 @@ from optparse import OptionParser
 from moai.utils import (get_duration,
                         get_moai_log,
                         ProgressBar)
-from moai.database import Database
+from moai.database import SQLDatabase
 
 VERSION = pkg_resources.working_set.by_key['moai'].version
                  
@@ -85,7 +85,7 @@ def update_moai():
     else:
         from_date = None
         
-    database = Database(config['database'])
+    database = SQLDatabase(config['database'])
     for content_point in iter_entry_points(group='moai.content',
                                            name=config['content']):
         ContentClass = content_point.load()

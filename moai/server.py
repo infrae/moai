@@ -9,10 +9,8 @@ of :ref:`IServer` and :ref:`IFeedConfig`.
 import os
 import tempfile
 
-from zope.interface import implements
 import oaipmh.error
 
-from moai.interfaces import IServer, IFeedConfig
 from moai.oai import OAIServerFactory, OAIServer
 
 class Server(object):
@@ -22,9 +20,6 @@ class Server(object):
     Developers might want to subclass this, to provide custom
     asset handling in their implementation.
     """
-
-    implements(IServer)
-
     def __init__(self, base_url, db, config):
         self.base_url = base_url
         self._db = db
@@ -127,9 +122,6 @@ class FeedConfig(object):
     """The feedconfig object contains all the settings for a specific
     feed. It implements the :ref:`IFeedConfig` interface.
     """
-
-    implements(IFeedConfig)
-
     def __init__(self,
                  repository_name,
                  base_url,
@@ -143,7 +135,8 @@ class FeedConfig(object):
                  sets_deleted = None,
                  filter_sets = None,
                  delay = 0,
-                 base_asset_path=None):
+                 base_asset_path=None,
+                 ):
         
         self.name = repository_name
         self.url = base_url
@@ -151,10 +144,10 @@ class FeedConfig(object):
         self.metadata_prefixes = metadata_prefixes or ['oai_dc']
         self.batch_size = batch_size
         self.content_type = content_type
-        self.sets_needed = sets_needed or []
-        self.sets_allowed = sets_allowed or []
-        self.sets_disallowed = sets_disallowed or []
-        self.sets_deleted = sets_deleted or []
-        self.filter_sets = filter_sets or []
+        self.sets_needed = set(sets_needed or [])
+        self.sets_allowed = set(sets_allowed or [])
+        self.sets_disallowed = set(sets_disallowed or [])
+        self.sets_deleted = set(sets_deleted or [])
+        self.filter_sets = set(filter_sets or [])
         self.delay = delay
         self.base_asset_path = base_asset_path or tempfile.gettempdir()

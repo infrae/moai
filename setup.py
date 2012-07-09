@@ -30,6 +30,11 @@ setup(
     'moai.content':[
         'moai_example=moai.example:ExampleContent'
      ],
+    'moai.database':[
+        'sqlite=moai.database:SQLDatabase',
+        'mysql=moai.database:SQLDatabase',
+        'postgres=moai.database:SQLDatabase',
+        'oracle=moai.database:SQLDatabase'],
     'moai.provider':[
         'file=moai.provider.file:FileBasedContentProvider',
         'list=moai.provider.list:ListBasedContentProvider',
@@ -40,7 +45,7 @@ setup(
          'oai_dc=moai.metadata.oaidc:OAIDC',
          'mods=moai.metadata.mods:MODS',
          'didl=moai.metadata.didl:DIDL',
-         'nl_didl=moai.metadata.didl:DareDIDL'
+         'nl_didl=moai.metadata.dare_didl:DareDIDL'
      ],
     },
     install_requires=[
@@ -50,7 +55,6 @@ setup(
     'webob',
     'pasteScript',
     'sqlalchemy',
-    'simplejson'
     ],
     test_suite='moai.test.suite'
 )
