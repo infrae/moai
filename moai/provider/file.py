@@ -2,16 +2,11 @@ import os
 import time
 import fnmatch
 
-from zope.interface import implements
-
-from moai.interfaces import IContentProvider
 
 class FileBasedContentProvider(object):
     """Provides content by reading directories of files
     Implements the :ref:`IContentProvider` interface
     """
-    implements(IContentProvider)
-
     def __init__(self, uri, content_filter="*"):
         assert uri.startswith('file://'), 'unknown uri format'
         path = uri[7:]

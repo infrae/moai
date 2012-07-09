@@ -9,10 +9,8 @@ of :ref:`IServer` and :ref:`IFeedConfig`.
 import os
 import tempfile
 
-from zope.interface import implements
 import oaipmh.error
 
-from moai.interfaces import IServer, IFeedConfig
 from moai.oai import OAIServerFactory, OAIServer
 
 class Server(object):
@@ -22,9 +20,6 @@ class Server(object):
     Developers might want to subclass this, to provide custom
     asset handling in their implementation.
     """
-
-    implements(IServer)
-
     def __init__(self, base_url, db, config):
         self.base_url = base_url
         self._db = db
@@ -127,9 +122,6 @@ class FeedConfig(object):
     """The feedconfig object contains all the settings for a specific
     feed. It implements the :ref:`IFeedConfig` interface.
     """
-
-    implements(IFeedConfig)
-
     def __init__(self,
                  repository_name,
                  base_url,
