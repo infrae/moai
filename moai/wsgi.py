@@ -93,6 +93,7 @@ def app_factory(global_config,
     if sets_needed:
         sets_needed = sets_needed.split()
     database = get_database(database)
+    database.config = kwargs
     feedconfig = FeedConfig(name,
                             url,
                             admin_emails=admin_email,
@@ -102,6 +103,7 @@ def app_factory(global_config,
                             sets_allowed=sets_allowed,
                             sets_needed=sets_needed)
     server = Server(url, database, feedconfig)
+    
     return MOAIWSGIApp(server)
 
 class FileIterable(object):

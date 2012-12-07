@@ -17,10 +17,13 @@ class MODS(object):
 
         self.ns = {'mods': 'http://www.loc.gov/mods/v3',
                    'xml':'http://www.w3.org/XML/1998/namespace',
-                   'dai': 'info:eu-repo/dai'}
+                   'dai': 'info:eu-repo/dai',
+                   'gal': 'info:eu-repo/grantAgreement'}
 
         self.schemas = {
-           'mods': 'http://www.loc.gov/standards/mods/v3/mods-3-2.xsd'}
+           'mods': 'http://www.loc.gov/standards/mods/v3/mods-3-2.xsd',
+           'dai': 'http://purl.org/REP/standards/dai-extension.xsd',
+           'gal': 'http://purl.org/REP/standards/gal-extension.xsd'}
         
         
     def get_namespace(self):
@@ -34,7 +37,8 @@ class MODS(object):
         data = metadata.record
         MODS = ElementMaker(namespace=self.ns['mods'], nsmap=self.ns)
         DAI = ElementMaker(namespace=self.ns['dai'], nsmap=self.ns)
-        mods = MODS.mods(version="3.2")
+        GAL = ElementMaker(namespace=self.ns['gal'], nsmap=self.ns)
+        mods = MODS.mods(version="3.3")
 
         if data['metadata'].get('identifier'):
             mods.append(MODS.identifier(data['metadata']['identifier'][0],
@@ -114,6 +118,10 @@ class MODS(object):
                     dai_list.append((unique_id, dai))
             if dai_list:
                 daiList = DAI.daiList()
+                daiList.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (
+                    self.ns['dai'],
+                    self.schemas['dai'])
+
                 for id, dai in dai_list:
                     daiList.append(DAI.identifier(
                         dai[0].split('/')[-1],
@@ -213,6 +221,36 @@ class MODS(object):
         if data['metadata'].get('rights'):
             mods.append(MODS.accessCondition(data['metadata']['rights'][0]))
         
+        projects = data['metadata'].get('project', [])
+        funders = set([prj['funder'] for prj in projects if prj.get('funder')])
+        funder_ids = {}
+        for funder in funders:
+            unique_id = uuid.uuid4().hex
+            if unique_id[0].isdigit():
+                unique_id = '_'+unique_id
+            funder_ids[funder] = unique_id
+            mods.append(
+                MODS.name(MODS.namePart(funder),
+                          MODS.role(MODS.roleTerm('fnd',
+                                                  authority='marcrelator',
+                                                  type='code')),
+                          ID=unique_id,
+                          type='corporate'))
+        
+        if projects:
+            galList = GAL.grantAgreementList()
+            galList.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (
+                self.ns['gal'],
+                self.schemas['gal'])
+            mods.append(MODS.extension(galList))
+            for prj in projects:
+                el = GAL.grantAgreement(code=prj['id'])
+                if prj.get('funder'):
+                    el.append(GAL.funder(IDref=funder_ids[prj['funder']]))
+                if prj.get('title'):
+                    el.append(GAL.title(prj['title']))
+                galList.append(el)
+
             
         mods.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (
             self.ns['mods'],
