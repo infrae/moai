@@ -92,8 +92,7 @@ def app_factory(global_config,
     sets_needed = kwargs.get('needed_sets', '') or []
     if sets_needed:
         sets_needed = sets_needed.split()
-    database = get_database(database)
-    database.config = kwargs
+    database = get_database(database, kwargs)
     feedconfig = FeedConfig(name,
                             url,
                             admin_emails=admin_email,
@@ -101,7 +100,8 @@ def app_factory(global_config,
                             sets_deleted=sets_deleted,
                             sets_disallowed=sets_disallowed,
                             sets_allowed=sets_allowed,
-                            sets_needed=sets_needed)
+                            sets_needed=sets_needed,
+                            extra_args=kwargs)
     server = Server(url, database, feedconfig)
     
     return MOAIWSGIApp(server)
