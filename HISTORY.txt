@@ -1,14 +1,16 @@
 MOAI Changes
 ============
 
-2.0.0b (unreleased)
-------------------
+MOAI 2.0.0 (2012-12-19)
+-----------------------
 
-- First release in the 2.0 series
+- First public release in the 2.x series, switched to mod_wsgi, 
+  smaller simpler codebase, pluggability through entry_points instead of ZCA.
+- New docs and examples, simpler direct integration with external databases
+- Added support for GAL metadata MODS extension
 
-
-1.1.2 (2010-09-30)
-------------------
+MOAI 1.1.2 (2010-09-30)
+-----------------------
 
 - Changed contact info, and switched repository from svn to mercurial
   this release has no code changes

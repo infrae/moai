@@ -57,7 +57,7 @@ class WSGIRequest(object):
     def send_status(self, code, msg='', mimetype='text/plain'):
         response = Response()
         response.content_type = mimetype
-        response.status = code
+        response.status = int(code.split()[0])
         response.body = msg
         return response
 
