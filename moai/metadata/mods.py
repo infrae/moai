@@ -1,3 +1,4 @@
+import re
 import uuid
 
 from lxml.builder import ElementMaker
@@ -21,7 +22,7 @@ class MODS(object):
                    'gal': 'info:eu-repo/grantAgreement'}
 
         self.schemas = {
-           'mods': 'http://www.loc.gov/standards/mods/v3/mods-3-2.xsd',
+           'mods': 'http://www.loc.gov/standards/mods/v3/mods-3-3.xsd',
            'dai': 'http://purl.org/REP/standards/dai-extension.xsd',
            'gal': 'http://purl.org/REP/standards/gal-extension.xsd'}
         
@@ -43,10 +44,10 @@ class MODS(object):
         if data['metadata'].get('identifier'):
             mods.append(MODS.identifier(data['metadata']['identifier'][0],
                                         type="uri"))
-
-        if data['metadata'].get('url'):
-            mods.append(MODS.location(MODS.url(data['metadata']['url'][0])))
-
+        for key, value in data['metadata'].get('identifier_data', {}).items():
+            mods.append(MODS.identifier(value, type=key))
+                
+            
         if data['metadata'].get('title'):
             titleInfo = MODS.titleInfo(
                 MODS.title(data['metadata']['title'][0])
@@ -54,6 +55,40 @@ class MODS(object):
             titleInfo.attrib['{%s}lang' % self.ns['xml']] = data['metadata'].get(
                 'language', ['en'])[0]
             mods.append(titleInfo)
+
+        mods.append(MODS.typeOfResource('text'))        
+        if data['metadata'].get('dare_type'):
+            dt = 'info:eu-repo/semantics/%s' % data['metadata']['dare_type'][0]
+            mods.append(MODS.genre(dt))
+
+        if data['metadata'].get('url'):
+            location_el = MODS.location(MODS.url(data['metadata']['url'][0],
+                                                 usage="primary display",
+                                                 access="object in context"))
+            for asset in data['metadata'].get('asset', []):
+                if asset.get('access') == 'open':
+                    location_el.append(MODS.url(asset['absolute_uri'],
+                                                access='raw object'))
+            mods.append(location_el)
+
+        public_assets = [a for a in data['metadata'].get('asset', [])
+                         if a.get('access') == 'open']
+        if len(public_assets) == 1:
+            phys_descr_el = MODS.physicalDescription()
+            if asset.get('mimetype'):
+                phys_descr_el.append(MODS.internetMediaType(asset['mimetype']))
+            if asset.get('bytes'):
+                try:
+                    kbytes = re.sub(r'(\d{3})(?=\d)', r'\1,',
+                                    str(int(asset['bytes'])/1024)[::-1])[::-1]
+                
+                    phys_descr_el.append(MODS.extent('Filesize: %s KB' % kbytes))
+                except:
+                    pass
+                
+            phys_descr_el.append(MODS.digitalOrigin('born digital'))
+            mods.append(phys_descr_el)
+            
             
         if data['metadata'].get('description'):
             mods.append(MODS.abstract(data['metadata']['description'][0]))
@@ -143,11 +178,16 @@ class MODS(object):
                 type="corporate"))
 
         if data['metadata'].get('language'):
-            mods.append(MODS.language(
+            lang_el = MODS.language(
                 MODS.languageTerm(data['metadata']['language'][0],
                                   type="code",
-                                  authority="rfc3066")))
-
+                                  authority="rfc3066"))
+            if data['metadata']['language'][0] == 'en':
+                lang_el.append(MODS.languageTerm('English', type="text"))
+            if data['metadata']['language'][0] == 'nl':
+                lang_el.append(MODS.languageTerm('Nederlands', type="text"))
+            mods.append(lang_el)
+            
         for host in ['journal', 'series']:
             title = data['metadata'].get('%s_title' % host)
             part_type = {'journal': 'host'}.get(host, host)
@@ -195,12 +235,7 @@ class MODS(object):
             origin.append(MODS.publisher(data['metadata']['publisher'][0]))
         if data['metadata'].get('date'):
             origin.append(MODS.dateIssued(data['metadata']['date'][0],
-                                        encoding='iso8601'))
-
-        mods.append(MODS.typeOfResource('text'))        
-        if data['metadata'].get('dare_type'):
-            dt = 'info:eu-repo/semantics/%s' % data['metadata']['dare_type'][0]
-            mods.append(MODS.genre(dt))
+                                        encoding='w3cdtf'))
 
         
         classifications = data['metadata'].get('classification', [])
@@ -251,6 +286,26 @@ class MODS(object):
                     el.append(GAL.title(prj['title']))
                 galList.append(el)
 
+        info = data['metadata'].get('record_info_data', {})
+        if info:
+            record_info_el = MODS.recordInfo()
+            if info.get('source'):
+                record_info_el.append(MODS.recordContentSource(info['source']))
+            if info.get('identifier'):
+                record_info_el.append(MODS.recordIdentifier(info['identifier']))
+            for key, value in info.get('identifier_data', {}).items():
+                record_info_el.append(MODS.recordIdentifier(value, source=key))
+            if info.get('origin'):
+                record_info_el.append(MODS.recordOrigin(info['origin']))
+            if info.get('created'):
+                record_info_el.append(
+                    MODS.recordCreationDate(info['created'],
+                                            encoding="w3cdtf"))
+            if info.get('changed'):
+                record_info_el.append(
+                    MODS.recordChangeDate(info['changed'],
+                                          encoding="w3cdtf"))
+            mods.append(record_info_el)
             
         mods.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (
             self.ns['mods'],

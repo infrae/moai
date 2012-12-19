@@ -40,7 +40,6 @@ More specifically MOAI has the ability to:
 - Simple and robust authentication through integration with the Apache webserver
 - Serve assets via Apache while still using configurable authentication rules
 
-In the coming period we will be adding more features and updating this page accordingly. 
 
 .. _MOAI History: http://moai.infrae.com/history.html
 .. _Fedora Commons: http://www.fedora.info
