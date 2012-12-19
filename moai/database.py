@@ -6,13 +6,16 @@ import sqlalchemy as sql
 
 from moai.utils import check_type
 
-def get_database(uri):
+def get_database(uri, config=None):
     prefix = uri.split(':')[0]
     for entry_point in iter_entry_points(group='moai.database', name=prefix):
         dbclass = entry_point.load()
-        return dbclass(uri)
-    else:
-        raise ValueError('No such database registered: %s' % prefix)
+        try:
+            return dbclass(uri, config)
+        except TypeError:
+            # ugly backwards compatibility hack
+            return dbclass(uri)
+    raise ValueError('No such database registered: %s' % prefix)
 
 
 class SQLDatabase(object):
