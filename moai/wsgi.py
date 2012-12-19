@@ -27,13 +27,15 @@ class WSGIRequest(object):
         """Send the file located at 'path' back to the user
         """
         response = Response(content_type=mimetype,
-                            conditional_request=True)
-        response.app_iter = FileIterable(path)
-        response.content_length = os.path.getsize(path)
+                            conditional_response=True)
         response.last_modified = os.path.getmtime(path)
-        response.etag = '%s-%s-%s' % (response.last_modified,
-                                      response.content_length,
-                                      hash(path))
+        response.app_iter = FileIterable(path)
+        with open(path) as f:
+            response.body = f.read()
+        response.content_length = os.path.getsize(path)
+        # do not accept ranges, since this does not work reliable
+        # with acrobat IE plugin
+        response.headers['Accept-Ranges'] = 'none'
         return response
     
     def query_dict(self):
