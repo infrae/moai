@@ -37,17 +37,16 @@ class Server(object):
                 asset['md5'] == filename):
                 break
         else:
-            return req.send_status('404 File not Found',
-                                   'The asset "%s" does not exist' % filename)
+            return req.send_status(
+                '404 File not Found',
+                'The asset "%s" does not exist' % filename)
             
-        assetpath = config.get_asset_path(id, asset)
+        if not os.path.isfile(asset['path']):
+            return req.send_status(
+                '404 File not Found',
+                'The asset file "%s" does not exist' % filename)
 
-        if not os.path.isfile(assetpath):
-            return req.send_status('404 File not Found',
-                                   'The asset file "%s" does not exist' % filename)
-
-        
-        return req.send_file(assetpath,
+        return req.send_file(asset['path'],
                              asset['mimetype'].encode('ascii'))
 
     def allow_download(self, url, config):
@@ -66,8 +65,8 @@ class Server(object):
         
         oai_server = OAIServer(self._db, config)
         try:
-            header, metadata, descriptio = oai_server.getRecord(
-                'oai_dc', config.get_oai_id(id))
+            header, metadata, description = oai_server.getRecord(
+                'oai_dc', config.oai_id_prefix + id)
         except oaipmh.error.IdDoesNotExistError:
             # record is not in the oai feed, don't download
             return False
@@ -87,11 +86,11 @@ class Server(object):
         return False
             
     def handle_request(self, req):
-
         if not req.url().startswith(self.base_url):
-            return req.send_status('500 Internal Server Error',
-                 'The url "%s" does not start with base url "%s".' % (req.url(),
-                                                                      self.base_url))
+            return req.send_status(
+                '500 Internal Server Error',
+                'The url "%s" does not start with base url "%s".' % (
+                req.url(), self.base_url))
         url = req.url()[len(self.base_url):]
         
         if url.startswith('/'):
@@ -134,10 +133,8 @@ class FeedConfig(object):
                  sets_disallowed = None,
                  sets_deleted = None,
                  filter_sets = None,
-                 delay = 0,
-                 base_asset_path=None,
-                 ):
-        
+                 extra_args = None):
+        extra_args = extra_args or {}
         self.name = repository_name
         self.url = base_url
         self.admins = admin_emails or []
@@ -149,5 +146,8 @@ class FeedConfig(object):
         self.sets_disallowed = set(sets_disallowed or [])
         self.sets_deleted = set(sets_deleted or [])
         self.filter_sets = set(filter_sets or [])
-        self.delay = delay
-        self.base_asset_path = base_asset_path or tempfile.gettempdir()
+        self.delay = extra_args.get('delay', 0)
+        self.base_asset_path = extra_args.get('base_asset_path',
+                                              tempfile.gettempdir())
+        self.oai_id_prefix = extra_args.get('oai_id_prefix', '')
+        
