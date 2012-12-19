@@ -7,7 +7,7 @@ MOAI 2.0.0 (2012-12-19)
 - First public release in the 2.x series, switched to mod_wsgi, 
   smaller simpler codebase, pluggability through entry_points instead of ZCA.
 - New docs and examples, simpler direct integration with external databases
-- Added support for GAL metadata MODS extension
+- Update mods format and support for EU GAL metadata MODS extension
 
 MOAI 1.1.2 (2010-09-30)
 -----------------------
