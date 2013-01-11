@@ -58,8 +58,7 @@ class MODS(object):
 
         mods.append(MODS.typeOfResource('text'))        
         if data['metadata'].get('dare_type'):
-            dt = 'info:eu-repo/semantics/%s' % data['metadata']['dare_type'][0]
-            mods.append(MODS.genre(dt))
+            mods.append(MODS.genre(data['metadata']['dare_type'][0]))
 
         if data['metadata'].get('url'):
             location_el = MODS.location(MODS.url(data['metadata']['url'][0],
@@ -128,13 +127,12 @@ class MODS(object):
                         surname = u'%s, %s' % (surname, prefix[0])
                     name.append(MODS.namePart(surname, type="family"))
                 initials = contributor.get('initials')
-                if initials:
-                    initials = initials[0]
-                    firstname = contributor.get('firstname')
-                    if firstname:
-                        initials = u'%s (%s)' % (initials, firstname[0])
-                    name.append(MODS.namePart(initials, type="given"))
-
+                firstname = contributor.get('firstname')
+                if firstname:
+                    name.append(MODS.namePart(firstname[0], type="given"))
+                elif initials:
+                    name.append(MODS.namePart(initials[0], type="given"))
+                    
                 role = contributor.get('role')
                 if role:
                     role = role[0]
