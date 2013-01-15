@@ -311,3 +311,20 @@ class MODS(object):
         
         element.append(mods)
 
+class NL_MODS(MODS):
+    """
+    like mods, but dateIssued uses wrong iso8601 encoding instead of w3cdtf
+    """
+    def __init__(self, prefix, config, db):
+        super(NL_MODS, self).__init__(prefix, config, db)
+        self.ns['nl_mods'] = self.ns['mods']
+        self.schemas['nl_mods'] = self.schemas['mods']
+        
+    def __call__(self, element, metadata):
+        super(NL_MODS, self).__call__(element, metadata)
+        for el in element.xpath(
+            './mods:mods/mods:originInfo/'
+            'mods:dateIssued[@encoding="w3cdtf"]', namespaces=self.ns):
+            el.attrib['encoding'] = 'iso8601'
+        
+        

@@ -1,7 +1,7 @@
 
 from lxml.builder import ElementMaker
 
-from moai.metadata.mods import MODS, XSI_NS
+from moai.metadata.mods import NL_MODS, XSI_NS
 
         
 class DIDL(object):
@@ -54,7 +54,7 @@ class DIDL(object):
 
         # generate mods for this feed
         mods_data = DIDL.Resource(mimeType="application/xml")
-        MODS('mods', self.config, self.db)(mods_data, metadata)
+        NL_MODS('mods', self.config, self.db)(mods_data, metadata)
 
         asset_data = []
 
