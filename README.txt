@@ -139,7 +139,30 @@ Adding your own Database
 
 Instead of writing your own provider/content classes, you can also register your own custom database. Implementing a replacement for moai.database.SQLDatabase can be more complicated then writing a provider/content class, but it has the advantage that Moai is always up to date, and you don't need a second sqlite database.
 
+Have a look at the setup.py file from the MOAI code, it registers several databases. You could use this mechanism to register your own database from your own python package.
 
+In the settings.ini you configuration you can then reference your database ('mydb://some+config+variables').
+
+For the database, have a look at the generic database provider in database.py. The only methods that you need to implement are: oai_sets, oai_earliest_datestamp and oai_query.
+The oai_query method returns dictionaries with record data. The keys of these dictionaries are defined in the metadata files (for example metadata.py),  have a look at the source. 
+
+For oai_dc there are the following names:
+
+'title', 'creator', 'subject', 'description', 'publisher', 'contributor', 'type', 'format', 'identifier', 'source', 'language', 'date', 'relation', 'coverage', 'rights
+
+So a return value would look like:
+
+    {'id': <oai record id>,
+     'deleted': <bool>,
+     'modified': <utc datetime>,
+     'sets': <list of setspecs>,
+     'metadata': {
+       'title': [<list with publication title>],
+       'creator': [<list of creator names>],
+       ...}
+    }
+
+ 
 
 
 
