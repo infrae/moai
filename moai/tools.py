@@ -51,7 +51,7 @@ def update_moai():
     if not os.path.isfile(config_path):
         sys.stderr.write('No config_path file found at %s,\n'
                          'Start script from other directory '
-                         'or use --config_path option\n''' % config_path)
+                         'or use --config option\n''' % config_path)
         sys.exit(1)
     configfile = ConfigParser.ConfigParser()
     configfile.read(config_path)
@@ -84,22 +84,32 @@ def update_moai():
             *time.strptime(options.from_date, fmt)[:6])
     else:
         from_date = None
-        
+
     database = SQLDatabase(config['database'])
+
+    ContentClass = None
     for content_point in iter_entry_points(group='moai.content',
                                            name=config['content']):
         ContentClass = content_point.load()
 
+    if ContentClass is None:
+        sys.stderr.write('Unknown content class: %s\n' % (config['content'],))
+        sys.exit(1)
+
     provider_name = config['provider'].split(':', 1)[0]
+    provider = None
     for provider_point in iter_entry_points(group='moai.provider',
                                            name=provider_name):
         provider = provider_point.load()(config['provider'])
 
+    if provider is None:
+        sys.stderr.write('Unknown provider: %s\n' % (provider_name,))
+        sys.exit(1)
 
     log = get_moai_log()
-    
+    provider.set_logger(log)
+
     progress = ProgressBar()
-    error_count = 0
     starttime = time.time()
 
     sys.stderr.write('Updating content provider..')

@@ -55,7 +55,7 @@ Configuring MOAI
 
 Configuration is done in the settings.ini file. The default settings file uses the Paste#urlmap application to map wsgi applications to a url.
 
-In the `composite:main` section is a line:
+In the `composite:main` section there is a line:
 
 /oai = moai_example
 
@@ -80,11 +80,11 @@ content:           Class that maps metadata from provider format to moai format
 Adding Content
 ==============
 
-The Moai system is designed to fetch periodically fetch content from a `provider`, and convert that to Moais internal format, which can then be translated in the different metadata formats from the oaipmh feed.
+The Moai system is designed to periodically fetch content from a `provider`, and convert it to Moai's internal format, which can then be translated to the different metadata formats for the oaipmh feed.
 
 Moai comes with an example that shows this principle:
 
-In the moai/moai directory are two XML files. Let's pretend these files are from a remote system, and we want to publish them with MOAI.
+In the moai/moai directory there are two XML files. Let's pretend these files are from a remote system, and we want to publish them with MOAI.
 
 In the settings.ini file, the following option is specified:
 
@@ -104,11 +104,11 @@ Now let's try to add these two xml files, let's first visit the oaipmh feed to m
 
 http://localhost:8080/oai?verb=ListRecords&metadataPrefix=oai_dc
 
-This should return a nowRecordsMatch error.
+This should return a noRecordsMatch error.
 
 To add the content, run the update_content script, with the section name from the settings.ini as argument
 
-> ./bin/update_content moai_example
+> ./bin/update_moai moai_example
 
 This will produce the following output:
 

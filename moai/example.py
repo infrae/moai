@@ -9,9 +9,9 @@ class ExampleContent(object):
         self.id = None
         self.modified = None
         self.deleted = None
-        self.data = None
         self.sets = None
-        
+        self.metadata = None
+
     def update(self, path):
         doc = etree.parse(path)
         xpath = XPath(doc, nsmap={'x':'http://example.org/data'})

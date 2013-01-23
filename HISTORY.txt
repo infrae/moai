@@ -8,6 +8,7 @@ MOAI 2.0.0 (2012-12-19)
   smaller simpler codebase, pluggability through entry_points instead of ZCA.
 - New docs and examples, simpler direct integration with external databases
 - Update mods format and support for EU GAL metadata MODS extension
+- Several documentation and tool improvements by Filipe Correia
 
 MOAI 1.1.2 (2010-09-30)
 -----------------------
