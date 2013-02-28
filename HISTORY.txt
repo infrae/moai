@@ -1,7 +1,7 @@
 MOAI Changes
 ============
 
-MOAI 2.0.0 (2012-12-19)
+MOAI 2.0.0 (2013-02-28)
 -----------------------
 
 - First public release in the 2.x series, switched to mod_wsgi, 

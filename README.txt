@@ -64,18 +64,24 @@ This makes it easy to run many Maoi instances in one server, each with it's own 
 
 The app:moai_example configuration let's you specify the following options:
 
-name:              The name of the oai feed (returned in Identify verb)
-url:               The url of the oai feed (returned in oaipmh xml output)
-admin_email:       The email adress of the amdin  (returned in Identify verb)
-
-formats:           Available metadata formats
-disallow_sets:     List of setspecs that are not allowed in the output of this
-                   feed
-allow_sets:        If used, only sets listed here will be returned
-
-database:          SQLAlchemy uri to identify the database for used for storage
-provider:          Provider identifier where moai retrieves content from
-content:           Class that maps metadata from provider format to moai format
+name
+  The name of the oai feed (returned in Identify verb)
+url
+  The url of the oai feed (returned in oaipmh xml output)
+admin_email
+  The email adress of the amdin  (returned in Identify verb)
+formats
+  Available metadata formats
+disallow_sets
+  List of setspecs that are not allowed in the output of this feed
+allow_sets
+  If used, only sets listed here will be returned
+database
+  SQLAlchemy uri to identify the database for used for storage
+provider
+  Provider identifier where moai retrieves content from
+content
+  Class that maps metadata from provider format to moai format
 
 Adding Content
 ==============
@@ -88,9 +94,10 @@ In the moai/moai directory there are two XML files. Let's pretend these files ar
 
 In the settings.ini file, the following option is specified:
 
-provider = file://moai/example-*.xml
+`provider = file://moai/example-*.xml`
 
-This tells moai that we want to use a file provider, with some files located in moai/example-*.xml. 
+This tells moai that we want to use a file provider, with some files located in
+`moai/example-*.xml`. 
 
 The following option points to the class that we want to use for converting the example content xml data to Moais internal format.
 
@@ -150,7 +157,7 @@ For oai_dc there are the following names:
 
 'title', 'creator', 'subject', 'description', 'publisher', 'contributor', 'type', 'format', 'identifier', 'source', 'language', 'date', 'relation', 'coverage', 'rights
 
-So a return value would look like:
+So a return value would look like::
 
     {'id': <oai record id>,
      'deleted': <bool>,

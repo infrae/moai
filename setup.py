@@ -6,9 +6,11 @@ setup(
     version='2.0.0',
     author='Infrae',
     author_email='info@infrae.com',
-    url='http://moai.infrae.com',
+    url='http://infrae.com/products/moai',
     description="MOAI, A Open Access Server Platform for Institutional Repositories",
-    long_description=(open(join(dirname(__file__), 'README.txt')).read()+
+    long_description=(open(join(dirname(__file__), 'ABOUT.txt')).read()+
+                      '\n'+
+                      open(join(dirname(__file__), 'README.txt')).read()+
                       '\n'+
                       open(join(dirname(__file__), 'HISTORY.txt')).read()),
     classifiers=["Development Status :: 5 - Production/Stable",
