@@ -56,6 +56,8 @@ setup(
     'WSGIUtils',
     'wsgi_intercept',
     'webob',
+    'paste',
+    'pasteDeploy',
     'pasteScript',
     'sqlalchemy',
     ],
