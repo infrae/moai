@@ -40,7 +40,6 @@ class MODS(object):
         DAI = ElementMaker(namespace=self.ns['dai'], nsmap=self.ns)
         GAL = ElementMaker(namespace=self.ns['gal'], nsmap=self.ns)
         mods = MODS.mods(version="3.3")
-
         if data['metadata'].get('identifier'):
             mods.append(MODS.identifier(data['metadata']['identifier'][0],
                                         type="uri"))
@@ -163,18 +162,21 @@ class MODS(object):
                 
                 mods.append(MODS.extension(daiList))
 
-
-        dgg = data['metadata'].get('degree_grantor')
-        if dgg:
+        for corp in data['metadata'].get('corporate_data', []):
+            roles = MODS.role()
+            if corp.get('role'):
+                roles.append(MODS.roleTerm(corp['role'],
+                                           authority="marcrelator",
+                                           type="text"))
+            if corp.get('role_code'):
+                roles.append(MODS.roleTerm(corp['role_code'],
+                                           authority="marcrelator",
+                                           type="code"))
             mods.append(MODS.name(
-                MODS.namePart(dgg[0]),
-                MODS.role(
-                  MODS.roleTerm('dgg',
-                                authority="marcrelator",
-                                type="code")
-                ),
+                MODS.namePart(corp['name']),
+                roles,
                 type="corporate"))
-
+            
         if data['metadata'].get('language'):
             lang_el = MODS.language(
                 MODS.languageTerm(data['metadata']['language'][0],
@@ -197,7 +199,12 @@ class MODS(object):
             issn = data['metadata'].get('%s_issn' % host)
             if issn:
                 relitem.append(
-                    MODS.identifier('urn:issn:%s' % issn[0],
+                    MODS.identifier(issn[0],
+                                    type="issn"))
+            host_uri = data['metadata'].get('%s_uri' % host)
+            if host_uri:
+                relitem.append(
+                    MODS.identifier(host_uri[0],
                                     type="uri"))
             volume = data['metadata'].get('%s_volume' % host)
             issue = data['metadata'].get('%s_issue' % host)
