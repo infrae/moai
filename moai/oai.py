@@ -18,10 +18,10 @@ def get_writer(prefix, config, db):
 
 class OAIServer(object):
     """An OAI-2.0 compliant oai server.
-    
+
     Underlying code is based on pyoai's oaipmh.server'
     """
-    
+
     def __init__(self, db, config):
         self.db = db
         self.config = config
@@ -43,7 +43,7 @@ class OAIServer(object):
             pkg_resources.Requirement.parse('pyoai'))
         moai_egg = pkg_resources.working_set.find(
             pkg_resources.Requirement.parse('MOAI'))
-        
+
         if moai_egg and pyoai_egg:
             version = '<version>%s (using pyoai%s)</version>' % (
                 moai_egg.version,
@@ -58,7 +58,7 @@ class OAIServer(object):
             '%s'
             '<URL>http://moai.infrae.com</URL>'
             '</toolkit>' % version)
-            
+
         return result
 
     def listMetadataFormats(self, identifier=None):
@@ -69,14 +69,14 @@ class OAIServer(object):
             schema = writer.get_schema_location()
             result.append((prefix, schema, ns))
         return result
-    
+
     def listSets(self, cursor=0, batch_size=20):
         for set in self.db.oai_sets(cursor, batch_size):
             yield [set['id'], set['name'], set['description']]
 
     def listRecords(self, metadataPrefix, set=None, from_=None, until=None,
                     cursor=0, batch_size=10):
-        
+
         self._checkMetadataPrefix(metadataPrefix)
         for record in self._listQuery(set, from_, until, cursor, batch_size):
             header, metadata = self._createHeaderAndMetadata(record)
@@ -84,7 +84,7 @@ class OAIServer(object):
 
     def listIdentifiers(self, metadataPrefix, set=None, from_=None, until=None,
                         cursor=0, batch_size=10):
-        
+
         self._checkMetadataPrefix(metadataPrefix)
         for record in self._listQuery(set, from_, until, cursor, batch_size):
             yield self._createHeader(record)
@@ -98,7 +98,7 @@ class OAIServer(object):
         if header is None:
             raise oaipmh.error.IdDoesNotExistError(identifier)
         return header, metadata, None
-        
+
     def _checkMetadataPrefix(self, metadataPrefix):
         if metadataPrefix not in self.config.metadata_prefixes:
             raise oaipmh.error.CannotDisseminateFormatError
@@ -109,25 +109,26 @@ class OAIServer(object):
             if setspec in self.config.sets_deleted:
                 deleted = True
                 break
-        return oaipmh.common.Header(record['id'],
+        return oaipmh.common.Header(None,
+                                    record['id'],
                                     record['modified'],
                                     record['sets'],
                                     deleted)
 
     def _createHeaderAndMetadata(self, record):
         header = self._createHeader(record)
-        metadata = oaipmh.common.Metadata(record)
+        metadata = oaipmh.common.Metadata(None, record)
         metadata.record = record
         return header, metadata
-    
-    def _listQuery(self, set=None, from_=None, until=None, 
+
+    def _listQuery(self, set=None, from_=None, until=None,
                    cursor=0, batch_size=10, identifier=None):
-            
+
         now = datetime.utcnow()
         if until != None and until > now:
             # until should never be in the future
             until = now
-            
+
         if self.config.delay:
             # subtract delay from until_ param, if present
             if until is None:
@@ -135,13 +136,13 @@ class OAIServer(object):
             until = until.timetuple()
             ut = time.mktime(until)-self.filter_data.delay
             until = datetime.fromtimestamp(ut)
-            
+
         needed_sets = self.config.sets_needed.copy()
         if not set is None:
             needed_sets.add(set)
         allowed_sets = self.config.sets_allowed.copy()
-        disallowed_sets = self.config.sets_disallowed.copy()    
-        
+        disallowed_sets = self.config.sets_disallowed.copy()
+
         return self.db.oai_query(offset=cursor,
                                  batch_size=batch_size,
                                  needed_sets=needed_sets,
@@ -155,12 +156,12 @@ class OAIServer(object):
 def OAIServerFactory(db, config):
     """Create a new OAI batching OAI Server given a config and
     a database"""
-    
+
     metadata_registry = oaipmh.metadata.MetadataRegistry()
     for prefix in config.metadata_prefixes:
         metadata_registry.registerWriter(prefix,
                                          get_writer(prefix, config, db))
-            
+
     return oaipmh.server.BatchingServer(
         OAIServer(db, config),
         metadata_registry=metadata_registry,
