@@ -2,12 +2,8 @@ import datetime
 import json
 from pkg_resources import iter_entry_points
 
+import six
 import sqlalchemy as sql
-
-try:
-    text = unicode
-except NameError:
-    text = str
 
 from moai.utils import check_type
 
@@ -139,7 +135,7 @@ class SQLDatabase(object):
         # adds a record, call flush to actually store in db
 
         check_type(oai_id,
-                   text,
+                   six.text_type,
                    prefix="record %s" % oai_id,
                    suffix='for parameter "oai_id"')
         check_type(modified,

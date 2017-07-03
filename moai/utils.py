@@ -4,10 +4,6 @@ import time
 import logging
 import logging.handlers
 import six
-try:
-    text = unicode
-except NameError:
-    text = str
 
 
 def get_moai_log():
@@ -101,18 +97,18 @@ class XPath(object):
         for stuff in self.doc.xpath(xpath, namespaces=self.nsmap):
             if isinstance(stuff, str):
                 result.append(stuff.strip().decode('utf8'))
-            elif isinstance(stuff, text):
+            elif isinstance(stuff, six.text_type):
                 # convert to real unicode object, not lxml proxy
-                result.append(text(stuff.strip()))
+                result.append(six.text_type(stuff.strip()))
             elif hasattr(stuff, 'text'):
                 if isinstance(stuff.text, str):
                     v = stuff.text.strip()
                     if six.PY2:
                         v = v.decode('utf8')
                     result.append(v)
-                elif isinstance(stuff.text, text):
+                elif isinstance(stuff.text, six.text_type):
                     # convert to real unicode object, not lxml proxy
-                    result.append(text(stuff.text.strip()))
+                    result.append(six.text_type(stuff.text.strip()))
         return result
     
     def number(self, xpath):
