@@ -10,7 +10,7 @@ setup(
     description="MOAI, A Open Access Server Platform for Institutional Repositories",
     long_description=(open(join(dirname(__file__), 'ABOUT.txt')).read()+
                       '\n'+
-                      open(join(dirname(__file__), 'README.txt')).read()+
+                      open(join(dirname(__file__), 'README.rst')).read()+
                       '\n'+
                       open(join(dirname(__file__), 'HISTORY.txt')).read()),
     classifiers=["Development Status :: 5 - Production/Stable",

@@ -1,6 +1,10 @@
-
+===============
 Installing MOAI
 ===============
+
+.. image:: https://img.shields.io/travis/mpasternak/moai.svg
+        :target: https://travis-ci.org/mpasternak/moai
+
 
 The MOAI Software can be run in any wsgi compliant server. 
 
