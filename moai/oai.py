@@ -109,14 +109,15 @@ class OAIServer(object):
             if setspec in self.config.sets_deleted:
                 deleted = True
                 break
-        return oaipmh.common.Header(record['id'],
+        return oaipmh.common.Header(None,
+                                    record['id'],
                                     record['modified'],
                                     record['sets'],
                                     deleted)
 
     def _createHeaderAndMetadata(self, record):
         header = self._createHeader(record)
-        metadata = oaipmh.common.Metadata(record)
+        metadata = oaipmh.common.Metadata(None, record)
         metadata.record = record
         return header, metadata
     
