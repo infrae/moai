@@ -60,6 +60,9 @@ setup(
     'pasteDeploy',
     'pasteScript',
     'sqlalchemy',
+    'wsgi_intercept',
+    'future',
+    'six'
     ],
     test_suite='moai.test.suite'
 )
