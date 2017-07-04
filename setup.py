@@ -30,7 +30,8 @@ setup(
         'main=moai.wsgi:app_factory'
      ],
     'moai.content':[
-        'moai_example=moai.example:ExampleContent'
+        'moai_example=moai.example:ExampleContent',
+        'moai_yoda=moai.yoda:YodaContent'
      ],
     'moai.database':[
         'sqlite=moai.database:SQLDatabase',
@@ -63,5 +64,3 @@ setup(
     ],
     test_suite='moai.test.suite'
 )
-
-
