@@ -39,7 +39,12 @@ class YodaContent(object):
             log.warning("Missing Last Modified Time in %s".format(path))
             self.modified = datetime.now() - timedelta(days=1)
         else:
-            self.modified = datetime.strptime(last_modified, "%Y-%M-%d")
+            ret = datetime.strptime(last_modified[0:19],'%Y-%m-%dT%H:%M:%S')
+    	    if last_modified[19]=='+':
+                ret-=timedelta(hours=int(last_modified[20:22]),minutes=int(last_modified[22:]))
+            elif last_modified[19]=='-':
+                ret+=timedelta(hours=int(last_modified[20:22]),minutes=int(last_modified[22:]))
+            self.modified = ret
 
         author_data = []
         creators = xpath.strings('//Creator/Name')
