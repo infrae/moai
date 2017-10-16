@@ -25,7 +25,7 @@ class YodaContent(object):
 
         self.root = doc.getroot()
 	
-        id = xpath.string("/metadata/system/Persistent_Identifier_Datapackage[Identifier_Scheme='DOI']/Identifier")
+        id = xpath.string("/metadata/System/Persistent_Identifier_Datapackage[Identifier_Scheme='DOI']/Identifier")
 	if not id:
             log.warning("Missing Persistent Identifier (DOI) of Datapackage in %s".format(path))
             return
@@ -81,7 +81,7 @@ class YodaContent(object):
             self.metadata['date'] = dates
 
         rightsinxml = [xpath.string('//License'),
-                       xpath.string('//system/License_URL')]
+                       xpath.string('//System/License_URL')]
 
         rights = [r for r in rightsinxml if r]
         if rights:
