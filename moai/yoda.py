@@ -9,8 +9,8 @@ class YodaContent(object):
         self.provider = provider
         self.id = None
         self.modified = None
+	self.sets = {}
         self.deleted = False
-        self.sets = dict()
         self.metadata = dict()
 
     def update(self, path):
@@ -25,9 +25,9 @@ class YodaContent(object):
 
         self.root = doc.getroot()
 	
-        id = xpath.string('//Persistent_Identifier_Datapackage')
+        id = xpath.string("/metadata/system/Persistent_Identifier_Datapackage[Identifier_Scheme='DOI']/Identifier")
 	if not id:
-            log.warning("Missing Persistent Identifier of Datapackage in %s".format(path))
+            log.warning("Missing Persistent Identifier (DOI) of Datapackage in %s".format(path))
             return
 	
         self.id = 'oai:%s' % id
@@ -81,7 +81,7 @@ class YodaContent(object):
             self.metadata['date'] = dates
 
         rightsinxml = [xpath.string('//License'),
-                       xpath.string('//License/Properties/URL')]
+                       xpath.string('//system/License_URL')]
 
         rights = [r for r in rightsinxml if r]
         if rights:
@@ -92,8 +92,8 @@ class YodaContent(object):
         if subject:
            self.metadata['subject'] = subject
        
-        locations = xpath.strings('//Location_Covered')
-        perioddates = [xpath.string('//Start_Period'), xpath.string('//End_Period')]
+        locations = xpath.strings('//Covered_Geolocation_Place')
+        perioddates = [xpath.string('//Covered_Period/Start_Date'), xpath.string('//Covered_Period/End_Date')]
         period = "/".join([d for d in perioddates if d])
         if period:
             coverage = locations + [period]
@@ -102,11 +102,3 @@ class YodaContent(object):
         if coverage:
             self.metadata['coverage'] = coverage
 
-	relations = xpath.strings('//Persistent_Identifier')
-        if relations:
-            self.metadata['relation'] = relations
-
-	self.sets[u'yoda'] = {
-            u'name': u'YoDa',
-            u'description': u'share-collaborate environment for research data'
-        }
