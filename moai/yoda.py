@@ -99,6 +99,8 @@ class YodaContent(object):
         eastBoundLongitude = xpath.strings('//geoLocation/eastBoundLongitude')
         southBoundLatitude = xpath.strings('//geoLocation/southBoundLatitude')
         northBoundLatitude = xpath.strings('//geoLocation/northBoundLatitude')
+
+        # Bounding box: left,bottom,right,top
         coordinates = ",".join([westBoundLongitude,southBoundLatitude,eastBoundLongitude,northBoundLatitude])
 
         perioddates = [xpath.string('//Covered_Period/Start_Date'), xpath.string('//Covered_Period/End_Date')]
