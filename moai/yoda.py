@@ -24,12 +24,12 @@ class YodaContent(object):
         xpath = XPath(doc, nsmap={})
 
         self.root = doc.getroot()
-	
+
         id = xpath.string("/metadata/System/Persistent_Identifier_Datapackage[Identifier_Scheme='DOI']/Identifier")
 	if not id:
             log.warning("Missing Persistent Identifier (DOI) of Datapackage in %s".format(path))
             return
-	
+
         self.id = 'oai:%s' % id
 
         self.metadata['identifier'] = [id]
@@ -58,7 +58,7 @@ class YodaContent(object):
             self.metadata['contributor'] = contributors
             for contributor in contributors:
                 author_data.append({u"name": contributor, u"role": [u"cont"]})
-	
+
 	self.metadata["author_data"]= author_data
 
         title = xpath.string('//Title')
@@ -72,7 +72,7 @@ class YodaContent(object):
         language = xpath.string('//Language')
         if language:
             self.metadata['language'] = [language]
-	
+
 	datesinxml = [xpath.string('//Publication_Date'),
                       xpath.string('//Embargo_End_Date')]
 
@@ -91,14 +91,26 @@ class YodaContent(object):
         subject = [s for s in subjectinxml if s]
         if subject:
            self.metadata['subject'] = subject
-       
+
         locations = xpath.strings('//Covered_Geolocation_Place')
+
+        geoLocation = xpath.strings('//geoLocation')
+        westBoundLongitude = xpath.strings('//geoLocation/westBoundLongitude')
+        eastBoundLongitude = xpath.strings('//geoLocation/eastBoundLongitude')
+        southBoundLatitude = xpath.strings('//geoLocation/southBoundLatitude')
+        northBoundLatitude = xpath.strings('//geoLocation/northBoundLatitude')
+        coordinates = ",".join([westBoundLongitude,southBoundLatitude,eastBoundLongitude,northBoundLatitude])
+
         perioddates = [xpath.string('//Covered_Period/Start_Date'), xpath.string('//Covered_Period/End_Date')]
         period = "/".join([d for d in perioddates if d])
+
+        if period and geoLocation:
+            coverage = locations + [period] + coordinates
+        if geoLocation:
+            coverage = locations + coordinates
         if period:
             coverage = locations + [period]
         else:
             coverage = locations
         if coverage:
             self.metadata['coverage'] = coverage
-
