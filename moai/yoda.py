@@ -101,16 +101,17 @@ class YodaContent(object):
         northBoundLatitude = xpath.strings('//geoLocation/northBoundLatitude')
 
         # Bounding box: left,bottom,right,top
-        coordinates = ",".join([westBoundLongitude,southBoundLatitude,eastBoundLongitude,northBoundLatitude])
+        coordinates = westBoundLongitude + southBoundLatitude + eastBoundLongitude + northBoundLatitude
+        coordinates = ",".join(coordinates)
 
         perioddates = [xpath.string('//Covered_Period/Start_Date'), xpath.string('//Covered_Period/End_Date')]
         period = "/".join([d for d in perioddates if d])
 
         if period and geoLocation:
-            coverage = locations + [period] + coordinates
-        if geoLocation:
-            coverage = locations + coordinates
-        if period:
+            coverage = locations + [period] + [coordinates]
+        elif geoLocation:
+            coverage = locations + [coordinates]
+        elif period:
             coverage = locations + [period]
         else:
             coverage = locations
