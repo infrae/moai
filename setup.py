@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from os.path import join, dirname
 
 setup(
-    name='Yoda-MOAI',
+    name='MOAI',
     version='2.1.0',
     author='Infrae',
     author_email='info@infrae.com',
