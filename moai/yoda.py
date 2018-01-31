@@ -27,7 +27,7 @@ class YodaContent(object):
 
         id = xpath.string("/metadata/System/Persistent_Identifier_Datapackage[Identifier_Scheme='DOI']/Identifier")
 	if not id:
-            log.warning("Missing Persistent Identifier (DOI) of Datapackage in %s".format(path))
+            log.warning("Missing Persistent Identifier (DOI) of Datapackage in " + path)
             return
 
         self.id = 'oai:%s' % id
@@ -95,22 +95,24 @@ class YodaContent(object):
         locations = xpath.strings('//Covered_Geolocation_Place')
 
         geoLocation = xpath.strings('//geoLocation')
-        westBoundLongitude = xpath.strings('//geoLocation/westBoundLongitude')
-        eastBoundLongitude = xpath.strings('//geoLocation/eastBoundLongitude')
-        southBoundLatitude = xpath.strings('//geoLocation/southBoundLatitude')
-        northBoundLatitude = xpath.strings('//geoLocation/northBoundLatitude')
+        westBoundLongitudes = xpath.strings('//geoLocation/westBoundLongitude')
+        eastBoundLongitudes = xpath.strings('//geoLocation/eastBoundLongitude')
+        southBoundLatitudes = xpath.strings('//geoLocation/southBoundLatitude')
+        northBoundLatitudes = xpath.strings('//geoLocation/northBoundLatitude')
 
         # Bounding box: left,bottom,right,top
-        coordinates = westBoundLongitude + southBoundLatitude + eastBoundLongitude + northBoundLatitude
-        coordinates = ",".join(coordinates)
+        boxes = []
+        for west, east, south, north in zip(westBoundLongitudes, southBoundLatitudes, eastBoundLongitudes, northBoundLatitudes):
+            box = ",".join([west, south, east, north])
+            boxes.append(box)
 
         perioddates = [xpath.string('//Covered_Period/Start_Date'), xpath.string('//Covered_Period/End_Date')]
         period = "/".join([d for d in perioddates if d])
 
         if period and geoLocation:
-            coverage = locations + [period] + [coordinates]
+            coverage = locations + [period] + boxes
         elif geoLocation:
-            coverage = locations + [coordinates]
+            coverage = locations + boxes
         elif period:
             coverage = locations + [period]
         else:
