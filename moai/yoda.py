@@ -71,7 +71,7 @@ class YodaContent(object):
 
         language = xpath.string('//Language')
         if language:
-            self.metadata['language'] = [language]
+            self.metadata['language'] = [language[0:2]]
 
 	datesinxml = [xpath.string('//Publication_Date'),
                       xpath.string('//Embargo_End_Date')]
