@@ -74,7 +74,7 @@ class DataCite(object):
 
 
          # Publisher
-         datacite.append(NONE.publisher(data['metadata']['publisher']))
+         #datacite.append(NONE.publisher(data['metadata']['publisher']))
 
          #<publicationYear>2014</publicationYear>
          #datacite.append(NONE.publicationYear(data['metadata']['date']))
@@ -93,20 +93,20 @@ class DataCite(object):
          datacite.append(subjects)
 
          # Contributors
-         contributors = NONE.contributor()
-         for contributorName in  data['metadata']['contributor']:
-                 contributor = NONE.contributor()
-                 contributor.attrib['contributorType'] = 'ProjectLeader'
-                 contributor.append(NONE.contributorName(contributorName))
+         # contributors = NONE.contributor()
+         # for contributorName in  data['metadata']['contributor']:
+         #         contributor = NONE.contributor()
+         #         contributor.attrib['contributorType'] = 'ProjectLeader'
+         #         contributor.append(NONE.contributorName(contributorName))
 
-                 nameIdentifier = NONE.nameIdentifier('NameIdentifier')
-                 nameIdentifier.attrib['schemeURI'] = 'http://orcid.org'
-                 nameIdentifier.attrib['nameIdentifierScheme'] = 'ORCID'
-                 contributor.append(nameIdentifier)
+         #         nameIdentifier = NONE.nameIdentifier('NameIdentifier')
+         #         nameIdentifier.attrib['schemeURI'] = 'http://orcid.org'
+         #         nameIdentifier.attrib['nameIdentifierScheme'] = 'ORCID'
+         #         contributor.append(nameIdentifier)
 
-                 contributor.append(NONE.affiliation('Affiliation'))
-                 contributors.append(contributor)
-         datacite.append(contributors)
+         #         contributor.append(NONE.affiliation('Affiliation'))
+         #         contributors.append(contributor)
+         # datacite.append(contributors)
 
          # Dates
          dates = NONE.dates()
