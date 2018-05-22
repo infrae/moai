@@ -39,15 +39,17 @@ class DataCite(object):
          datacite.attrib['xmlnsxsi'] = XSI_NS
 
          # Identifier DOI
-         identifier = NONE.identifier(data['metadata']['identifier'][0])
-         identifier.attrib['identifyerType'] = "DOI" # TODO: Hardcoding allowed here?
+         try:
+             identifier = NONE.identifier(data['metadata']['identifier'][0])
+             identifier.attrib['identifyerType'] = "DOI" # TODO: Hardcoding allowed here?
 
-         datacite.append(identifier)
-
+             datacite.append(identifier)
+         except KeyError:
+             pass
 
          # Creators
-         creators = NONE.creators()
-         for creatorName in  data['metadata']['creator']:
+         try:
+             for creatorName in  data['metadata']['creator']:
                  creator = NONE.creator()
                  creator.append(NONE.creatorName(creatorName))
                  creator.append(NONE.givenName('Given'))
@@ -61,27 +63,40 @@ class DataCite(object):
                  creator.append(NONE.affiliation('Affiliation'))
                  creators.append(creator)
 
-         datacite.append(creators)
+             datacite.append(creators)
+         except KeyError:
+             pass
 
          # Title
-         titles= NONE.titles()
-         title = NONE.title(data['metadata']['title'][0])
-         title.attrib['lang'] = data['metadata']['language'][0] # accepteert xml:lang niet...moet anders opgevoerd
-         titles.append(title)
+         try:
+             titles= NONE.titles()
+             title = NONE.title(data['metadata']['title'][0])
+             title.attrib['lang'] = data['metadata']['language'][0] # accepteert xml:lang niet...moet anders opgevoerd
+             titles.append(title)
 
-         # TODO: Hier nog description toevoegen!
-         datacite.append(titles)
-
+             # TODO: Hier nog description toevoegen!
+             datacite.append(titles)
+         except KeyError:
+             pass
 
          # Publisher
-         #datacite.append(NONE.publisher(data['metadata']['publisher']))
+         try:
+             datacite.append(NONE.publisher(data['metadata']['publisher']))
+         except KeyError:
+             pass
 
          #<publicationYear>2014</publicationYear>
-         #datacite.append(NONE.publicationYear(data['metadata']['date']))
+         try:
+             # TODO: fix bad argument type
+             #datacite.append(NONE.publicationYear(data['metadata']['date']))
+             pass
+         except KeyError:
+             pass
 
          # Subjects
-         subjects = NONE.subjects()
-         for subject in  data['metadata']['subject']:
+         try:
+             subjects = NONE.subjects()
+             for subject in  data['metadata']['subject']:
                  subjectNode = NONE.subject(subject)
 
                  subjectNode.attrib['lang'] = data['metadata']['language'][0] # accepteert xml:lang niet
@@ -90,75 +105,96 @@ class DataCite(object):
 
                  subjects.append(subjectNode)
 
-         datacite.append(subjects)
+             datacite.append(subjects)
+         except KeyError:
+             pass
 
          # Contributors
-         # contributors = NONE.contributor()
-         # for contributorName in  data['metadata']['contributor']:
-         #         contributor = NONE.contributor()
-         #         contributor.attrib['contributorType'] = 'ProjectLeader'
-         #         contributor.append(NONE.contributorName(contributorName))
+         try:
+             contributors = NONE.contributor()
+             for contributorName in  data['metadata']['contributor']:
+                 contributor = NONE.contributor()
+                 contributor.attrib['contributorType'] = 'ProjectLeader'
+                 contributor.append(NONE.contributorName(contributorName))
 
-         #         nameIdentifier = NONE.nameIdentifier('NameIdentifier')
-         #         nameIdentifier.attrib['schemeURI'] = 'http://orcid.org'
-         #         nameIdentifier.attrib['nameIdentifierScheme'] = 'ORCID'
-         #         contributor.append(nameIdentifier)
+                 nameIdentifier = NONE.nameIdentifier('NameIdentifier')
+                 nameIdentifier.attrib['schemeURI'] = 'http://orcid.org'
+                 nameIdentifier.attrib['nameIdentifierScheme'] = 'ORCID'
+                 contributor.append(nameIdentifier)
 
-         #         contributor.append(NONE.affiliation('Affiliation'))
-         #         contributors.append(contributor)
-         # datacite.append(contributors)
+                 contributor.append(NONE.affiliation('Affiliation'))
+                 contributors.append(contributor)
+             datacite.append(contributors)
+         except KeyError:
+             pass
 
          # Dates
-         dates = NONE.dates()
-         for date in  data['metadata']['date']:
+         try:
+             dates = NONE.dates()
+             for date in  data['metadata']['date']:
                  dateNode = NONE.date(date)
                  dateNode.attrib['dateType'] = '??'
 
                  dates.append(dateNode)
-         datacite.append(dates)
+             datacite.append(dates)
+         except KeyError:
+             pass
 
          # Language
-         datacite.append(NONE.language(data['metadata']['language'][0]))
+         try:
+             datacite.append(NONE.language(data['metadata']['language'][0]))
+         except KeyError:
+             pass
 
          # Version
-         datacite.append(NONE.version('VERSION??'))
-
+         try:
+             datacite.append(NONE.version('VERSION??'))
+         except KeyError:
+             pass
 
          # Rights
-         rightsList = NONE.rightsList()
-         rights = NONE.rightsList(data['metadata']['rights'][0])
-         rights.attrib['rightsURI'] = 'http://creativecommons.org/publicdomain/zero/1.0/'
-         rightsList.append(rights)
-         datacite.append(rightsList)
-
+         try:
+             rightsList = NONE.rightsList()
+             rights = NONE.rightsList(data['metadata']['rights'][0])
+             rights.attrib['rightsURI'] = 'http://creativecommons.org/publicdomain/zero/1.0/'
+             rightsList.append(rights)
+             datacite.append(rightsList)
+         except KeyError:
+             pass
 
          # Descriptions
-         descriptions = NONE.descriptions()
-         for description in  data['metadata']['description']:
+         try:
+             descriptions = NONE.descriptions()
+             for description in data['metadata']['description']:
                  descriptionNode = NONE.description(description)
 
                  descriptionNode.attrib['lang'] = data['metadata']['language'][0] # accepteert xml:lang niet
                  descriptionNode.attrib['descriptionType'] = 'Abstract'
                  descriptions.append(descriptionNode)
 
-         datacite.append(descriptions)
+             datacite.append(descriptions)
+         except KeyError:
+             pass
 
          # Geolocations
-         geoLocations = NONE.geoLocations()
-         
-         # TODO: Loop, can be multiple????
-         coverage = data['metadata']['coverage'][2].split(',')
-         geoLocation = NONE.geoLocation()
-         geoLocationBox = NONE.geoLocationBox()
-         geoLocationBox.append(NONE.westBoundLongitude(coverage[1]))
-         geoLocationBox.append(NONE.eastBoundLongitude(coverage[3]))
-         geoLocationBox.append(NONE.southBoundLatitude(coverage[2]))
-         geoLocationBox.append(NONE.northBoundLatitude(coverage[0]))
+         try:
+             geoLocations = NONE.geoLocations()
 
-         geoLocation.append(geoLocationBox)
-         geoLocations.append(geoLocation)
+             # TODO: Loop, can be multiple????
+             coverage = data['metadata']['coverage'][2].split(',')
+             geoLocation = NONE.geoLocation()
+             geoLocationBox = NONE.geoLocationBox()
+             geoLocationBox.append(NONE.westBoundLongitude(coverage[1]))
+             geoLocationBox.append(NONE.eastBoundLongitude(coverage[3]))
+             geoLocationBox.append(NONE.southBoundLatitude(coverage[2]))
+             geoLocationBox.append(NONE.northBoundLatitude(coverage[0]))
 
-         datacite.append(geoLocations)
+             geoLocation.append(geoLocationBox)
+             geoLocations.append(geoLocation)
+
+             datacite.append(geoLocations)
+         except KeyError:
+             pass
 
          # Add entire structure
          element.append(datacite)
