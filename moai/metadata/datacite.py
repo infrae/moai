@@ -49,6 +49,7 @@ class DataCite(object):
 
          # Creators
          try:
+             creators = NONE.creators()
              for creatorName in  data['metadata']['creator']:
                  creator = NONE.creator()
                  creator.append(NONE.creatorName(creatorName))
@@ -69,7 +70,7 @@ class DataCite(object):
 
          # Title
          try:
-             titles= NONE.titles()
+             titles = NONE.titles()
              title = NONE.title(data['metadata']['title'][0])
              title.attrib['lang'] = data['metadata']['language'][0] # accepteert xml:lang niet...moet anders opgevoerd
              titles.append(title)
