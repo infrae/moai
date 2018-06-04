@@ -130,6 +130,8 @@ class YodaContent(object):
         language = xpath.string('//Language')
         if language:
             self.metadata['language'] = [language[0:2]]
+        else:
+           language = 'en'
 
         version = xpath.string('//Version')
         if version:
@@ -144,10 +146,19 @@ class YodaContent(object):
             self.metadata['date'] = dates
 
         # Dates - handling datacite
-        dataciteDates = {"updated":  xpath.string('//System/Last_Modified_Date')[0:10],
-                 "available":  xpath.string('//System/Last_Modified_Date')[0:10],
-                 "collected": xpath.string('//Collected/Start_Date')[0:10] + '/' + xpath.string('//Collected/End_Date')[0:10]
-                }
+        #dataciteDates = {"updated":  xpath.string('//System/Last_Modified_Date')[0:10],
+        #         "available":  xpath.string('//System/Last_Modified_Date')[0:10],
+        #         "collected": xpath.string('//Collected/Start_Date')[0:10] + '/' + xpath.string('//Collected/End_Date')[0:10]
+        #        }
+
+        dataciteDates = {}
+        if xpath.string('//System/Publication_Date'):
+            dataciteDates['updated'] = xpath.string('//System/Publication_Date')[0:10]
+        if xpath.string('//System/Last_Modified_Date'):
+            dataciteDates['available'] = xpath.string('//System/Last_Modified_Date')[0:10]
+
+        #if (len(xpath.string('//Collected/Start_Date'))>0 AND len(xpath.string('//Collected/End_Date'))>0):
+        #    dataciteDates['collected'] = xpath.string('//Collected/Start_Date')[0:10] + ' / ' + xpath.string('//Collected/End_Date')[0:10]
 
         self.metadata['dataciteDates'] = dataciteDates
 
