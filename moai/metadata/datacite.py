@@ -38,15 +38,18 @@ class DataCite(object):
          datacite.attrib['xmlns'] = self.ns['datacite']
          datacite.attrib['xmlnsxsi'] = XSI_NS
 
-         language = data['metadata']['language'][0]
+         try:
+            language = data['metadata']['language'][0]
+         except (IndexError, KeyError) as e:
+            language = 'en'  # Default language hardcoded for now
+            pass
 
          # Identifier DOI
          try:
              identifier = NONE.identifier(data['metadata']['identifier'][0])
              identifier.attrib['identifyerType'] = "DOI" # TODO: Hardcoding allowed here?
-
              datacite.append(identifier)
-         except KeyError:
+         except (IndexError, KeyError) as e:
              pass
 
          # Creators
@@ -63,7 +66,8 @@ class DataCite(object):
                  nameIdentifier.attrib['nameIdentifierScheme'] = dccreator['name_identifier_scheme']
                  creator.append(nameIdentifier)
 
-                 creator.append(NONE.affiliation(dccreator['affiliation']))
+                 if 'affiliation' in dccreator:
+                     creator.append(NONE.affiliation(dccreator['affiliation']))
 
                  creators.append(creator)
              datacite.append(creators)
@@ -79,7 +83,7 @@ class DataCite(object):
 
              # TODO: Hier nog description toevoegen!
              datacite.append(titles)
-         except KeyError:
+         except (IndexError,KeyError) as e:
              pass
 
          # Publisher
@@ -105,7 +109,6 @@ class DataCite(object):
                  subjectNode.attrib['subjectScheme'] = 'dewey' #????
 
                  subjects.append(subjectNode)
-
              datacite.append(subjects)
          except KeyError:
              pass
@@ -184,7 +187,7 @@ class DataCite(object):
              rights.attrib['rightsURI'] = 'http://creativecommons.org/publicdomain/zero/1.0/'
              rightsList.append(rights)
              datacite.append(rightsList)
-         except KeyError:
+         except (IndexError, KeyError) as e:
              pass
 
          # Descriptions
@@ -218,9 +221,11 @@ class DataCite(object):
 
                      geoLocation.append(geoLocationBox)
                      geoLocations.append(geoLocation)
+##
+                     geoLocations.append(geoLocation)
 
                      index += 1
-         except IndexError:
+         except (IndexError, KeyError) as e:
              pass
 
          if index !=2:
@@ -233,7 +238,6 @@ class DataCite(object):
                  fundingRef = NONE.fundingReference()
                  fundingRef.append(NONE.funderName(reference['name']))
                  fundingRef.append(NONE.Award_Number(reference['awardNumber']))
-
                  fundingReferences.append(fundingRef)
 
              datacite.append(fundingReferences)

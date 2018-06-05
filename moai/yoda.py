@@ -49,7 +49,7 @@ class YodaContent(object):
             self.modified = ret
 
         author_data = []
-	
+
         creators = xpath.strings('//Creator/Name')
         if creators:
             self.metadata['creator'] = creators
@@ -70,12 +70,13 @@ class YodaContent(object):
 
         if len(funders):
             for funder in funders:
-                #log.debug('FN: ' + funder.find('Funder_Name').text)
-                #log.debug('AwNr' + funder.find('Properties/Award_Number').text)
-                fundingRefs.append({"name": funder.find('Funder_Name').text,
-                        "awardNumber": funder.find('Properties/Award_Number').text
-                })
+                funderDict = {}
 
+                if funder.find('Funder_Name') is not None:
+                    funderDict["name"] = funder.find('Funder_Name').text
+                if funder.find('Properties/Award_Number') is not None:
+                    funderDict["awardNumber"] = funder.find('Properties/Award_Number').text
+                fundingRefs.append(funderDict)
             self.metadata["fundingReferences"] = fundingRefs
 
         # Related datapackages i.e. related identifiers
@@ -84,11 +85,17 @@ class YodaContent(object):
 
         if len(packages):
             for package in packages:
-                relatedIdentifiers.append({"title":package.find('Properties/Title').text,
-                        "relatedIdentifierScheme": package.find('Properties/Persistent_Identifier/Identifier_Scheme').text,
-                        "relatedIdentifier": package.find('Properties/Persistent_Identifier/Identifier').text,
-                        "relationType": package.find('Relation_Type').text
-                })
+                relatedDict = {}
+                if package.find('Properties/Title') is not None:
+                    relatedDict["title"] = package.find('Properties/Title').text
+                if package.find('Properties/Persistent_Identifier/Identifier_Scheme') is not None:
+                    relatedDict["relatedIdentifierScheme"] = package.find('Properties/Persistent_Identifier/Identifier_Scheme').text
+                if package.find('Properties/Persistent_Identifier/Identifier') is not None:
+                    relatedDict["relatedIdentifier"] = package.find('Properties/Persistent_Identifier/Identifier').text
+                if package.find('Relation_Type') is not None:
+                    relatedDict["relationType"] = package.find('Relation_Type').text
+
+                relatedIdentifiers.append(relatedDict)
 
             self.metadata["relatedIdentifiers"] = relatedIdentifiers
 
@@ -98,10 +105,17 @@ class YodaContent(object):
 
         if len(dcContributors):
             for contrib in dcContributors:
-                dataciteContributors.append({"name": contrib.find('Name').text,
-                        "type": contrib.find('Properties/Contributor_Type').text,
-                        "name_identifier": contrib.find('Properties/Person_Identifier/Name_Identifier').text,
-                        "name_identifier_scheme": contrib.find('Properties/Person_Identifier/Name_Identifier_Scheme').text                      })
+                contribDict = {}
+                if contrib.find('Name') is not None:
+                    contribDict["name"] = contrib.find('Name').text
+                if contrib.find('Properties/Contributor_Type') is not None:
+                    contribDict["type"] = contrib.find('Properties/Contributor_Type').text
+                if contrib.find('Properties/Person_Identifier/Name_Identifier') is not None:
+                    contribDict["name_identifier"] = contrib.find('Properties/Person_Identifier/Name_Identifier').text
+                if contrib.find('Properties/Person_Identifier/Name_Identifier_Scheme') is not None:
+                    contribDict["name_identifier_scheme"] = contrib.find('Properties/Person_Identifier/Name_Identifier_Scheme').text
+
+                dataciteContributors.append(contribDict)
 
             self.metadata['dataciteContributors'] = dataciteContributors
 
@@ -112,10 +126,20 @@ class YodaContent(object):
 
         if len(dcCreators):
             for creator in dcCreators:
-                dataciteCreators.append({"name": creator.find('Name').text,
-                        "affilitation": creator.find('Properties/Affiliation').text,
-                        "name_identifier": creator.find('Properties/Person_Identifier/Name_Identifier').text,
-                        "name_identifier_scheme": creator.find('Properties/Person_Identifier/Name_Identifier_Scheme').text                      })
+                creatorDict = {}
+                if creator.find('Name') is not None:
+                    creatorDict['name'] =  creator.find('Name').text
+
+                if creator.find('Properties/Affiliation') is not None:
+                     creatorDict['affiliation'] =  creator.find('Properties/Affiliation').text
+
+                if creator.find('Properties/Person_Identifier/Name_Identifier') is not None:
+                     creatorDict['name_identifier'] = creator.find('Properties/Person_Identifier/Name_Identifier').text
+
+                if creator.find('Properties/Person_Identifier/Name_Identifier_Scheme') is not None:
+                     creatorDict['name_identifier_scheme'] = creator.find('Properties/Person_Identifier/Name_Identifier_Scheme').text
+
+                dataciteCreators.append(creatorDict)
 
             self.metadata['dataciteCreators'] = dataciteCreators
 
@@ -131,12 +155,12 @@ class YodaContent(object):
         if language:
             self.metadata['language'] = [language[0:2]]
         else:
-           language = 'en'
+            self.metadata['language'] = 'en'
 
         version = xpath.string('//Version')
         if version:
             self.metadata['version'] = version
-			
+
         # Dates - handling dublin core
         datesinxml = [xpath.string('//Publication_Date'),
                       xpath.string('//Embargo_End_Date')]
@@ -146,11 +170,6 @@ class YodaContent(object):
             self.metadata['date'] = dates
 
         # Dates - handling datacite
-        #dataciteDates = {"updated":  xpath.string('//System/Last_Modified_Date')[0:10],
-        #         "available":  xpath.string('//System/Last_Modified_Date')[0:10],
-        #         "collected": xpath.string('//Collected/Start_Date')[0:10] + '/' + xpath.string('//Collected/End_Date')[0:10]
-        #        }
-
         dataciteDates = {}
         if xpath.string('//System/Publication_Date'):
             dataciteDates['updated'] = xpath.string('//System/Publication_Date')[0:10]
@@ -165,7 +184,7 @@ class YodaContent(object):
         # Year of publication
         self.metadata['publicationYear'] = xpath.string('//Publication_Date')[0:4]
 
-		# Rights
+        # Rights
         rightsinxml = [xpath.string('//License'),
                        xpath.string('//System/License_URL')]
 
