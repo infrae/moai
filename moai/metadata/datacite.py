@@ -47,7 +47,7 @@ class DataCite(object):
          # Identifier DOI
          try:
              identifier = NONE.identifier(data['metadata']['identifier'][0])
-             identifier.attrib['identifyerType'] = "DOI" # TODO: Hardcoding allowed here?
+             identifier.attrib['identifierType'] = "DOI" # TODO: Hardcoding allowed here?
              datacite.append(identifier)
          except (IndexError, KeyError) as e:
              pass
@@ -86,9 +86,9 @@ class DataCite(object):
          except (IndexError,KeyError) as e:
              pass
 
-         # Publisher
+         # Publisher - hardcoded
          try:
-             datacite.append(NONE.publisher(data['metadata']['publisher']))
+             datacite.append(NONE.publisher('Utrecht Univerity'))
          except KeyError:
              pass
 
@@ -120,7 +120,6 @@ class DataCite(object):
                  contributor = NONE.contributor()
                  contributor.attrib['contributorType'] = dccontributor['type']
                  contributor.append(NONE.contributorName(dccontributor['name']))
-
 
                  nameIdentifier = NONE.nameIdentifier(dccontributor['name_identifier'])
                  # nameIdentifier.attrib['schemeURI'] = 'http://orcid.org' ?????
@@ -159,10 +158,9 @@ class DataCite(object):
              relatedIdentifiers = NONE.relatedIdentifiers()
              for identifier in data['metadata']['relatedIdentifiers']:
                  relatedIdentifier = NONE.relatedIdentifier(identifier['title'])
-                 relatedIdentifier.attrib('relatedIdentifierType',identifier['relatedIdentifierType'])
-                 relatedIdentifier.attrib('relationType',identifier['relatedType'])
-                 relatedIdentifier.attrib('relation',identifier['relatedType'])
-
+                 relatedIdentifier.attrib['relatedIdentifierType'] = identifier['relatedIdentifierScheme']
+                 relatedIdentifier.attrib['relationType'] = identifier['relationType'].split(':')[0]
+                 relatedIdentifier.attrib['relatedIdentifier'] = identifier['relatedIdentifier']
 
                  # relationType
                  # relatedIdentifier
@@ -170,7 +168,7 @@ class DataCite(object):
 
                  relatedIdentifiers.append(relatedIdentifier)
 
-             datacite.append(relatedIdentifier)
+             datacite.append(relatedIdentifiers)
          except KeyError:
              pass
 
@@ -206,29 +204,41 @@ class DataCite(object):
 
          # Geolocations
          try:
-             index = 2 # provision is set up this way - index=2 contains first geobox data
              geoLocations = NONE.geoLocations()
+
+             addGeoLocations = False
+             # Look at location names contained in one string
+             locations =  data['metadata']['coverage'][0]
+             if locations:
+                 geoLocation = NONE.geoLocation()
+                 geoLocationPlace = NONE.geoLocationPlace(locations)
+                 geoLocation.append(geoLocationPlace)
+                 geoLocations.append(geoLocation)
+                 addGeoLocations = True
+
+             # Look at geo boxes
+             index = 2 # provision is set up this way - index=2 contains first geobox data
+             # geoLocations = NONE.geoLocations()
 
              while index<100:
                  if data['metadata']['coverage'][index]:
                      coverage = data['metadata']['coverage'][index].split(',')
                      geoLocation = NONE.geoLocation()
                      geoLocationBox = NONE.geoLocationBox()
-                     geoLocationBox.append(NONE.westBoundLongitude(coverage[1]))
-                     geoLocationBox.append(NONE.eastBoundLongitude(coverage[3]))
-                     geoLocationBox.append(NONE.southBoundLatitude(coverage[2]))
-                     geoLocationBox.append(NONE.northBoundLatitude(coverage[0]))
+                     geoLocationBox.append(NONE.westBoundLongitude(coverage[0]))
+                     geoLocationBox.append(NONE.eastBoundLongitude(coverage[2]))
+                     geoLocationBox.append(NONE.southBoundLatitude(coverage[1]))
+                     geoLocationBox.append(NONE.northBoundLatitude(coverage[3]))
 
                      geoLocation.append(geoLocationBox)
                      geoLocations.append(geoLocation)
-##
-                     geoLocations.append(geoLocation)
 
+                     addGeoLocations = True
                      index += 1
          except (IndexError, KeyError) as e:
              pass
 
-         if index !=2:
+         if addGeoLocations:
              datacite.append(geoLocations)
 
          # Funding references
@@ -246,3 +256,9 @@ class DataCite(object):
 
          # Add entire structure
          element.append(datacite)
+
+
+				 
+				 
+				 
+	

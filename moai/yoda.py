@@ -92,6 +92,7 @@ class YodaContent(object):
                     relatedDict["relatedIdentifierScheme"] = package.find('Properties/Persistent_Identifier/Identifier_Scheme').text
                 if package.find('Properties/Persistent_Identifier/Identifier') is not None:
                     relatedDict["relatedIdentifier"] = package.find('Properties/Persistent_Identifier/Identifier').text
+
                 if package.find('Relation_Type') is not None:
                     relatedDict["relationType"] = package.find('Relation_Type').text
 
@@ -108,6 +109,9 @@ class YodaContent(object):
                 contribDict = {}
                 if contrib.find('Name') is not None:
                     contribDict["name"] = contrib.find('Name').text
+                if contrib.find('Properties/Affiliation') is not None:
+                     contribDict['affiliation'] =  contrib.find('Properties/Affiliation').text
+
                 if contrib.find('Properties/Contributor_Type') is not None:
                     contribDict["type"] = contrib.find('Properties/Contributor_Type').text
                 if contrib.find('Properties/Person_Identifier/Name_Identifier') is not None:
@@ -155,7 +159,7 @@ class YodaContent(object):
         if language:
             self.metadata['language'] = [language[0:2]]
         else:
-            self.metadata['language'] = 'en'
+            self.metadata['language'] = ['en']
 
         version = xpath.string('//Version')
         if version:
@@ -171,13 +175,26 @@ class YodaContent(object):
 
         # Dates - handling datacite
         dataciteDates = {}
-        if xpath.string('//System/Publication_Date'):
-            dataciteDates['updated'] = xpath.string('//System/Publication_Date')[0:10]
         if xpath.string('//System/Last_Modified_Date'):
-            dataciteDates['available'] = xpath.string('//System/Last_Modified_Date')[0:10]
+            dataciteDates['updated'] = xpath.string('//System/Last_Modified_Date')[0:10]
+        if xpath.string('//Embargo_End_Date'):
+            dataciteDates['available'] = xpath.string('//Embargo_End_Date')[0:10]
 
-        #if (len(xpath.string('//Collected/Start_Date'))>0 AND len(xpath.string('//Collected/End_Date'))>0):
-        #    dataciteDates['collected'] = xpath.string('//Collected/Start_Date')[0:10] + ' / ' + xpath.string('//Collected/End_Date')[0:10]
+        # embargo is handled differently in test schema - old school flex date
+        embargo = xpath('//Embargo_End_Date')
+        #if embargo.find('Embargo_End_Date_YYYY_MM_DD') is not None:
+        #    embargoEndDate = embargo.find('Embargo_End_Date_YYYY_MM_DD').text
+        #elif embargo.find('Embargo_End_Date_YYYY_MM') is not None:
+        #    embargoEndDate = embargo.find('Embargo_End_Date_YYYY_MM').text
+        #elif embargo.find('Embargo_End_Date_YYYY') is not None:
+        #    embargoEndDate = embargo.find('Embargo_End_Date_YYYY').text
+        #else:
+        #    embargoEndDate = embargo.text[0:10]
+
+        start = xpath.string('//Collected/Start_Date')
+        end = xpath.string('//Collected/End_Date')
+        if start is not None and end is not None:
+            dataciteDates['collected'] = start + ' / ' + end
 
         self.metadata['dataciteDates'] = dataciteDates
 
@@ -207,7 +224,7 @@ class YodaContent(object):
 
         # Bounding box: left,bottom,right,top
         boxes = []
-        for west, east, south, north in zip(westBoundLongitudes, southBoundLatitudes, eastBoundLongitudes, northBoundLatitudes):
+        for west, south, east, north in zip(westBoundLongitudes, southBoundLatitudes, eastBoundLongitudes, northBoundLatitudes):
             box = ",".join([west, south, east, north])
             boxes.append(box)
 
@@ -224,3 +241,6 @@ class YodaContent(object):
             coverage = locations
         if coverage:
             self.metadata['coverage'] = coverage
+
+
+
