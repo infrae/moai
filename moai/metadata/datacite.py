@@ -1,6 +1,7 @@
 from lxml.builder import ElementMaker
 
 XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
+XML_NS = 'https://www.w3.org/TR/xml-names/'
 
 class DataCite(object):
      """The standard Datacite.
@@ -13,7 +14,9 @@ class DataCite(object):
          self.config = config
          self.db = db
 
-         self.ns = {'datacite': 'http://datacite.org/schema/kernel-4'}
+         self.ns = {'datacite': 'http://datacite.org/schema/kernel-4',
+                    'xml': XML_NS
+         }
          self.schemas = {'datacite': 'http://schema.datacite.org/meta/kernel-4/metadata.xsd'}
 
      def get_namespace(self):
@@ -28,15 +31,12 @@ class DataCite(object):
          # TODO: is deze nog nodig?
          DATACITE =  ElementMaker(namespace=self.ns['datacite'],
                                 nsmap =self.ns)
-         NONE = ElementMaker('')
+         NONE = ElementMaker('', nsmap = self.ns)
 
          datacite = NONE.resource()
          datacite.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (
              self.ns['datacite'],
              self.schemas['datacite'])
-
-         datacite.attrib['xmlns'] = self.ns['datacite']
-         datacite.attrib['xmlnsxsi'] = XSI_NS
 
          try:
             language = data['metadata']['language'][0]
@@ -47,7 +47,7 @@ class DataCite(object):
          # Identifier DOI
          try:
              identifier = NONE.identifier(data['metadata']['identifier'][0])
-             identifier.attrib['identifierType'] = "DOI" # TODO: Hardcoding allowed here?
+             identifier.attrib['identifierType'] = "DOI"
              datacite.append(identifier)
          except (IndexError, KeyError) as e:
              pass
@@ -61,13 +61,15 @@ class DataCite(object):
                  #creator.append(NONE.givenName('Given'))
                  #creator.append(NONE.familyName('Family'))
 
-                 nameIdentifier = NONE.nameIdentifier(dccreator['name_identifier'])
-                 # nameIdentifier.attrib['schemeURI'] = 'http://orcid.org' ?????
-                 nameIdentifier.attrib['nameIdentifierScheme'] = dccreator['name_identifier_scheme']
-                 creator.append(nameIdentifier)
-
                  if 'affiliation' in dccreator:
-                     creator.append(NONE.affiliation(dccreator['affiliation']))
+                     for creatorAffiliation in dccreator['affiliation']:
+                         creator.append(NONE.affiliation(creatorAffiliation))
+
+                 for nameIdentifier in dccreator['name_identifiers']:
+                     for key in nameIdentifier:
+                        nameIdf = NONE.nameIdentifier(nameIdentifier[key])
+                        nameIdf.attrib['nameIdentifierScheme'] = key
+                        creator.append(nameIdf)
 
                  creators.append(creator)
              datacite.append(creators)
@@ -78,10 +80,8 @@ class DataCite(object):
          try:
              titles = NONE.titles()
              title = NONE.title(data['metadata']['title'][0])
-             title.attrib['lang'] = language # 2do accepteert 'xml:lang' niet...moet anders opgevoerd
+             title.attrib['{%s}lang' % XML_NS] = language
              titles.append(title)
-
-             # TODO: Hier nog description toevoegen!
              datacite.append(titles)
          except (IndexError,KeyError) as e:
              pass
@@ -98,18 +98,22 @@ class DataCite(object):
          except KeyError:
              pass
 
-         # Subjects
+         # Subjects divided in two steps: disciplines and tags
          try:
              subjects = NONE.subjects()
-             for subject in  data['metadata']['subject']:
+             # Subjects - Disciplines
+             for subject in  data['metadata']['dataciteDisciplines']:
                  subjectNode = NONE.subject(subject)
+                 subjectNode.attrib['subjectScheme'] = 'OECD FOS 2007'
+                 subjects.append(subjectNode)
 
-                 subjectNode.attrib['lang'] = language # TODO: accepteert 'xml:lang' niet
-                 # subjectNode.attrib['schemeURI'] = 'http://orcid.org' #????
-                 # subjectNode.attrib['subjectScheme'] = 'dewey' #????
-
+             # Subjects - Tags
+             for subject in  data['metadata']['dataciteTags']:
+                 subjectNode = NONE.subject(subject)
+                 subjectNode.attrib['subjectScheme'] = 'Keyword'
                  subjects.append(subjectNode)
              datacite.append(subjects)
+
          except KeyError:
              pass
 
@@ -121,15 +125,19 @@ class DataCite(object):
                  contributor.attrib['contributorType'] = dccontributor['type']
                  contributor.append(NONE.contributorName(dccontributor['name']))
 
-                 nameIdentifier = NONE.nameIdentifier(dccontributor['name_identifier'])
-                 # nameIdentifier.attrib['schemeURI'] = 'http://orcid.org' ?????
-                 nameIdentifier.attrib['nameIdentifierScheme'] = dccontributor['name_identifier_scheme']
-                 contributor.append(nameIdentifier)
-
                  # contributor.append(NONE.affiliation('Affiliation'))
                  if 'affiliation' in dccontributor:
-                     contributor.append(NONE.affiliation(dccontributor['affiliation']))
+                     # contributor.append(NONE.affiliation(dccontributor['affiliation']))
+                     for contribAffiliation in dccontributor['affiliation']:
+                         contributor.append(NONE.affiliation(contribAffiliation))
 
+
+                 for nameIdentifier in dccontributor['name_identifiers']:
+                     for key in nameIdentifier:
+                        # contributor.append(NONE.idftest(key))
+                        nameIdf = NONE.nameIdentifier(nameIdentifier[key])
+                        nameIdf.attrib['nameIdentifierScheme'] = key
+                        contributor.append(nameIdf)
 
                  contributors.append(contributor)
              datacite.append(contributors)
@@ -186,7 +194,7 @@ class DataCite(object):
          # Rights
          try:
              rightsList = NONE.rightsList()
-             rights = NONE.rightsList(data['metadata']['rights'][0])
+             rights = NONE.rights(data['metadata']['rights'][0])
              # rights.attrib['rightsURI'] = 'http://creativecommons.org/publicdomain/zero/1.0/'
              rightsList.append(rights)
              datacite.append(rightsList)
@@ -198,15 +206,13 @@ class DataCite(object):
              descriptions = NONE.descriptions()
              for description in data['metadata']['description']:
                  descriptionNode = NONE.description(description)
-
-                 descriptionNode.attrib['lang'] = language # accepteert xml:lang niet
                  descriptionNode.attrib['descriptionType'] = 'Abstract'
                  descriptions.append(descriptionNode)
 
              datacite.append(descriptions)
          except KeyError:
              pass
-
+##
          # Geolocations
          try:
              geoLocations = NONE.geoLocations()
@@ -253,7 +259,7 @@ class DataCite(object):
              for reference in data['metadata']['fundingReferences']:
                  fundingRef = NONE.fundingReference()
                  fundingRef.append(NONE.funderName(reference['name']))
-                 fundingRef.append(NONE.Award_Number(reference['awardNumber']))
+                 fundingRef.append(NONE.awardNumber(reference['awardNumber']))
                  fundingReferences.append(fundingRef)
 
              datacite.append(fundingReferences)

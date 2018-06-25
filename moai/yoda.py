@@ -109,20 +109,32 @@ class YodaContent(object):
                 contribDict = {}
                 if contrib.find('Name') is not None:
                     contribDict["name"] = contrib.find('Name').text
-                if contrib.find('Properties/Affiliation') is not None:
-                     contribDict['affiliation'] =  contrib.find('Properties/Affiliation').text
 
                 if contrib.find('Properties/Contributor_Type') is not None:
                     contribDict["type"] = contrib.find('Properties/Contributor_Type').text
-                if contrib.find('Properties/Person_Identifier/Name_Identifier') is not None:
-                    contribDict["name_identifier"] = contrib.find('Properties/Person_Identifier/Name_Identifier').text
-                if contrib.find('Properties/Person_Identifier/Name_Identifier_Scheme') is not None:
-                    contribDict["name_identifier_scheme"] = contrib.find('Properties/Person_Identifier/Name_Identifier_Scheme').text
+
+                if contrib.find('Properties') is not None:
+                    affiliations = []
+                    personIdentifiers = []
+                    children =  contrib.find('Properties')
+                    for child in children:
+                        if child.tag == 'Affiliation':
+                            affiliations.append(child.tag + '-' + child.text)
+                        elif child.tag == 'Person_Identifier':
+                            nameIdentifier = ''
+                            nameIdentifierScheme = ''
+                            piChildren = child.getchildren()
+                            for piChild in piChildren:
+                                if piChild.tag == 'Name_Identifier':
+                                    nameIdentifier = piChild.text
+                                elif piChild.tag == 'Name_Identifier_Scheme':
+                                    nameIdentifierScheme = piChild.text
+                            personIdentifiers.append({nameIdentifierScheme: nameIdentifier})
+                    contribDict['affiliation'] = affiliations
+                    contribDict['name_identifiers'] = personIdentifiers
 
                 dataciteContributors.append(contribDict)
-
             self.metadata['dataciteContributors'] = dataciteContributors
-
 
         # Creators datacite - yoda creators can hold n idf/idf_schemes. Does datacite?
         dataciteCreators = []
@@ -134,17 +146,27 @@ class YodaContent(object):
                 if creator.find('Name') is not None:
                     creatorDict['name'] =  creator.find('Name').text
 
-                if creator.find('Properties/Affiliation') is not None:
-                     creatorDict['affiliation'] =  creator.find('Properties/Affiliation').text
-
-                if creator.find('Properties/Person_Identifier/Name_Identifier') is not None:
-                     creatorDict['name_identifier'] = creator.find('Properties/Person_Identifier/Name_Identifier').text
-
-                if creator.find('Properties/Person_Identifier/Name_Identifier_Scheme') is not None:
-                     creatorDict['name_identifier_scheme'] = creator.find('Properties/Person_Identifier/Name_Identifier_Scheme').text
+                if creator.find('Properties') is not None:
+                    affiliations = []
+                    personIdentifiers = []
+                    children =  creator.find('Properties')
+                    for child in children:
+                        if child.tag == 'Affiliation':
+                            affiliations.append(child.tag + '-' + child.text)
+                        elif child.tag == 'Person_Identifier':
+                            nameIdentifier = ''
+                            nameIdentifierScheme = ''
+                            piChildren = child.getchildren()
+                            for piChild in piChildren:
+                                if piChild.tag == 'Name_Identifier':
+                                    nameIdentifier = piChild.text
+                                elif piChild.tag == 'Name_Identifier_Scheme':
+                                    nameIdentifierScheme = piChild.text
+                            personIdentifiers.append({nameIdentifierScheme: nameIdentifier})
+                    creatorDict['affiliation'] = affiliations
+                    creatorDict['name_identifiers'] = personIdentifiers
 
                 dataciteCreators.append(creatorDict)
-
             self.metadata['dataciteCreators'] = dataciteCreators
 
         title = xpath.string('//Title')
@@ -176,9 +198,9 @@ class YodaContent(object):
         # Dates - handling datacite
         dataciteDates = {}
         if xpath.string('//System/Last_Modified_Date'):
-            dataciteDates['updated'] = xpath.string('//System/Last_Modified_Date')[0:10]
+            dataciteDates['Updated'] = xpath.string('//System/Last_Modified_Date')[0:10]
         if xpath.string('//Embargo_End_Date'):
-            dataciteDates['available'] = xpath.string('//Embargo_End_Date')[0:10]
+            dataciteDates['Available'] = xpath.string('//Embargo_End_Date')[0:10]
 
         # embargo is handled differently in test schema - old school flex date
         embargo = xpath('//Embargo_End_Date')
@@ -194,7 +216,7 @@ class YodaContent(object):
         start = xpath.string('//Collected/Start_Date')
         end = xpath.string('//Collected/End_Date')
         if start is not None and end is not None:
-            dataciteDates['collected'] = start + ' / ' + end
+            dataciteDates['Collected'] = start + '/' + end
 
         self.metadata['dataciteDates'] = dataciteDates
 
@@ -212,7 +234,14 @@ class YodaContent(object):
         subjectinxml = xpath.strings('//Discipline') + xpath.strings('//Tag')
         subject = [s for s in subjectinxml if s]
         if subject:
-           self.metadata['subject'] = subject
+            self.metadata['subject'] = subject
+
+        # Datacite will handle tags and disciplines differently - both will fall under Subjects
+        dcdisciplines = xpath.strings('//Discipline')
+        self.metadata['dataciteDisciplines'] = dcdisciplines
+
+        dctags =  xpath.strings('//Tag')
+        self.metadata['dataciteTags'] = dctags
 
         locations = xpath.strings('//Covered_Geolocation_Place')
 
@@ -241,6 +270,4 @@ class YodaContent(object):
             coverage = locations
         if coverage:
             self.metadata['coverage'] = coverage
-
-
-
+			
