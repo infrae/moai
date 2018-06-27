@@ -174,7 +174,6 @@ class DataCite(object):
                  relatedIdentifier.attrib['relationType'] = identifier['relationType'].split(':')[0]
                  relatedIdentifier.attrib['relatedIdentifier'] = identifier['relatedIdentifier']
 
-
                  # relationType
                  # relatedIdentifier
                  # relatedIdentifierScheme
@@ -212,41 +211,46 @@ class DataCite(object):
              datacite.append(descriptions)
          except KeyError:
              pass
-##
+
          # Geolocations
          try:
              geoLocations = NONE.geoLocations()
 
+             # "dataciteLocations"
+
              addGeoLocations = False
              # Look at location names contained in one string
-             locations =  data['metadata']['coverage'][0]
-             if locations:
+             locations =  data['metadata']['dataciteLocations']
+             locationCount = 0
+             for location in locations:
                  geoLocation = NONE.geoLocation()
-                 geoLocationPlace = NONE.geoLocationPlace(locations)
+                 geoLocationPlace = NONE.geoLocationPlace(location)
                  geoLocation.append(geoLocationPlace)
                  geoLocations.append(geoLocation)
                  addGeoLocations = True
+                 locationCount += 1
 
-             # Look at geo boxes
-             index = 2 # provision is set up this way - index=2 contains first geobox data
+             # Look at geo boxes - At the moment this is NOT part of iLab.
+             # Needs to be fixed for EPOS
+#             index = 2 # provision is set up this way - index=2 contains first geobox data
+             # Must be made flexible - possibly on the count of dataciteLocations
              # geoLocations = NONE.geoLocations()
 
-             while index<100:
-                 if data['metadata']['coverage'][index]:
-                     coverage = data['metadata']['coverage'][index].split(',')
-                     geoLocation = NONE.geoLocation()
-                     geoLocationBox = NONE.geoLocationBox()
-                     geoLocationBox.append(NONE.westBoundLongitude(coverage[0]))
-                     geoLocationBox.append(NONE.eastBoundLongitude(coverage[2]))
-                     geoLocationBox.append(NONE.southBoundLatitude(coverage[1]))
-                     geoLocationBox.append(NONE.northBoundLatitude(coverage[3]))
+#             while index<100:
+#                 if data['metadata']['coverage'][index]:
+#                     coverage = data['metadata']['coverage'][index].split(',')
+#                     geoLocation = NONE.geoLocation()
+#                     geoLocationBox = NONE.geoLocationBox()
+#                     geoLocationBox.append(NONE.westBoundLongitude(coverage[0]))
+#                     geoLocationBox.append(NONE.eastBoundLongitude(coverage[2]))
+#                     geoLocationBox.append(NONE.southBoundLatitude(coverage[1]))
+#                     geoLocationBox.append(NONE.northBoundLatitude(coverage[3]))
 
-                     geoLocation.append(geoLocationBox)
-                     geoLocations.append(geoLocation)
-##
-                     #geoLocations.append(geoLocation)
-                     addGeoLocations = True
-                     index += 1
+#                     geoLocation.append(geoLocationBox)
+#                     geoLocations.append(geoLocation)
+
+#                    addGeoLocations = True
+#                     index += 1
          except (IndexError, KeyError) as e:
              pass
 

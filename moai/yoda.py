@@ -119,7 +119,7 @@ class YodaContent(object):
                     children =  contrib.find('Properties')
                     for child in children:
                         if child.tag == 'Affiliation':
-                            affiliations.append(child.tag + '-' + child.text)
+                            affiliations.append(child.text)
                         elif child.tag == 'Person_Identifier':
                             nameIdentifier = ''
                             nameIdentifierScheme = ''
@@ -135,6 +135,7 @@ class YodaContent(object):
 
                 dataciteContributors.append(contribDict)
             self.metadata['dataciteContributors'] = dataciteContributors
+
 
         # Creators datacite - yoda creators can hold n idf/idf_schemes. Does datacite?
         dataciteCreators = []
@@ -152,7 +153,7 @@ class YodaContent(object):
                     children =  creator.find('Properties')
                     for child in children:
                         if child.tag == 'Affiliation':
-                            affiliations.append(child.tag + '-' + child.text)
+                            affiliations.append(child.text)
                         elif child.tag == 'Person_Identifier':
                             nameIdentifier = ''
                             nameIdentifierScheme = ''
@@ -236,6 +237,7 @@ class YodaContent(object):
         if subject:
             self.metadata['subject'] = subject
 
+
         # Datacite will handle tags and disciplines differently - both will fall under Subjects
         dcdisciplines = xpath.strings('//Discipline')
         self.metadata['dataciteDisciplines'] = dcdisciplines
@@ -243,7 +245,9 @@ class YodaContent(object):
         dctags =  xpath.strings('//Tag')
         self.metadata['dataciteTags'] = dctags
 
+
         locations = xpath.strings('//Covered_Geolocation_Place')
+        self.metadata['dataciteLocations'] = locations # extra field as there's a conflict with locations below
 
         geoLocation = xpath.strings('//geoLocation')
         westBoundLongitudes = xpath.strings('//geoLocation/westBoundLongitude')
@@ -270,4 +274,3 @@ class YodaContent(object):
             coverage = locations
         if coverage:
             self.metadata['coverage'] = coverage
-			
