@@ -31,7 +31,7 @@ class DataCite(object):
          # TODO: is deze nog nodig?
          DATACITE =  ElementMaker(namespace=self.ns['datacite'],
                                 nsmap =self.ns)
-         NONE = ElementMaker('', nsmap = self.ns)
+         NONE = DATACITE #ElementMaker('', nsmap = self.ns)
 
          datacite = NONE.resource()
          datacite.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (
