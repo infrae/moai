@@ -194,12 +194,12 @@ class DataCite(object):
          try:
              rightsList = NONE.rightsList()
              rights = NONE.rights(data['metadata']['rights'][0])
-             # rights.attrib['rightsURI'] = 'http://creativecommons.org/publicdomain/zero/1.0/'
+             rights.attrib['rightsURI'] = data['metadata']['rightsLicenseURL']
              rightsList.append(rights)
              datacite.append(rightsList)
          except (IndexError, KeyError) as e:
              pass
-
+			 
          # Descriptions
          try:
              descriptions = NONE.descriptions()

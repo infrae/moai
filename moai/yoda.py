@@ -225,6 +225,11 @@ class YodaContent(object):
         self.metadata['publicationYear'] = xpath.string('//Publication_Date')[0:4]
 
         # Rights
+        # License_URL is used here.
+        # This is actually wrong -> must be License_URI.
+        # I won't change it though, as I can't oversee the consequences of this data being present all of a sudden.
+        # Without proper testing.
+        # FOr datacite License_URI is required. Therefore, for now I add this as an extra key/val pair in the JSON representation
         rightsinxml = [xpath.string('//License'),
                        xpath.string('//System/License_URL')]
 
@@ -232,6 +237,11 @@ class YodaContent(object):
         if rights:
             self.metadata['rights'] = rights
 
+        # License URL -specifically for datacite
+        rightsLicenseURI = xpath.string('//System/License_URI')
+        if rightsLicenseURI:
+            self.metadata['rightsLicenseURL'] = rightsLicenseURI
+			
         subjectinxml = xpath.strings('//Discipline') + xpath.strings('//Tag')
         subject = [s for s in subjectinxml if s]
         if subject:
