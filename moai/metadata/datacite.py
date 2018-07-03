@@ -163,7 +163,9 @@ class DataCite(object):
              pass
 
          # resourceType - hardcoded
-         datacite.append(NONE.resourceType('Dataset'))
+         resourceType = NONE.resourceType('Dataset')
+         resourceType.attrib['resourceTypeGeneral'] = 'Dataset'
+         datacite.append(resourceType)
 
          # Related identifiers
          try:
