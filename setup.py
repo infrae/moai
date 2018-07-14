@@ -2,11 +2,11 @@ from setuptools import setup, find_packages
 from os.path import join, dirname
 
 setup(
-    name='MOAI',
+    name='MOAI-iplweb',
     version='2.0.0',
-    author='Infrae',
-    author_email='info@infrae.com',
-    url='http://infrae.com/products/moai',
+    author='Michał Pasternak',
+    author_email='michal.dtz@gmail.com',
+    url='http://iplweb.pl/',
     description="MOAI, A Open Access Server Platform for Institutional Repositories",
     long_description=(open(join(dirname(__file__), 'ABOUT.txt')).read()+
                       '\n'+
