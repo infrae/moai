@@ -15,8 +15,8 @@ bigger changes. This means that documentation may be obsolete in some parts. Pat
 Installing MOAI
 ===============
 
-.. image:: https://img.shields.io/travis/mpasternak/moai.svg
-        :target: https://travis-ci.org/mpasternak/moai
+.. image:: https://img.shields.io/travis/iplweb/moai-iplweb.svg
+        :target: https://travis-ci.org/iplweb/moai-iplweb
 
 
 The MOAI Software can be run in any wsgi compliant server. 
