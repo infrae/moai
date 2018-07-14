@@ -1,3 +1,16 @@
+This is a fork
+==============
+
+This is a fork of original project, which can be found https://github.com/infrae/moai/ which
+includes TravisCI integration and Python 3 support. Both of those were returned to the original
+authors in form of a pull request here: https://github.com/infrae/moai/pull/5 . In case
+the original author decides to integrate suggested changes and support Python 3, this fork
+will be irrelevant.
+
+Please note that other than updating this README and renaming setup.py file, there are no
+bigger changes. This means that documentation may be obsolete in some parts. Patches accepted.
+
+
 ===============
 Installing MOAI
 ===============
@@ -13,7 +26,7 @@ MOAI comes with a development server that can be used for testing. In production
 Installation Steps
 ==================
 
-MOAI is a normal python package. It is tested with python2.5 and 2.6. 
+MOAI is a normal python package. It is tested with Python 2.7, 3.3, 3.4, 3.5, 3.6.
 I recommend creating a virtualenv to install the package in.
 
 http://pypi.python.org/pypi/virtualenv/
