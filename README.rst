@@ -26,7 +26,7 @@ MOAI comes with a development server that can be used for testing. In production
 Installation Steps
 ==================
 
-MOAI is a normal python package. It is tested with Python 2.7, 3.3, 3.4, 3.5, 3.6.
+MOAI is a normal python package. It is tested with Python 2.7, 3.4, 3.5, 3.6.
 I recommend creating a virtualenv to install the package in.
 
 http://pypi.python.org/pypi/virtualenv/
