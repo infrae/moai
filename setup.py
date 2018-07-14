@@ -1,10 +1,11 @@
+# -*- encoding: utf-8 -*-
 from setuptools import setup, find_packages
 from os.path import join, dirname
 
 setup(
     name='MOAI-iplweb',
     version='2.0.0',
-    author='Michał Pasternak',
+    author=u'Michał Pasternak',
     author_email='michal.dtz@gmail.com',
     url='http://iplweb.pl/',
     description="MOAI, A Open Access Server Platform for Institutional Repositories",
