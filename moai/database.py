@@ -2,6 +2,7 @@ import datetime
 import json
 from pkg_resources import iter_entry_points
 
+import six
 import sqlalchemy as sql
 
 from moai.utils import check_type
@@ -134,7 +135,7 @@ class SQLDatabase(object):
         # adds a record, call flush to actually store in db
 
         check_type(oai_id,
-                   unicode,
+                   six.text_type,
                    prefix="record %s" % oai_id,
                    suffix='for parameter "oai_id"')
         check_type(modified,
@@ -160,7 +161,7 @@ class SQLDatabase(object):
             if hasattr(obj, 'isoformat'):
                 return obj.isoformat()
             else:
-                raise TypeError, 'Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj))
+                raise TypeError('Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj)))
 
         metadata = json.dumps(metadata, default=date_handler)
         self._cache['records'][oai_id] = (dict(modified=modified,

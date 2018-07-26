@@ -1,16 +1,17 @@
+# -*- encoding: utf-8 -*-
 from setuptools import setup, find_packages
 from os.path import join, dirname
 
 setup(
-    name='MOAI',
+    name='MOAI-iplweb',
     version='2.0.0',
-    author='Infrae',
-    author_email='info@infrae.com',
-    url='http://infrae.com/products/moai',
+    author=u'Michał Pasternak',
+    author_email='michal.dtz@gmail.com',
+    url='http://iplweb.pl/',
     description="MOAI, A Open Access Server Platform for Institutional Repositories",
     long_description=(open(join(dirname(__file__), 'ABOUT.txt')).read()+
                       '\n'+
-                      open(join(dirname(__file__), 'README.txt')).read()+
+                      open(join(dirname(__file__), 'README.rst')).read()+
                       '\n'+
                       open(join(dirname(__file__), 'HISTORY.txt')).read()),
     classifiers=["Development Status :: 5 - Production/Stable",
@@ -60,6 +61,9 @@ setup(
     'pasteDeploy',
     'pasteScript',
     'sqlalchemy',
+    'wsgi_intercept',
+    'future',
+    'six'
     ],
     test_suite='moai.test.suite'
 )

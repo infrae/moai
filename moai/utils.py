@@ -3,6 +3,8 @@ import datetime
 import time
 import logging
 import logging.handlers
+import six
+
 
 def get_moai_log():
     log = logging.getLogger('moai')
@@ -49,7 +51,7 @@ def check_type(object,
                    prefix=prefix,
                    suffix=suffix)
     if unicode_values and object_type is dict:
-        check_type(object.values(),
+        check_type(list(object.values()),
                    list,
                    unicode_keys=unicode_keys,
                    unicode_values=True,
@@ -58,11 +60,12 @@ def check_type(object,
                    suffix=suffix)
     if unicode_values and object_type is list:
         for stuff in object:
-            if isinstance(stuff, str):
-                raise TypeError(('%s contains non unicode string "%s" %s' % (
-                    prefix,
-                    stuff,
-                    suffix)).strip())
+            if six.PY2:
+                if isinstance(stuff, str):
+                    raise TypeError(('%s contains non unicode string "%s" %s' % (
+                        prefix,
+                        stuff,
+                        suffix)).strip())
             if recursive:
                 if isinstance(stuff, list):
                     check_type(stuff,
@@ -94,15 +97,18 @@ class XPath(object):
         for stuff in self.doc.xpath(xpath, namespaces=self.nsmap):
             if isinstance(stuff, str):
                 result.append(stuff.strip().decode('utf8'))
-            elif isinstance(stuff, unicode):
+            elif isinstance(stuff, six.text_type):
                 # convert to real unicode object, not lxml proxy
-                result.append(unicode(stuff.strip()))
+                result.append(six.text_type(stuff.strip()))
             elif hasattr(stuff, 'text'):
                 if isinstance(stuff.text, str):
-                    result.append(stuff.text.strip().decode('utf8'))
-                elif isinstance(stuff.text, unicode):
+                    v = stuff.text.strip()
+                    if six.PY2:
+                        v = v.decode('utf8')
+                    result.append(v)
+                elif isinstance(stuff.text, six.text_type):
                     # convert to real unicode object, not lxml proxy
-                    result.append(unicode(stuff.text.strip()))
+                    result.append(six.text_type(stuff.text.strip()))
         return result
     
     def number(self, xpath):
@@ -168,9 +174,15 @@ class XPath(object):
         for stuff in self.doc.xpath(xpath, namespaces=self.nsmap):
             if hasattr(stuff, 'tag'):
                 if '}' in stuff.tag:
-                    result.append(stuff.tag.split('}', 1)[1].decode('utf8'))
+                    v = stuff.tag.split('}', 1)[1]
+                    if six.PY2:
+                        v = v.decode('utf8')
+                    result.append(v)
                 else:
-                    result.append(stuff.tag.decode('utf8'))
+                    v = stuff.tag
+                    if six.PY2:
+                        v = v.decode('utf8')
+                    result.append(v)
         return result
     
     def __call__(self, xpath):

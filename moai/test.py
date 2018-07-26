@@ -3,14 +3,24 @@ import os
 from unittest import TestCase, TestSuite, makeSuite
 import doctest
 import datetime
-import urllib2
+
+try:
+    import urllib2
+    urlopen = urllib2.urlopen
+except ImportError:
+    import urllib
+    from urllib import request
+    urlopen = request.urlopen
 
 from lxml import etree
 import wsgi_intercept
-from wsgi_intercept.urllib2_intercept import install_opener
+try:
+    from wsgi_intercept.urllib2_intercept import install_opener
+except ImportError:
+    from wsgi_intercept.urllib_intercept import install_opener
 
 from moai.utils import XPath
-from moai.database import Database
+from moai.database import SQLDatabase as Database
 from moai.server import Server, FeedConfig
 from moai.wsgi import MOAIWSGIApp
 from moai.provider.file import FileBasedContentProvider
@@ -100,7 +110,7 @@ class DatabaseTest(TestCase):
         self.assertEquals(self.db.record_count(), 0)
         # let's add a record
         self.db.update_record(u'oai:spam',
-                              datetime.datetime(2010, 10, 13, 12, 30, 00),
+                              datetime.datetime(2010, 10, 13, 12, 30, 0),
                               False,
                               {},
                               {u'title': u'Spam!'})
@@ -111,12 +121,12 @@ class DatabaseTest(TestCase):
         self.assertEquals(record['id'], u'oai:spam')
         self.assertEquals(record['deleted'], False)
         self.assertEquals(record['modified'],
-                          datetime.datetime(2010, 10, 13, 12, 30, 00))
+                          datetime.datetime(2010, 10, 13, 12, 30, 0))
         self.assertEquals(record['sets'], [])
         self.assertEquals(record['metadata'], {u'title': u'Spam!'})
         # change a metadata value
         self.db.update_record(u'oai:spam',
-                              datetime.datetime(2010, 10, 13, 12, 30, 01),
+                              datetime.datetime(2010, 10, 13, 12, 30, 1),
                               False,
                               {},
                               {u'title': u'Ham!'})
@@ -133,7 +143,7 @@ class DatabaseTest(TestCase):
         # add a record that references a set
         self.assertEquals(self.db.set_count(), 0)
         self.db.update_record(u'oai:spam',
-                              datetime.datetime(2010, 10, 13, 12, 30, 00),
+                              datetime.datetime(2010, 10, 13, 12, 30, 0),
                               False,
                               {u'spamset': {u'name': u'Spam Set',
                                             u'description': u'spam spam spam',
@@ -152,7 +162,7 @@ class DatabaseTest(TestCase):
         self.assertEquals(set['hidden'], False)
         # now, we'll change the record to use the hamset
         self.db.update_record(u'oai:spam',
-                              datetime.datetime(2010, 10, 13, 12, 30, 00),
+                              datetime.datetime(2010, 10, 13, 12, 30, 0),
                               False,
                               {u'hamset': {u'name': u'Ham Set',
                                             u'description': u'ham ham ham',
@@ -176,7 +186,7 @@ class DatabaseTest(TestCase):
         # hidden sets are not added to the record setrefs list,
         # they are there though, for filtering purposes
         self.db.update_record(u'oai:spam',
-                              datetime.datetime(2010, 10, 13, 12, 30, 00),
+                              datetime.datetime(2010, 10, 13, 12, 30, 0),
                               False,
                               {u'spamset': {u'name': u'Spam Set',
                                             u'description': u'spam spam spam',
@@ -200,10 +210,10 @@ class DatabaseTest(TestCase):
         self.assertEquals(self.db.oai_earliest_datestamp(),
                           datetime.datetime(1970, 1, 1, 0, 0))
         self.db.update_record(u'oai:spam',
-                              datetime.datetime(2009, 10, 13, 12, 30, 00),
+                              datetime.datetime(2009, 10, 13, 12, 30, 0),
                               False, {}, {})
         self.db.update_record(u'oai:ham',
-                              datetime.datetime(2010, 10, 13, 12, 30, 00),
+                              datetime.datetime(2010, 10, 13, 12, 30, 0),
                               False, {}, {})
         self.db.flush()
         self.assertEquals(self.db.oai_earliest_datestamp(),
@@ -211,11 +221,11 @@ class DatabaseTest(TestCase):
 
     def test_oai_query_dates(self):
         self.db.update_record(u'oai:spam',
-                              datetime.datetime(2010, 01, 01, 00, 00, 00),
+                              datetime.datetime(2010, 1, 1, 0, 0, 0),
                               False, {u'spamset':{u'name':u'spam'}},
                               {})
         self.db.update_record(u'oai:ham',
-                              datetime.datetime(2009, 01, 01, 00, 00, 00),
+                              datetime.datetime(2009, 1, 1, 0, 0, 0),
                               False, {u'hamset':{u'name':u'ham'}},
                               {})
         self.db.flush()
@@ -263,7 +273,7 @@ class DatabaseTest(TestCase):
 
     def test_oai_query_identifier(self):
         self.db.update_record(u'oai:spam',
-                              datetime.datetime(2010, 01, 01, 00, 00, 00),
+                              datetime.datetime(2010, 1, 1, 0, 0, 0),
                               False, {u'spamset':{u'name':u'spam'}},
                               {})
         self.db.flush()
@@ -275,25 +285,25 @@ class DatabaseTest(TestCase):
         # records with a timestamp in the future should never
         # be returned, this feature can be used to create embargo dates
         self.db.update_record(u'oai:spam',
-                              datetime.datetime(2020, 01, 01, 00, 00, 00),
+                              datetime.datetime(2020, 1, 1, 0, 0, 0),
                               False, {u'spamset':{u'name':u'spam'}},
                               {})
         self.db.flush()
         self.assertEquals(list(self.db.oai_query()), [])
         self.assertEquals(list(self.db.oai_query(
-            until_date=datetime.datetime(2030, 01, 01, 00, 00, 00))), [])
+            until_date=datetime.datetime(2030, 1, 1, 0, 0, 0))), [])
         self.assertEquals(list(self.db.oai_query(identifier=u'oai:spam')), [])
         
     def test_oai_sets(self):
         self.db.update_record(u'oai:spam',
-                              datetime.datetime(2009, 10, 13, 12, 30, 00),
+                              datetime.datetime(2009, 10, 13, 12, 30, 0),
                               False, {u'spam': dict(name=u'spamset'),
                                       u'test': dict(name=u'testset')}, {})
         self.db.update_record(u'oai:spamspamspam',
-                              datetime.datetime(2009, 06, 13, 12, 30, 00),
+                              datetime.datetime(2009, 6, 13, 12, 30, 0),
                               False, {u'spam': dict(name=u'spamset')}, {})
         self.db.update_record(u'oai:ham',
-                              datetime.datetime(2010, 10, 13, 12, 30, 00),
+                              datetime.datetime(2010, 10, 13, 12, 30, 0),
                               False, {u'ham': dict(name=u'hamset'),
                                       u'test': dict(name=u'testset')}, {})
         self.db.flush()
@@ -332,14 +342,14 @@ class DatabaseTest(TestCase):
                            [u'oai:spamspamspam'])
     def test_oai_batching(self):
         self.db.update_record(u'oai:spam',
-                              datetime.datetime(2009, 10, 13, 12, 30, 00),
+                              datetime.datetime(2009, 10, 13, 12, 30, 0),
                               False, {u'spam': dict(name=u'spamset'),
                                       u'test': dict(name=u'testset')}, {})
         self.db.update_record(u'oai:spamspamspam',
-                              datetime.datetime(2009, 06, 13, 12, 30, 00),
+                              datetime.datetime(2009, 6, 13, 12, 30, 0),
                               False, {u'spam': dict(name=u'spamset')}, {})
         self.db.update_record(u'oai:ham',
-                              datetime.datetime(2010, 10, 13, 12, 30, 00),
+                              datetime.datetime(2010, 10, 13, 12, 30, 0),
                               False, {u'ham': dict(name=u'hamset'),
                                       u'test': dict(name=u'testset')}, {})
         self.db.flush()
@@ -387,16 +397,16 @@ class ServerTest(TestCase):
     def setUp(self):
         self.db = Database()
         self.db.update_record(u'oai:spam',
-                              datetime.datetime(2009, 10, 13, 12, 30, 00),
+                              datetime.datetime(2009, 10, 13, 12, 30, 0),
                               False, {u'spam': dict(name=u'spamset'),
                                       u'test': dict(name=u'testset')},
                               {'title': [u'Spam!']})
         self.db.update_record(u'oai:spamspamspam',
-                              datetime.datetime(2009, 06, 13, 12, 30, 00),
+                              datetime.datetime(2009, 6, 13, 12, 30, 0),
                               False, {u'spam': dict(name=u'spamset')},
                               {'title': [u'Spam Spam Spam!']})
         self.db.update_record(u'oai:ham',
-                              datetime.datetime(2010, 10, 13, 12, 30, 00),
+                              datetime.datetime(2010, 10, 13, 12, 30, 0),
                               False, {u'ham': dict(name=u'hamset'),
                                       u'test': dict(name=u'testset')},
                               {'title': [u'Ham!']})
@@ -418,14 +428,14 @@ class ServerTest(TestCase):
         del self.config
         
     def test_identify(self):
-        xml = urllib2.urlopen('http://test?verb=Identify').read()
+        xml = urlopen('http://test?verb=Identify').read()
         doc = etree.fromstring(xml)
         xpath = XPath(doc, nsmap=
                       {"oai" :"http://www.openarchives.org/OAI/2.0/"})
         self.assertEquals(xpath.string('//oai:repositoryName'),u'Test Server')
         
     def test_list_identifiers(self):
-        xml = urllib2.urlopen('http://test?verb=ListIdentifiers'
+        xml = urlopen('http://test?verb=ListIdentifiers'
                               '&metadataPrefix=oai_dc').read()
         doc = etree.fromstring(xml)
         xpath = XPath(doc, nsmap=
@@ -434,14 +444,14 @@ class ServerTest(TestCase):
                           [u'oai:ham', u'oai:spam', u'oai:spamspamspam'])
 
     def test_list_with_dates(self):
-        xml = urllib2.urlopen('http://test?verb=ListIdentifiers'
+        xml = urlopen('http://test?verb=ListIdentifiers'
                               '&metadataPrefix=oai_dc&from=2010-01-01').read()
         doc = etree.fromstring(xml)
         xpath = XPath(doc, nsmap=
                       {"oai": "http://www.openarchives.org/OAI/2.0/"})
         self.assertEquals(xpath.strings('//oai:identifier'),
                           [u'oai:ham'])
-        xml = urllib2.urlopen('http://test?verb=ListIdentifiers'
+        xml = urlopen('http://test?verb=ListIdentifiers'
                               '&metadataPrefix=oai_dc&until=2010-01-01').read()
         doc = etree.fromstring(xml)
         xpath = XPath(doc, nsmap=
@@ -450,7 +460,7 @@ class ServerTest(TestCase):
                           [u'oai:spam', u'oai:spamspamspam'])
 
     def test_list_records(self):
-        xml = urllib2.urlopen('http://test?verb=ListRecords'
+        xml = urlopen('http://test?verb=ListRecords'
                               '&metadataPrefix=oai_dc').read()
         doc = etree.fromstring(xml)
         xpath = XPath(doc, nsmap=
@@ -460,7 +470,7 @@ class ServerTest(TestCase):
                           [u'oai:ham', u'oai:spam', u'oai:spamspamspam'])
         self.assertEquals(xpath.strings('//dc:title'),
                           [u'Ham!', u'Spam!', u'Spam Spam Spam!'])
-        xml = urllib2.urlopen('http://test?verb=ListRecords'
+        xml = urlopen('http://test?verb=ListRecords'
                               '&metadataPrefix=didl').read()
         doc = etree.fromstring(xml)
         xpath = XPath(doc, nsmap=
@@ -470,7 +480,7 @@ class ServerTest(TestCase):
                           [u'Ham!', u'Spam!', u'Spam Spam Spam!'])
         
     def test_list_sets(self):
-        xml = urllib2.urlopen('http://test?verb=ListSets').read()
+        xml = urlopen('http://test?verb=ListSets').read()
         doc = etree.fromstring(xml)
         xpath = XPath(doc, nsmap=
                       {"oai": "http://www.openarchives.org/OAI/2.0/"})
@@ -479,7 +489,7 @@ class ServerTest(TestCase):
 
     def test_list_hidden_sets(self):
         self.db.update_record(u'oai:spam',
-                              datetime.datetime(2009, 10, 13, 12, 30, 00),
+                              datetime.datetime(2009, 10, 13, 12, 30, 0),
                               False, {u'spam': dict(name=u'spamset'),
                                       u'test': dict(name=u'testset',
                                                     hidden=True)},
@@ -487,7 +497,7 @@ class ServerTest(TestCase):
         # note that we change the set through the record. It is important
         # that all the records have the same values for each set
         self.db.flush()
-        xml = urllib2.urlopen('http://test?verb=ListSets').read()
+        xml = urlopen('http://test?verb=ListSets').read()
         doc = etree.fromstring(xml)
         xpath = XPath(doc, nsmap=
                       {"oai": "http://www.openarchives.org/OAI/2.0/"})
@@ -496,8 +506,8 @@ class ServerTest(TestCase):
                           [u'hamset', u'spamset'])
         
         # however, we can use the hidden set to filter on
-        self.config.sets_disallowed.append(u'test')
-        xml = urllib2.urlopen('http://test?verb=ListIdentifiers'
+        self.config.sets_disallowed.add(u'test')
+        xml = urlopen('http://test?verb=ListIdentifiers'
                               '&metadataPrefix=oai_dc').read()
         doc = etree.fromstring(xml)
         xpath = XPath(doc, nsmap=
