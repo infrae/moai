@@ -14,10 +14,10 @@ class YodaContent(object):
         self.metadata = dict()
 
     def update(self, path):
-        log = get_moai_log()
         try:
             doc = etree.parse(path)
         except etree.ParseError:
+            log = get_moai_log()
             log.warning("Failed to parse %s".format(path))
             return
 
@@ -27,6 +27,7 @@ class YodaContent(object):
 
         id = xpath.string("/metadata/System/Persistent_Identifier_Datapackage[Identifier_Scheme='DOI']/Identifier")
         if not id:
+            log = get_moai_log()
             log.warning("Missing Persistent Identifier (DOI) of Datapackage in " + path)
             return
 
@@ -37,6 +38,7 @@ class YodaContent(object):
         last_modified = xpath.string('//Last_Modified_Date')
 
         if not last_modified:
+            log = get_moai_log()
             log.warning("Missing Last Modified Time in %s".format(path))
             self.modified = datetime.now() - timedelta(days=1)
         else:
