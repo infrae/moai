@@ -198,6 +198,9 @@ class DataCite(object):
              rights = NONE.rights(data['metadata']['rights'][0])
              rights.attrib['rightsURI'] = data['metadata']['rightsLicenseURL']
              rightsList.append(rights)
+             rights = NONE.rights(data['metadata']['accessRights'])
+             rights.attrib['rightsURI'] = data['metadata']['accessRightsURI']
+             rightsList.append(rights)
              datacite.append(rightsList)
          except (IndexError, KeyError) as e:
              pass
