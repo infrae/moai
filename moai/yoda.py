@@ -245,15 +245,16 @@ class YodaContent(object):
             self.metadata['rightsLicenseURL'] = rightsLicenseURI
 
         accessRestriction = xpath.string('//Data_Access_Restriction')
-        if accessRestriction.startswith('Open'):
-            self.metadata['accessRights'] = 'Open Access'
-            self.metadata['accessRightsURI'] = 'info:eu-repo/semantics/openAccess'
-        elif accessRestriction.startswith('Restricted'):
-            self.metadata['accessRights'] = 'Restricted Access'
-            self.metadata['accessRightsURI'] = 'info:eu-repo/semantics/restrictedAccess'
-        elif accessRestriction.startswith('Closed'):
-            self.metadata['accessRights'] = 'Closed Access'
-            self.metadata['accessRightsURI'] = 'info:eu-repo/semantics/closedAccess'
+	if accessRestriction:
+            if accessRestriction.startswith('Open'):
+                self.metadata['accessRights'] = 'Open Access'
+                self.metadata['accessRightsURI'] = 'info:eu-repo/semantics/openAccess'
+            elif accessRestriction.startswith('Restricted'):
+                self.metadata['accessRights'] = 'Restricted Access'
+                self.metadata['accessRightsURI'] = 'info:eu-repo/semantics/restrictedAccess'
+            elif accessRestriction.startswith('Closed'):
+                self.metadata['accessRights'] = 'Closed Access'
+                self.metadata['accessRightsURI'] = 'info:eu-repo/semantics/closedAccess'
 
         subjectinxml = xpath.strings('//Discipline') + xpath.strings('//Tag')
         subject = [s for s in subjectinxml if s]
