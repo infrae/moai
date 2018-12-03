@@ -98,7 +98,7 @@ class DataCite(object):
          except KeyError:
              pass
 
-         # Subjects divided in three steps: disciplines, tags and collection name
+         # Subjects divided in three steps: disciplines, tags and collection name!
          try:
              subjects = NONE.subjects()
              # Subjects - Disciplines

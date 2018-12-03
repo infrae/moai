@@ -176,6 +176,7 @@ class YodaContent(object):
         if title:
             self.metadata['title'] = [title]
 
+	# Add collection name
         collectionName = xpath.string('//Collection_Name')
         if collectionName:
             self.metadata['collectionName'] = [collectionName]
