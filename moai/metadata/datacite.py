@@ -98,7 +98,7 @@ class DataCite(object):
          except KeyError:
              pass
 
-         # Subjects divided in two steps: disciplines and tags
+         # Subjects divided in three steps: disciplines, tags and collection name
          try:
              subjects = NONE.subjects()
              # Subjects - Disciplines
@@ -112,6 +112,14 @@ class DataCite(object):
                  subjectNode = NONE.subject(subject)
                  subjectNode.attrib['subjectScheme'] = 'Keyword'
                  subjects.append(subjectNode)
+
+             # Subjects - Collection name 
+             for subject in  data['metadata']['collectionName']:
+                 subjectNode = NONE.subject(subject)
+                 subjectNode.attrib['subjectScheme'] = 'collection'
+                 subjects.append(subjectNode)
+
+
              datacite.append(subjects)
 
          except KeyError:
