@@ -15,16 +15,22 @@ class YodaContent(object):
 
     def update(self, path):
         try:
-            doc = etree.parse(path)
+            tree = etree.parse(path)
+
+            # Select all element nodes in namespace
+            query = "descendant-or-self::*[namespace-uri()!='']"
+
+            for element in tree.xpath(query):
+                # Replace element name with its local name
+                element.tag = etree.QName(element).localname
         except etree.ParseError:
             log = get_moai_log()
             log.warning("Failed to parse %s".format(path))
             return
 
-        xpath = XPath(doc, nsmap={})
+        xpath = XPath(tree, nsmap={})
 
-        self.root = doc.getroot()
-
+        # DOI
         id = xpath.string("/metadata/System/Persistent_Identifier_Datapackage[Identifier_Scheme='DOI']/Identifier")
         if not id:
             log = get_moai_log()
@@ -32,9 +38,9 @@ class YodaContent(object):
             return
 
         self.id = 'oai:%s' % id
-
         self.metadata['identifier'] = [id]
 
+        # Last modified
         last_modified = xpath.string('//Last_Modified_Date')
 
         if not last_modified:
@@ -50,6 +56,7 @@ class YodaContent(object):
                     ret+=timedelta(hours=int(last_modified[20:22]),minutes=int(last_modified[22:]))
             self.modified = ret
 
+        # Creators and contributors
         author_data = []
 
         creators = xpath.strings('//Creator/Name')
