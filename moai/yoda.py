@@ -310,3 +310,8 @@ class YodaContent(object):
             coverage = locations
         if coverage:
             self.metadata['coverage'] = coverage
+
+        # dataType now fed by yoda-metadata.xml instead of being hardcoded as 'Dataset' in datacite.py
+        dataType = xpath.string('//Data_Type')
+        if dataType:
+            self.metadata['dataType'] = dataType

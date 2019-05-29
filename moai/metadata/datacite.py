@@ -170,10 +170,22 @@ class DataCite(object):
          except KeyError:
              pass
 
-         # resourceType - hardcoded
+#         # resourceType - hardcoded
+#         resourceType = NONE.resourceType('Dataset')
+#         resourceType.attrib['resourceTypeGeneral'] = 'Dataset'
+#         datacite.append(resourceType)
+
+         # ResourceType
+         try:
+             resourceTypeGeneral = data['metadata']['dataType']
+         except KeyError:
+             resourceTypeGeneral = 'Dataset' # Set as default
+             pass
+
          resourceType = NONE.resourceType('Dataset')
-         resourceType.attrib['resourceTypeGeneral'] = 'Dataset'
+         resourceType.attrib['resourceTypeGeneral'] = resourceTypeGeneral
          datacite.append(resourceType)
+
 
          # Related identifiers
          try:
