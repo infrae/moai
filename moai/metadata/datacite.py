@@ -170,11 +170,6 @@ class DataCite(object):
          except KeyError:
              pass
 
-#         # resourceType - hardcoded
-#         resourceType = NONE.resourceType('Dataset')
-#         resourceType.attrib['resourceTypeGeneral'] = 'Dataset'
-#         datacite.append(resourceType)
-
          # ResourceType
          try:
              resourceTypeGeneral = data['metadata']['dataType']
@@ -182,7 +177,20 @@ class DataCite(object):
              resourceTypeGeneral = 'Dataset' # Set as default
              pass
 
-         resourceType = NONE.resourceType('Dataset')
+         # List as defined by Ton/Maarten/Frans 20190603
+         dictResourceTypes = {'Dataset': 'Research Data',
+                     'Datapaper':'Method Description',
+                     'Software':'Software',
+                     'Text': 'Other Document'}
+
+         try:
+             resourceTypeLabel = dictResourceTypes[resourceTypeGeneral]
+         except KeyError:
+             resourceTypeGeneral = 'Text' # Default situation -> set to 'Text' and get the correct label for that
+             resourceTypeLabel = dictResourceTypes[resourceTypeGeneral]
+         
+
+         resourceType = NONE.resourceType(resourceTypeLabel)
          resourceType.attrib['resourceTypeGeneral'] = resourceTypeGeneral
          datacite.append(resourceType)
 
@@ -288,7 +296,10 @@ class DataCite(object):
              for reference in data['metadata']['fundingReferences']:
                  fundingRef = NONE.fundingReference()
                  fundingRef.append(NONE.funderName(reference['name']))
-                 fundingRef.append(NONE.awardNumber(reference['awardNumber']))
+                 try:
+                     fundingRef.append(NONE.awardNumber(reference['awardNumber']))
+                 except KeyError:
+                     pass
                  fundingReferences.append(fundingRef)
 
              datacite.append(fundingReferences)
