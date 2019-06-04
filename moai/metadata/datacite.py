@@ -58,8 +58,6 @@ class DataCite(object):
              for dccreator in data['metadata']['dataciteCreators']:
                  creator = NONE.creator()
                  creator.append(NONE.creatorName(dccreator['name']))
-                 #creator.append(NONE.givenName('Given'))
-                 #creator.append(NONE.familyName('Family'))
 
                  if 'affiliation' in dccreator:
                      for creatorAffiliation in dccreator['affiliation']:
@@ -113,7 +111,7 @@ class DataCite(object):
                  subjectNode.attrib['subjectScheme'] = 'Keyword'
                  subjects.append(subjectNode)
 
-             # Subjects - Collection name 
+             # Subjects - Collection name
              for subject in  data['metadata']['collectionName']:
                  subjectNode = NONE.subject(subject)
                  subjectNode.attrib['subjectScheme'] = 'collection'
@@ -179,21 +177,19 @@ class DataCite(object):
 
          # List as defined by Ton/Maarten/Frans 20190603
          dictResourceTypes = {'Dataset': 'Research Data',
-                     'Datapaper':'Method Description',
-                     'Software':'Software',
-                     'Text': 'Other Document'}
+                              'Datapaper':'Method Description',
+                              'Software':'Software',
+                              'Text': 'Other Document'}
 
          try:
              resourceTypeLabel = dictResourceTypes[resourceTypeGeneral]
          except KeyError:
              resourceTypeGeneral = 'Text' # Default situation -> set to 'Text' and get the correct label for that
              resourceTypeLabel = dictResourceTypes[resourceTypeGeneral]
-         
 
          resourceType = NONE.resourceType(resourceTypeLabel)
          resourceType.attrib['resourceTypeGeneral'] = resourceTypeGeneral
          datacite.append(resourceType)
-
 
          # Related identifiers
          try:
@@ -203,10 +199,6 @@ class DataCite(object):
                  relatedIdentifier.attrib['relatedIdentifierType'] = identifier['relatedIdentifierScheme']
                  relatedIdentifier.attrib['relationType'] = identifier['relationType'].split(':')[0]
                  relatedIdentifier.attrib['relatedIdentifier'] = identifier['relatedIdentifier']
-
-                 # relationType
-                 # relatedIdentifier
-                 # relatedIdentifierScheme
 
                  relatedIdentifiers.append(relatedIdentifier)
 
@@ -232,7 +224,7 @@ class DataCite(object):
              datacite.append(rightsList)
          except (IndexError, KeyError) as e:
              pass
-			 
+
          # Descriptions
          try:
              descriptions = NONE.descriptions()
@@ -250,8 +242,8 @@ class DataCite(object):
              geoLocations = NONE.geoLocations()
 
              # "dataciteLocations"
-
              addGeoLocations = False
+
              # Look at location names contained in one string
              locations =  data['metadata']['dataciteLocations']
              locationCount = 0
