@@ -172,7 +172,6 @@ class DataCite(object):
          try:
              resourceTypeGeneral = data['metadata']['dataType']
          except KeyError:
-             resourceTypeGeneral = 'Dataset' # Set as default
              pass
 
          # List as defined by Ton/Maarten/Frans 20190603
