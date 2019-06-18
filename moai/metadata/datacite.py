@@ -169,26 +169,21 @@ class DataCite(object):
              pass
 
          # ResourceType
-         try:
-             resourceTypeGeneral = data['metadata']['dataType']
-         except KeyError:
-             pass
 
          # List as defined by Ton/Maarten/Frans 20190603
-         dictResourceTypes = {'Dataset': 'Research Data',
-                              'Datapaper':'Method Description',
-                              'Software':'Software',
-                              'Text': 'Other Document'}
+         dictResourceTypes = {'Dataset'  : 'Research Data',
+                              'Datapaper': 'Method Description',
+                              'Software' : 'Computer Code',
+                              'Text'     : 'Other Document'}
 
          try:
+             resourceTypeGeneral = data['metadata']['dataType']
              resourceTypeLabel = dictResourceTypes[resourceTypeGeneral]
+             resourceType = NONE.resourceType(resourceTypeLabel)
+             resourceType.attrib['resourceTypeGeneral'] = resourceTypeGeneral
+             datacite.append(resourceType)
          except KeyError:
-             resourceTypeGeneral = 'Text' # Default situation -> set to 'Text' and get the correct label for that
-             resourceTypeLabel = dictResourceTypes[resourceTypeGeneral]
-
-         resourceType = NONE.resourceType(resourceTypeLabel)
-         resourceType.attrib['resourceTypeGeneral'] = resourceTypeGeneral
-         datacite.append(resourceType)
+             pass
 
          # Related identifiers
          try:
