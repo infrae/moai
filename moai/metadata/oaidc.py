@@ -48,6 +48,9 @@ class OAIDC(object):
             for value in data['metadata'].get(field, []):
                 if field == 'identifier' and data['metadata'].get('url'):
                     value = data['metadata']['url'][0]
+                elif field == 'rights':
+                    value = data['metadata']['rights'][0] + ' (' + data['metadata']['rightsLicenseURL'] + ')'
+                    value += ' | ' + data['metadata']['accessRights'] + ' (' + data['metadata']['accessRightsURI'] + ')' 
                 oai_dc.append(el(value))
         
         element.append(oai_dc)
