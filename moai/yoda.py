@@ -195,7 +195,7 @@ class YodaContent(object):
         language = xpath.string('//Language')
         if language:
             self.metadata['language'] = [language[0:2]]
-        else:
+        elif title:
             self.metadata['language'] = ['en']
 
         version = xpath.string('//Version')
