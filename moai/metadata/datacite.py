@@ -41,8 +41,7 @@ class DataCite(object):
          try:
             language = data['metadata']['language'][0]
          except (IndexError, KeyError) as e:
-            if data['metadata']['title']:
-                language = 'en'  # Default language hardcoded for now
+            language = 'en'  # Default language hardcoded for now
             pass
 
          # Identifier DOI
