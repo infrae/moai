@@ -41,7 +41,8 @@ class DataCite(object):
          try:
             language = data['metadata']['language'][0]
          except (IndexError, KeyError) as e:
-            language = 'en'  # Default language hardcoded for now
+            if data['metadata']['title']:
+                language = 'en'  # Default language hardcoded for now
             pass
 
          # Identifier DOI
@@ -86,7 +87,8 @@ class DataCite(object):
 
          # Publisher - hardcoded
          try:
-             datacite.append(NONE.publisher('Utrecht University'))
+             if data['metadata']['title']:
+                 datacite.append(NONE.publisher('Utrecht University'))
          except KeyError:
              pass
 
@@ -117,9 +119,7 @@ class DataCite(object):
                  subjectNode.attrib['subjectScheme'] = 'collection'
                  subjects.append(subjectNode)
 
-
              datacite.append(subjects)
-
          except KeyError:
              pass
 
@@ -193,7 +193,6 @@ class DataCite(object):
                  relatedIdentifier.attrib['relatedIdentifierType'] = identifier['relatedIdentifierScheme']
                  relatedIdentifier.attrib['relationType'] = identifier['relationType'].split(':')[0]
                  relatedIdentifier.attrib['relatedIdentifier'] = identifier['relatedIdentifier']
-
                  relatedIdentifiers.append(relatedIdentifier)
 
              datacite.append(relatedIdentifiers)
