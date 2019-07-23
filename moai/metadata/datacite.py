@@ -188,7 +188,7 @@ class DataCite(object):
          try:
              relatedIdentifiers = NONE.relatedIdentifiers()
              for identifier in data['metadata']['relatedIdentifiers']:
-                 relatedIdentifier = identifier['relatedIdentifier']
+                 relatedIdentifier = NONE.relatedIdentifier(identifier['relatedIdentifier'])
                  relatedIdentifier.attrib['relatedIdentifierType'] = identifier['relatedIdentifierScheme']
                  relatedIdentifier.attrib['relationType'] = identifier['relationType'].split(':')[0]
                  relatedIdentifiers.append(relatedIdentifier)
