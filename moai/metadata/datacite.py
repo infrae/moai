@@ -1,5 +1,6 @@
 from lxml.builder import ElementMaker
 
+
 XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
 XML_NS = 'https://www.w3.org/TR/xml-names/'
 
@@ -26,7 +27,8 @@ class DataCite(object):
          return self.schemas[self.prefix]
 
      def __call__(self, element, metadata):
-         data = metadata.record
+         data = metadata.record['metadata']['metadata']  # data is added
+
 
          # TODO: is deze nog nodig?
          DATACITE =  ElementMaker(namespace=self.ns['datacite'],
@@ -38,136 +40,193 @@ class DataCite(object):
              self.ns['datacite'],
              self.schemas['datacite'])
 
+         # OK - language	
          try:
-            language = data['metadata']['language'][0]
+            language = data['Language'][0:2]
          except (IndexError, KeyError) as e:
             language = 'en'  # Default language hardcoded for now
             pass
 
-         # Identifier DOI
+
+         # OK - Identifier DOI
          try:
-             identifier = NONE.identifier(data['metadata']['identifier'][0])
+             identifier = NONE.identifier(data['System']['Persistent_Identifier_Datapackage']['Identifier'])
              identifier.attrib['identifierType'] = "DOI"
              datacite.append(identifier)
          except (IndexError, KeyError) as e:
              pass
 
-         # Creators
+         # OK Creators
          try:
              creators = NONE.creators()
-             for dccreator in data['metadata']['dataciteCreators']:
+
+             creator_list = data['Creator']
+             if isinstance(creator_list, list)==False:
+                 creator_list = [creator_list]
+
+             for dccreator in creator_list:
                  creator = NONE.creator()
-                 creator.append(NONE.creatorName(dccreator['name']))
+                 creator.append(NONE.creatorName(dccreator['Name']))
 
-                 if 'affiliation' in dccreator:
-                     for creatorAffiliation in dccreator['affiliation']:
-                         creator.append(NONE.affiliation(creatorAffiliation))
+                 affiliation_list = dccreator['Affiliation']
+                 if isinstance(affiliation_list, list)==False:
+                     affiliation_list = [affiliation_list]
+ 
+                 for affiliation in affiliation_list:
+                     creator.append(NONE.affiliation(affiliation))
 
-                 for nameIdentifier in dccreator['name_identifiers']:
-                     for key in nameIdentifier:
-                        nameIdf = NONE.nameIdentifier(nameIdentifier[key])
-                        nameIdf.attrib['nameIdentifierScheme'] = key
-                        creator.append(nameIdf)
+                 idf_list =  dccreator['Person_Identifier']
+                 if isinstance(idf_list, list)==False:
+		     idf_list = [idf_list]
+                 for identifier in idf_list:
+                     nameIdf = NONE.nameIdentifier(identifier['Name_Identifier'])
+                     nameIdf.attrib['nameIdentifierScheme'] = identifier['Name_Identifier_Scheme']
+                     creator.append(nameIdf)
 
                  creators.append(creator)
              datacite.append(creators)
          except KeyError:
              pass
 
-         # Title
+
+         # OK - Title
          try:
              titles = NONE.titles()
-             title = NONE.title(data['metadata']['title'][0])
+             title = NONE.title(data['Title'])
              title.attrib['{%s}lang' % XML_NS] = language
              titles.append(title)
              datacite.append(titles)
          except (IndexError,KeyError) as e:
              pass
 
-         # Publisher - hardcoded
+         # OK Publisher - hardcoded
          try:
-             if data['metadata']['title']:
+             if data['Title']:
                  datacite.append(NONE.publisher('Utrecht University'))
          except KeyError:
              pass
 
-         # Publication year
+         # OK - Publication year
          try:
-             datacite.append(NONE.publicationYear(data['metadata']['publicationYear']))
+             datacite.append(NONE.publicationYear(data['System']['Publication_Date'][0:4]))
          except KeyError:
              pass
 
-         # Subjects divided in three steps: disciplines, tags and collection name!
+         # OK - Subjects divided in three steps: disciplines, tags and collection name!
          try:
              subjects = NONE.subjects()
+
              # Subjects - Disciplines
-             for subject in  data['metadata']['dataciteDisciplines']:
+             list_subjects = data['Discipline']
+             if isinstance(list_subjects, list)==False:
+                 list_subjects = [list_subjects]
+             for subject in list_subjects:
                  subjectNode = NONE.subject(subject)
                  subjectNode.attrib['subjectScheme'] = 'OECD FOS 2007'
                  subjects.append(subjectNode)
 
+
              # Subjects - Tags
-             for subject in  data['metadata']['dataciteTags']:
+             list_subjects = data['Tag'] 
+             if isinstance(list_subjects, list)==False:
+                 list_subjects = [list_subjects] 
+             for subject in list_subjects:
                  subjectNode = NONE.subject(subject)
                  subjectNode.attrib['subjectScheme'] = 'Keyword'
                  subjects.append(subjectNode)
+ 
 
              # Subjects - Collection name
-             for subject in  data['metadata']['collectionName']:
-                 subjectNode = NONE.subject(subject)
-                 subjectNode.attrib['subjectScheme'] = 'collection'
-                 subjects.append(subjectNode)
+             subjectNode = NONE.subject( data['Collection_Name'])
+             subjectNode.attrib['subjectScheme'] = 'collection'
+             subjects.append(subjectNode)
 
              datacite.append(subjects)
          except KeyError:
              pass
 
-         # Contributors
+
+         # OK Contributors
          try:
              contributors = NONE.contributors()
-             for dccontributor in data['metadata']['dataciteContributors']:
+             
+             contributor_list = data['Contributor']
+             if isinstance(contributor_list, list)==False:
+                 contributor_list = [contributor_list]
+             
+             for dccontributor in contributor_list:
                  contributor = NONE.contributor()
-                 contributor.attrib['contributorType'] = dccontributor['type']
-                 contributor.append(NONE.contributorName(dccontributor['name']))
+                 contributor.attrib['contributorType'] = dccontributor['Contributor_Type']
+                 contributor.append(NONE.contributorName(dccontributor['Name']))
 
-                 # contributor.append(NONE.affiliation('Affiliation'))
-                 if 'affiliation' in dccontributor:
-                     # contributor.append(NONE.affiliation(dccontributor['affiliation']))
-                     for contribAffiliation in dccontributor['affiliation']:
-                         contributor.append(NONE.affiliation(contribAffiliation))
+                 affiliation_list = dccontributor['Affiliation']
+                 if isinstance(affiliation_list, list)==False:
+                     affiliation_list = [affiliation_list]
 
+                 for affiliation in affiliation_list:
+                     contributor.append(NONE.affiliation(affiliation))
 
-                 for nameIdentifier in dccontributor['name_identifiers']:
-                     for key in nameIdentifier:
-                        # contributor.append(NONE.idftest(key))
-                        nameIdf = NONE.nameIdentifier(nameIdentifier[key])
-                        nameIdf.attrib['nameIdentifierScheme'] = key
-                        contributor.append(nameIdf)
+                 idf_list =  dccontributor['Person_Identifier']
+                 if isinstance(idf_list, list)==False:
+                     idf_list = [idf_list]
+                 for identifier in idf_list:
+                     nameIdf = NONE.nameIdentifier(identifier['Name_Identifier'])
+                     nameIdf.attrib['nameIdentifierScheme'] = identifier['Name_Identifier_Scheme']
+                     contributor.append(nameIdf)
 
                  contributors.append(contributor)
              datacite.append(contributors)
          except KeyError:
              pass
 
-         # Date handling
+
+
+         # OK Date handling
+         # Updated
+         dataciteDates = NONE.dates()
          try:
-             dataciteDates = NONE.dates()
-             dateCollection = data['metadata']['dataciteDates']
-             for dateType in dateCollection:
-                 dataciteDate = NONE.date(dateCollection[dateType])
-                 dataciteDate.attrib['dateType'] = dateType
-                 dataciteDates.append(dataciteDate)
+             date = data['System']['Last_Modified_Date']
+             dataciteDate = NONE.date(date)
+             dataciteDate.attrib['dateType'] = 'Updated'
+             dataciteDates.append(dataciteDate)
              datacite.append(dataciteDates)
          except KeyError:
              pass
 
-         # Language
+         # Available
+         try:
+             date = data['Embargo_End_Date']
+             dataciteDate = NONE.date(date)
+             dataciteDate.attrib['dateType'] = 'Available'
+             dataciteDates.append(dataciteDate)
+             datacite.append(dataciteDates)
+         except KeyError:
+             pass
+
+         # Start / end collected
+         try:
+             date_start = data['Collected']['Start_Date']
+             date_end   = data['Collected']['End_Date']
+             dataciteDate = NONE.date(date_start + '/' + date_end)
+             dataciteDate.attrib['dateType'] = 'Collection'
+             dataciteDates.append(dataciteDate)
+             datacite.append(dataciteDates)
+         except KeyError:
+             pass
+
+
+         datacite.append(dataciteDates)
+
+
+
+
+         # OK - Language
          try:
              datacite.append(NONE.language(language))
          except KeyError:
              pass
 
-         # ResourceType
+         # OK ResourceType
 
          # List as defined by Ton/Maarten/Frans 20190603
          dictResourceTypes = {'Dataset'  : 'Research Data',
@@ -176,59 +235,81 @@ class DataCite(object):
                               'Text'     : 'Other Document'}
 
          try:
-             resourceTypeGeneral = data['metadata']['dataType']
+             resourceTypeGeneral = data['Data_Type']
              resourceTypeLabel = dictResourceTypes[resourceTypeGeneral]
              resourceType = NONE.resourceType(resourceTypeLabel)
              resourceType.attrib['resourceTypeGeneral'] = resourceTypeGeneral
              datacite.append(resourceType)
          except KeyError:
+	     resourceType = NONE.resourceType('Other Document')
+             resourceType.attrib['resourceTypeGeneral'] = 'Text'
+             datacite.append(resourceType)
              pass
 
-         # Related identifiers
+         # OK - Related identifiers
          try:
              relatedIdentifiers = NONE.relatedIdentifiers()
-             for identifier in data['metadata']['relatedIdentifiers']:
-                 relatedIdentifier = NONE.relatedIdentifier(identifier['relatedIdentifier'])
-                 relatedIdentifier.attrib['relatedIdentifierType'] = identifier['relatedIdentifierScheme']
-                 relatedIdentifier.attrib['relationType'] = identifier['relationType'].split(':')[0]
+             for identifier in data['Related_Datapackage']:
+                 relatedIdentifier = NONE.relatedIdentifier(identifier['Persistent_Identifier']['Identifier'])
+                 relatedIdentifier.attrib['relatedIdentifierType'] = identifier['Persistent_Identifier']['Identifier_Scheme']
+                 relatedIdentifier.attrib['relationType'] = identifier['Relation_Type'].split(':')[0]
                  relatedIdentifiers.append(relatedIdentifier)
 
              datacite.append(relatedIdentifiers)
          except KeyError:
              pass
 
-         # Version
+
+
+         # OK Version
          try:
-             datacite.append(NONE.version(data['metadata']['version']))
+             datacite.append(NONE.version(data['Version']))
          except KeyError:
              pass
 
-         # Rights
+         # OK Rights
+
+         license = data['License']
+         license_uri = data['System']['License_URI']
+
+         access_restriction = data['Data_Access_Restriction']
+         access_rights = ''
+	 access_rightsURI = ''
+	 if access_restriction:
+             if access_restriction.startswith('Open'):
+                 access_rights = 'Open Access'
+                 access_rightsURI = 'info:eu-repo/semantics/openAccess'
+             elif access_restriction.startswith('Restricted'):
+                 access_rights = 'Restricted Access'
+                 access_rightsURI = 'info:eu-repo/semantics/restrictedAccess'
+             elif access_restriction.startswith('Closed'):
+                 access_rights = 'Closed Access'
+                 access_rightsURI = 'info:eu-repo/semantics/closedAccess'
+
          try:
              rightsList = NONE.rightsList()
-             rights = NONE.rights(data['metadata']['rights'][0])
-             rights.attrib['rightsURI'] = data['metadata']['rightsLicenseURL']
+             rights = NONE.rights(license)
+             rights.attrib['rightsURI'] = license_uri
              rightsList.append(rights)
-             rights = NONE.rights(data['metadata']['accessRights'])
-             rights.attrib['rightsURI'] = data['metadata']['accessRightsURI']
+             rights = NONE.rights(access_rights)
+             rights.attrib['rightsURI'] = access_rightsURI
              rightsList.append(rights)
              datacite.append(rightsList)
          except (IndexError, KeyError) as e:
              pass
 
-         # Descriptions
+         # OK Descriptions
          try:
              descriptions = NONE.descriptions()
-             for description in data['metadata']['description']:
-                 descriptionNode = NONE.description(description)
-                 descriptionNode.attrib['descriptionType'] = 'Abstract'
-                 descriptions.append(descriptionNode)
+             descriptionNode = NONE.description(data['Description'])
+             descriptionNode.attrib['descriptionType'] = 'Abstract'
+             descriptions.append(descriptionNode)
 
              datacite.append(descriptions)
          except KeyError:
              pass
 
-         # Geolocations
+         # LAST Geolocations
          try:
              geoLocations = NONE.geoLocations()
 
@@ -273,14 +354,14 @@ class DataCite(object):
          if addGeoLocations:
              datacite.append(geoLocations)
 
-         # Funding references
+         # OK Funding references
          try:
              fundingReferences = NONE.fundingReferences()
-             for reference in data['metadata']['fundingReferences']:
+             for reference in data['Funding_Reference']:
                  fundingRef = NONE.fundingReference()
-                 fundingRef.append(NONE.funderName(reference['name']))
+                 fundingRef.append(NONE.funderName(reference['Funder_Name']))
                  try:
-                     fundingRef.append(NONE.awardNumber(reference['awardNumber']))
+                     fundingRef.append(NONE.awardNumber(reference['Award_Number']))
                  except KeyError:
                      pass
                  fundingReferences.append(fundingRef)

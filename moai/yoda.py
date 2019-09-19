@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 
 from moai.utils import XPath, get_moai_log
 
+import json
+
 
 class YodaContent(object):
     def __init__(self, provider):
@@ -14,6 +16,38 @@ class YodaContent(object):
         self.metadata = dict()
 
     def update(self, path):
+        log = get_moai_log()
+
+        log.warning(path)
+
+
+ 
+        with open(path, 'r') as myfile:
+            jsonSchemaData = myfile.read()
+
+        log = get_moai_log()
+        log.warning(jsonSchemaData)
+
+        dictJsonData = json.loads(jsonSchemaData)
+
+	# Modified and id are required for the system to operate
+        
+        # dictJsonData['System']['Last_Modified_Date']
+        persistent_identifier_datapackage = dictJsonData['System']['Persistent_Identifier_Datapackage']['Identifier']
+
+	self.id = 'oai:%s' % persistent_identifier_datapackage   #i.decode('unicode-escape')
+        self.modified = datetime.now() - timedelta(days=1)
+
+        self.metadata['identifier'] = ['HDR111333']
+
+        self.metadata['metadata'] = dictJsonData  
+        #jsonSchemaData.decode('unicode-escape')
+
+
+'''
+        return
+
+
         try:
             tree = etree.parse(path)
 
@@ -315,3 +349,5 @@ class YodaContent(object):
         dataType = xpath.string('//Data_Type')
         if dataType:
             self.metadata['dataType'] = dataType
+
+'''
