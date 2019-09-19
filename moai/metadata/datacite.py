@@ -40,7 +40,7 @@ class DataCite(object):
              self.ns['datacite'],
              self.schemas['datacite'])
 
-         # OK - language	
+         # Language	
          try:
             language = data['Language'][0:2]
          except (IndexError, KeyError) as e:
@@ -48,7 +48,7 @@ class DataCite(object):
             pass
 
 
-         # OK - Identifier DOI
+         # Identifier DOI
          try:
              identifier = NONE.identifier(data['System']['Persistent_Identifier_Datapackage']['Identifier'])
              identifier.attrib['identifierType'] = "DOI"
@@ -56,7 +56,7 @@ class DataCite(object):
          except (IndexError, KeyError) as e:
              pass
 
-         # OK Creators
+         # Creators
          try:
              creators = NONE.creators()
 
@@ -89,7 +89,7 @@ class DataCite(object):
              pass
 
 
-         # OK - Title
+         # Title
          try:
              titles = NONE.titles()
              title = NONE.title(data['Title'])
@@ -99,20 +99,20 @@ class DataCite(object):
          except (IndexError,KeyError) as e:
              pass
 
-         # OK Publisher - hardcoded
+         # Publisher - hardcoded
          try:
              if data['Title']:
                  datacite.append(NONE.publisher('Utrecht University'))
          except KeyError:
              pass
 
-         # OK - Publication year
+         # Publication year
          try:
              datacite.append(NONE.publicationYear(data['System']['Publication_Date'][0:4]))
          except KeyError:
              pass
 
-         # OK - Subjects divided in three steps: disciplines, tags and collection name!
+         # Subjects divided in three steps: disciplines, tags and collection name!
          try:
              subjects = NONE.subjects()
 
@@ -146,7 +146,10 @@ class DataCite(object):
              pass
 
 
-         # OK Contributors
+         # Subject - special fields geo schemas
+         # To BE DONE
+
+         # Contributors
          try:
              contributors = NONE.contributors()
              
@@ -180,9 +183,8 @@ class DataCite(object):
              pass
 
 
-
-         # OK Date handling
-         # Updated
+         # Date handling
+         # -Updated
          dataciteDates = NONE.dates()
          try:
              date = data['System']['Last_Modified_Date']
@@ -193,7 +195,7 @@ class DataCite(object):
          except KeyError:
              pass
 
-         # Available
+         # -Available
          try:
              date = data['Embargo_End_Date']
              dataciteDate = NONE.date(date)
@@ -203,7 +205,7 @@ class DataCite(object):
          except KeyError:
              pass
 
-         # Start / end collected
+         # -Start / end collected
          try:
              date_start = data['Collected']['Start_Date']
              date_end   = data['Collected']['End_Date']
@@ -214,19 +216,16 @@ class DataCite(object):
          except KeyError:
              pass
 
-
          datacite.append(dataciteDates)
 
 
-
-
-         # OK - Language
+         # Language
          try:
              datacite.append(NONE.language(language))
          except KeyError:
              pass
 
-         # OK ResourceType
+         # ResourceType
 
          # List as defined by Ton/Maarten/Frans 20190603
          dictResourceTypes = {'Dataset'  : 'Research Data',
@@ -246,7 +245,7 @@ class DataCite(object):
              datacite.append(resourceType)
              pass
 
-         # OK - Related identifiers
+         # Related identifiers
          try:
              relatedIdentifiers = NONE.relatedIdentifiers()
              for identifier in data['Related_Datapackage']:
@@ -261,13 +260,13 @@ class DataCite(object):
 
 
 
-         # OK Version
+         # Version
          try:
              datacite.append(NONE.version(data['Version']))
          except KeyError:
              pass
 
-         # OK Rights
+         # Rights
 
          license = data['License']
          license_uri = data['System']['License_URI']
@@ -298,7 +297,7 @@ class DataCite(object):
          except (IndexError, KeyError) as e:
              pass
 
-         # OK Descriptions
+         # Descriptions
          try:
              descriptions = NONE.descriptions()
              descriptionNode = NONE.description(data['Description'])
@@ -309,50 +308,49 @@ class DataCite(object):
          except KeyError:
              pass
 
-         # LAST Geolocations
+
+	 # GeoLocation
          try:
              geoLocations = NONE.geoLocations()
+             location_present = False
+             for geoloc in data['GeoLocation']:
+                 location_present = True
+                 temp_description_start = geoloc['Description_Temporal']['Start_Date']
+                 temp_description_end = geoloc['Description_Temporal']['End_Date']
+                 spatial_description = geoloc['Description_Spatial']
+                 
+                 lon0 = str(geoloc['geoLocationBox']['westBoundLongitude'])
+                 lat0 = str(geoloc['geoLocationBox']['northBoundLatitude'])
+                 lon1 = str(geoloc['geoLocationBox']['eastBoundLongitude'])
+                 lat1 = str(geoloc['geoLocationBox']['southBoundLatitude'])
 
-             # "dataciteLocations"
-             addGeoLocations = False
-
-             # Look at location names contained in one string
-             locations =  data['metadata']['dataciteLocations']
-             locationCount = 0
-             for location in locations:
                  geoLocation = NONE.geoLocation()
-                 geoLocationPlace = NONE.geoLocationPlace(location)
-                 geoLocation.append(geoLocationPlace)
+
+                 if spatial_description: 
+                     geoLocationPlace = NONE.geoLocationPlace(spatial_description)
+                     geoLocation.append(geoLocationPlace)
+ 
+                 if lon0==lon1 and lat0==lat1: # dealing with a point
+                     geoLocationPoint = NONE.geoLocationPoint()
+                     geoLocationPoint.append(NONE.pointLongitude(lon0))
+                     geoLocationPoint.append(NONE.pointLatitude(lat0))
+                     geoLocation.append(geoLocationPoint)
+                 else:
+                     geoLocationBox = NONE.geoLocationBox()
+                     geoLocationBox.append(NONE.westBoundLongitude(lon0))
+                     geoLocationBox.append(NONE.eastBoundLongitude(lon1))
+                     geoLocationBox.append(NONE.southBoundLatitude(lat0))
+                     geoLocationBox.append(NONE.northBoundLatitude(lat1))
+                     geoLocation.append(geoLocationBox)
+
                  geoLocations.append(geoLocation)
-                 addGeoLocations = True
-                 locationCount += 1
 
-             # Look at geo boxes - At the moment this is NOT part of iLab.
-             # Needs to be fixed for EPOS
-#             index = 2 # provision is set up this way - index=2 contains first geobox data
-             # Must be made flexible - possibly on the count of dataciteLocations
-             # geoLocations = NONE.geoLocations()
+             # alleen toevoegen als er werkelijk locaties zijn
+             if location_present: 
+                 datacite.append(geoLocations)
 
-#             while index<100:
-#                 if data['metadata']['coverage'][index]:
-#                     coverage = data['metadata']['coverage'][index].split(',')
-#                     geoLocation = NONE.geoLocation()
-#                     geoLocationBox = NONE.geoLocationBox()
-#                     geoLocationBox.append(NONE.westBoundLongitude(coverage[0]))
-#                     geoLocationBox.append(NONE.eastBoundLongitude(coverage[2]))
-#                     geoLocationBox.append(NONE.southBoundLatitude(coverage[1]))
-#                     geoLocationBox.append(NONE.northBoundLatitude(coverage[3]))
-
-#                     geoLocation.append(geoLocationBox)
-#                     geoLocations.append(geoLocation)
-
-#                    addGeoLocations = True
-#                     index += 1
          except (IndexError, KeyError) as e:
              pass
-
-         if addGeoLocations:
-             datacite.append(geoLocations)
 
          # OK Funding references
          try:
