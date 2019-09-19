@@ -148,6 +148,29 @@ class DataCite(object):
 
          # Subject - special fields geo schemas
          # To BE DONE
+         subject_fields = ["Main_Setting", 
+            "Process_Hazard", 
+            "Geological_Structure",
+            "Geomorphical_Feature",
+            "Material",
+            "Apparatus",
+            "Monitoring",
+            "Software",
+            "Measured_Property"]
+
+	 for subject_field in subject_fields:
+             try:
+                 list_subjects = data[subject_field]
+                 if isinstance(list_subjects, list)==False:
+                     list_subjects = [list_subjects]
+                 for subject in list_subjects:
+                     subjectNode = NONE.subject(subject)
+                     subjectNode.attrib['subjectScheme'] = subject_field
+                     subjects.append(subjectNode)
+
+             except KeyError:
+                 continue
+
 
          # Contributors
          try:
