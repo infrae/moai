@@ -66,7 +66,9 @@ class DataCite(object):
 
              for dccreator in creator_list:
                  creator = NONE.creator()
-                 creator.append(NONE.creatorName(dccreator['Name']))
+                 
+                 name = dccreator['Name']['First_Name'] + ' ' +  dccreator['Name']['Last_Name']
+                 creator.append(NONE.creatorName(name))
 
                  affiliation_list = dccreator['Affiliation']
                  if isinstance(affiliation_list, list)==False:
@@ -183,7 +185,9 @@ class DataCite(object):
              for dccontributor in contributor_list:
                  contributor = NONE.contributor()
                  contributor.attrib['contributorType'] = dccontributor['Contributor_Type']
-                 contributor.append(NONE.contributorName(dccontributor['Name']))
+
+                 name = dccontributor['Name']['First_Name'] + ' ' + dccontributor['Name']['Last_Name']
+                 contributor.append(NONE.contributorName(name))
 
                  affiliation_list = dccontributor['Affiliation']
                  if isinstance(affiliation_list, list)==False:
@@ -201,9 +205,39 @@ class DataCite(object):
                      contributor.append(nameIdf)
 
                  contributors.append(contributor)
+
+
+	     # GEO 'Contact person' is a special case of contributerType: contactPerson	
+             contributor_list = data['Contact']
+             if isinstance(contributor_list, list)==False:
+                 contributor_list = [contributor_list]
+             for dccontributor in contributor_list:
+                 contributor = NONE.contributor()
+                 contributor.attrib['contributorType'] = 'ContactPerson'
+                 name = dccontributor['Name']['First_Name'] + ' ' + dccontributor['Name']['Last_Name']
+                 contributor.append(NONE.contributorName(name))
+
+                 affiliation_list = dccontributor['Affiliation']
+                 if isinstance(affiliation_list, list)==False:
+                     affiliation_list = [affiliation_list]
+
+                 for affiliation in affiliation_list:
+                     contributor.append(NONE.affiliation(affiliation))
+
+                 idf_list =  dccontributor['Person_Identifier']
+                 if isinstance(idf_list, list)==False:
+                     idf_list = [idf_list]
+                 for identifier in idf_list:
+                     nameIdf = NONE.nameIdentifier(identifier['Name_Identifier'])
+                     nameIdf.attrib['nameIdentifierScheme'] = identifier['Name_Identifier_Scheme']
+                     contributor.append(nameIdf)
+
+                 contributors.append(contributor)
+
              datacite.append(contributors)
          except KeyError:
              pass
+
 
 
          # Date handling
