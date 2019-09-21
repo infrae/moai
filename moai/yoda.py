@@ -38,7 +38,6 @@ class YodaContent(object):
 	self.id = 'oai:%s' % persistent_identifier_datapackage   #i.decode('unicode-escape')
         self.modified = datetime.now() - timedelta(days=1)
 
-        self.metadata['identifier'] = ['HDR111333']
+        self.metadata['identifier'] = [persistent_identifier_datapackage]
 
         self.metadata['metadata'] = dictJsonData  
-        #jsonSchemaData.decode('unicode-escape')
