@@ -282,7 +282,7 @@ class DataCite(object):
 
          # List as defined by Ton/Maarten/Frans 20190603
          dictResourceTypes = {'Dataset'  : 'Research Data',
-                              'Datapaper': 'Method Description',
+                              'DataPaper': 'Method Description',
                               'Software' : 'Computer Code',
                               'Text'     : 'Other Document'}
 
