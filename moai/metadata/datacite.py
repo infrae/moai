@@ -27,8 +27,10 @@ class DataCite(object):
          return self.schemas[self.prefix]
 
      def __call__(self, element, metadata):
-         data = metadata.record['metadata']['metadata']  # data is added
-
+         try:
+             data = metadata.record['metadata']['metadata'] 
+         except:
+             pass
 
          # TODO: is deze nog nodig?
          DATACITE =  ElementMaker(namespace=self.ns['datacite'],
@@ -90,7 +92,6 @@ class DataCite(object):
          except KeyError:
              pass
 
-
          # Title
          try:
              titles = NONE.titles()
@@ -147,7 +148,6 @@ class DataCite(object):
          except KeyError:
              pass
 
-
          # Subject - special fields geo schemas
          # To BE DONE
          subject_fields = ["Main_Setting", 
@@ -172,7 +172,6 @@ class DataCite(object):
 
              except KeyError:
                  continue
-
 
          # Contributors
          try:
@@ -238,8 +237,6 @@ class DataCite(object):
          except KeyError:
              pass
 
-
-
          # Date handling
          # -Updated
          dataciteDates = NONE.dates()
@@ -274,7 +271,6 @@ class DataCite(object):
              pass
 
          datacite.append(dataciteDates)
-
 
          # Language
          try:
@@ -315,8 +311,6 @@ class DataCite(object):
          except KeyError:
              pass
 
-
-
          # Version
          try:
              datacite.append(NONE.version(data['Version']))
@@ -324,25 +318,24 @@ class DataCite(object):
              pass
 
          # Rights
-
-         license = data['License']
-         license_uri = data['System']['License_URI']
-
-         access_restriction = data['Data_Access_Restriction']
-         access_rights = ''
-	 access_rightsURI = ''
-	 if access_restriction:
-             if access_restriction.startswith('Open'):
-                 access_rights = 'Open Access'
-                 access_rightsURI = 'info:eu-repo/semantics/openAccess'
-             elif access_restriction.startswith('Restricted'):
-                 access_rights = 'Restricted Access'
-                 access_rightsURI = 'info:eu-repo/semantics/restrictedAccess'
-             elif access_restriction.startswith('Closed'):
-                 access_rights = 'Closed Access'
-                 access_rightsURI = 'info:eu-repo/semantics/closedAccess'
-
          try:
+             license = data['License']
+             license_uri = data['System']['License_URI']
+
+             access_restriction = data['Data_Access_Restriction']
+             access_rights = ''
+	     access_rightsURI = ''
+	     if access_restriction:
+                 if access_restriction.startswith('Open'):
+                     access_rights = 'Open Access'
+                     access_rightsURI = 'info:eu-repo/semantics/openAccess'
+                 elif access_restriction.startswith('Restricted'):
+                     access_rights = 'Restricted Access'
+                     access_rightsURI = 'info:eu-repo/semantics/restrictedAccess'
+                 elif access_restriction.startswith('Closed'):
+                     access_rights = 'Closed Access'
+                     access_rightsURI = 'info:eu-repo/semantics/closedAccess'
+
              rightsList = NONE.rightsList()
              rights = NONE.rights(license)
              rights.attrib['rightsURI'] = license_uri
