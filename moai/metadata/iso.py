@@ -1,11 +1,9 @@
 from lxml.builder import ElementMaker
 
-
 XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
-XML_NS = 'https://www.w3.org/TR/xml-names/'
 
-class ISO(object):
-     """The standard ISO.
+class Iso(object):
+     """The standard Datacite.
 
      It is registered under the name 'datacite'
      """
@@ -15,10 +13,16 @@ class ISO(object):
          self.config = config
          self.db = db
 
-         self.ns = {'datacite': 'http://datacite.org/schema/kernel-4',
-                    'xml': XML_NS
+         self.ns =   {'gmd': 'http://www.isotc211.org/2005/gmd', 
+                      'gco': 'http://www.isotc211.org/2005/gco',
+                      'gmx': 'http://www.isotc211.org/2005/gmx',
+                      'gml': 'http://www.opengis.net/gml/3.2', 
+                      'xlink': 'http://www.w3.org/1999/xlink',
+                      'xsi':  'http://www.w3.org/2001/XMLSchema-instance'
          }
-         self.schemas = {'datacite': 'http://schema.datacite.org/meta/kernel-4/metadata.xsd'}
+
+         self.schemas = {'iso': 'http://www.isotc211.org/2005/gmd/gmd.xsd'}
+
 
      def get_namespace(self):
          return self.ns[self.prefix]
@@ -32,126 +36,376 @@ class ISO(object):
          except:
              pass
 
-         # TODO: is deze nog nodig?
-         DATACITE =  ElementMaker(namespace=self.ns['datacite'],
-                                nsmap =self.ns)
-         NONE = DATACITE #ElementMaker('', nsmap = self.ns)
+         # Is deze nog nodig?????
+         # Basic - will this be used as all will be GMD
+         #NONE =  ElementMaker(namespace=self.ns['gmd'],
+         #                    nsmap =self.ns) 
 
-         datacite = NONE.resource()
-         datacite.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (
-             self.ns['datacite'],
-             self.schemas['datacite'])
+         # GMD based elements    
+         GMD = ElementMaker(namespace=self.ns['gmd'],
+                             nsmap =self.ns) 
+         # GCO based elements 
+         GCO = ElementMaker(namespace=self.ns['gco'],
+                             nsmap =self.ns)
 
-         # Language	
+         iso = GMD.MD_Metadata()
+         iso.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (
+             self.ns['xsi'],
+             self.schemas['iso'])
+
+
+         # Language
          try:
-            language = data['Language'][0:2]
+             languageVal = data['Language'][0:3]
          except (IndexError, KeyError) as e:
-            language = 'en'  # Default language hardcoded for now
-            pass
+             languageVal = 'eng'  # Default language hardcoded for now
+             pass
 
 
-         # Identifier DOI
+
+# DOI
+         fileIdentifier = GMD.fileIdentifier()
+         fileIdentifier.append(GCO.CharacterString('doi:'+data['System']['Persistent_Identifier_Datapackage']['Identifier']))
+         iso.append(fileIdentifier)  
+
+# Language
+         language = GMD.language()
+         LanguageCode = GMD.LanuageCode(languageVal)
+         LanguageCode.attrib['codeList'] = 'http://www.loc.gov/standards/iso639-2/' 
+         LanguageCode.attrib['codeListValue'] = languageVal    
+
+         language.append(LanguageCode)
+         iso.append(language)          
+
+# Publisher - Hardcoded
+         contact = GMD.contact()
+
+         CI_ResponsibleParty = GMD.CI_ResponsibleParty()
+         contactInfo = GMD.contactInfo()
+         CI_Contact = GMD.CI_Contact()
+         onlineResource = GMD.onlineResource()
+         CI_OnlineResource = GMD.CI_OnlineResource()
+         linkage = GMD.linkage()
+         URL = GMD.URL('Utrecht University')
+
+         linkage.append(URL)
+         CI_OnlineResource.append(linkage)
+         onlineResource.append(CI_OnlineResource)
+         CI_Contact.append(onlineResource)
+         contactInfo.append(CI_Contact)
+         CI_ResponsibleParty.append(contactInfo)
+
+         # Add to main level - contact
+         contact.append(CI_ResponsibleParty)
+
+         iso.append(contact) 
+
+
+# Create base nodes
+         identificationInfo = GMD.identificationInfo()
+
+         MD_DataIdentification = GMD.MD_DataIdentification()
+
+
+         citation = GMD.citation()
+
+
+         CI_Citation = GMD.CI_Citation()
+
+
+# TITLE
+         title = GMD.title()
+
          try:
-             identifier = NONE.identifier(data['System']['Persistent_Identifier_Datapackage']['Identifier'])
-             identifier.attrib['identifierType'] = "DOI"
-             datacite.append(identifier)
+             CharacterString = GCO.CharacterString(data['Title'])
+             title.append(CharacterString)
+
+             CI_Citation.append(title)
+
+         except (IndexError,KeyError) as e:
+             pass         
+
+
+# DATE HANDLING
+         try:
+             # The dicts assume, for now, that only one date of each datetype will exist.
+             dates = {'revision': data['System']['Last_Modified_Date'],
+                      'creation': data['System']['Publication_Date'][0:4]}
+#             dateRevision = data['System']['Last_Modified_Date']
+#             dateCreation = data['System']['Publication_Date'][0:4]
+
+             
+             for dateTypeCode,thedate in dates.items():
+                 #dateTypeCode = dateInfo[0]
+                 #thedate = dateInfo[1]
+                 datelevel1 = GMD.date()
+                 CI_Date = GMD.CI_Date()
+                 datelevel2 =  GMD.date()
+
+                 # dateTypeCode = 'revision'
+                 CI_DateTypeCode = GMD.CI_DateTypeCode(dateTypeCode)
+                 CI_DateTypeCode.attrib['codeList'] = 'http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode'
+                 CI_DateTypeCode.attrib['codeListValue'] = dateTypeCode
+
+                 datelevel2.append(GCO.Date(thedate))
+                 datelevel2.append(CI_DateTypeCode)
+
+                 CI_Date.append(datelevel2)
+                 datelevel1.append(CI_Date)
+                 CI_Citation.append(CI_Date)
+
+         except (IndexError,KeyError) as e:
+             pass
+
+# DOI
+         try:
+             identifier = GMD.identifier()
+             MD_Identifier = GMD.MD_Identifier()
+             code = GMD.code()
+             CharacterString = GCO.CharacterString(data['System']['Persistent_Identifier_Datapackage']['Identifier'])
+             code.append(CharacterString)
+             MD_Identifier.append(code)
+             identifier.append(MD_Identifier)
+             
+             CI_Citation.append(identifier)
+ 
          except (IndexError, KeyError) as e:
              pass
 
-         # Creators
-         try:
-             creators = NONE.creators()
 
+# Author / Creator
+          # Role 'author' can be hardcoded. Will not change
+         
+         role = GMD.role()
+         CI_RoleCode = GMD.CI_RoleCode('author') # Can be hardcoded
+         CI_RoleCode.attrib['codeList'] = 'http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode'
+         CI_RoleCode.attrib['codeListValue'] = 'http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode_author'
+         role.append(CI_RoleCode)
+
+         try:
              creator_list = data['Creator']
              if isinstance(creator_list, list)==False:
                  creator_list = [creator_list]
 
              for dccreator in creator_list:
-                 creator = NONE.creator()
-                 
-                 name = dccreator['Name']['First_Name'] + ' ' +  dccreator['Name']['Last_Name']
-                 creator.append(NONE.creatorName(name))
+                 citedResponsibleParty = GMD.citedResponsibleParty()
+                 CI_ResponsibleParty = GMD.CI_ResponsibleParty()
+
+                 individualName = dccreator['Name']['First_Name'] + ' ' +  dccreator['Name']['Last_Name']
+                 CI_ResponsibleParty.append(GMD.individualName(GCO.CharacterString(individualName)))
+
 
                  affiliation_list = dccreator['Affiliation']
                  if isinstance(affiliation_list, list)==False:
                      affiliation_list = [affiliation_list]
- 
+
                  for affiliation in affiliation_list:
-                     creator.append(NONE.affiliation(affiliation))
+                     CI_ResponsibleParty.append(GMD.organisationName(GCO.CharacterString(affiliation)))
 
-                 idf_list =  dccreator['Person_Identifier']
-                 if isinstance(idf_list, list)==False:
-		     idf_list = [idf_list]
-                 for identifier in idf_list:
-                     nameIdf = NONE.nameIdentifier(identifier['Name_Identifier'])
-                     nameIdf.attrib['nameIdentifierScheme'] = identifier['Name_Identifier_Scheme']
-                     creator.append(nameIdf)
+                 CI_ResponsibleParty.append(role)
 
-                 creators.append(creator)
-             datacite.append(creators)
+                 citedResponsibleParty.append(CI_ResponsibleParty)
+  
+                 CI_Citation.append(citedResponsibleParty)
+
          except KeyError:
              pass
 
-         # Title
+# Funder
+         role = GMD.role()
+         CI_RoleCode = GMD.CI_RoleCode('funder') # Hardcoded
+         CI_RoleCode.attrib['codeList'] = 'http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode'
+         CI_RoleCode.attrib['codeListValue'] = '"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode_funder'
+         role.append(CI_RoleCode)
+
          try:
-             titles = NONE.titles()
-             title = NONE.title(data['Title'])
-             title.attrib['{%s}lang' % XML_NS] = language
-             titles.append(title)
-             datacite.append(titles)
+             funder_list = data['Funding_Reference']
+             if isinstance(funder_list, list)==False:
+                 funder_list = [funder_list]
+
+             for funder in funder_list:
+                 citedResponsibleParty = GMD.citedResponsibleParty()
+                 CI_ResponsibleParty = GMD.CI_ResponsibleParty()
+
+                 organisationName = GMD.organisationName()
+                 organisationName.append(GCO.CharacterString(funder['Funder_Name']))
+
+                 CI_ResponsibleParty.append(organisationName)
+
+                 CI_ResponsibleParty.append(role)
+
+                 citedResponsibleParty.append(CI_ResponsibleParty)
+
+                 CI_Citation.append(citedResponsibleParty)
+         except KeyError:
+             pass
+
+# Contributors
+         role = GMD.role()
+         CI_RoleCode = GMD.CI_RoleCode('contributor') # Hardcoded for now
+         CI_RoleCode.attrib['codeList'] = 'http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode'
+         CI_RoleCode.attrib['codeListValue'] = '"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode_contributor'
+         role.append(CI_RoleCode)
+
+         try:
+             contributor_list = data['Contributor']
+             if isinstance(contributor_list, list)==False:
+                 contributor_list = [contributor_list]
+
+             for contrib in contributor_list:
+                 citedResponsibleParty = GMD.citedResponsibleParty()
+                 CI_ResponsibleParty = GMD.CI_ResponsibleParty()
+
+                 individualName = contrib['Name']['First_Name'] + ' ' +  contrib['Name']['Last_Name']
+                 CI_ResponsibleParty.append(GMD.individualName(GCO.CharacterString(individualName)))
+
+
+                 affiliation_list = contrib['Affiliation']
+                 if isinstance(affiliation_list, list)==False:
+                     affiliation_list = [affiliation_list]
+
+                 for affiliation in affiliation_list:
+                     CI_ResponsibleParty.append(GMD.organisationName(GCO.CharacterString(affiliation)))
+
+                 CI_ResponsibleParty.append(role)
+
+                 citedResponsibleParty.append(CI_ResponsibleParty)
+
+                 CI_Citation.append(citedResponsibleParty)
+         except KeyError:
+             pass
+
+## citation level is complete - add all
+         citation.append(CI_Citation)
+
+         MD_DataIdentification.append(citation)
+
+# description - onder MD_DataIdentification
+         try:
+             abstract = GMD.abstract()
+             CharacterString = GCO.CharacterString(data['Description'])
+             abstract.append(CharacterString)
+             
+             MD_DataIdentification.append(abstract)
          except (IndexError,KeyError) as e:
              pass
 
-         # Publisher - hardcoded
+# pointOfContact
+# CONTACT PERSONS   ONDER MD_DataIdentification
+         pointOfContact = GMD.pointOfContact()
+         
+         role = GMD.role()
+         CI_RoleCode = GMD.CI_RoleCode('pointOfContact')
+         CI_RoleCode.attrib['codeList'] = 'http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode'
+         CI_RoleCode.attrib['codeListValue'] = '"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode_pointOfContact'
+         role.append(CI_RoleCode)
+
          try:
-             if data['Title']:
-                 datacite.append(NONE.publisher('Utrecht University'))
-         except KeyError:
+             # GEO 'Contact person' is a special case of contributerType: contactPerson
+
+             contributor_list = data['Contact']
+             if isinstance(contributor_list, list)==False:
+                 contributor_list = [contributor_list]
+
+             for dccontributor in contributor_list:
+                 CI_ResponsibleParty = GMD.CI_ResponsibleParty()
+
+                 individualName = dccreator['Name']['First_Name'] + ' ' +  dccreator['Name']['Last_Name']
+                 CI_ResponsibleParty.append(GMD.individualName(GCO.CharacterString(individualName)))
+
+                 affiliation_list = dccontributor['Affiliation']
+                 if isinstance(affiliation_list, list)==False:
+                     affiliation_list = [affiliation_list]
+
+                 for affiliation in affiliation_list:
+                     CI_ResponsibleParty.append(GMD.organisationName(GCO.CharacterString(affiliation)))
+
+                 CI_ResponsibleParty.append(role)
+                 pointOfContact.append(CI_ResponsibleParty)
+
+                 MD_DataIdentification.append(pointOfContact)
+         
+         except (IndexError,KeyError) as e:
              pass
 
-         # Publication year
-         try:
-             datacite.append(NONE.publicationYear(data['System']['Publication_Date'][0:4]))
-         except KeyError:
-             pass
 
-         # Subjects divided in three steps: disciplines, tags and collection name!
+# Keywords
+# Tags and disciplines - sluit aan op level MD_DataIdentification
+ 
+         # DISCIPLINES - all in 1 set 
          try:
-             subjects = NONE.subjects()
+             descriptiveKeywords = GMD.descriptiveKeywords() # Base of each keyword alike type
+             MD_Keywords = GMD.MD_Keywords()
+         
+             # Keep the listed values as one set of decriptiveKeywords
 
              # Subjects - Disciplines
              list_subjects = data['Discipline']
              if isinstance(list_subjects, list)==False:
                  list_subjects = [list_subjects]
              for subject in list_subjects:
-                 subjectNode = NONE.subject(subject)
-                 subjectNode.attrib['subjectScheme'] = 'OECD FOS 2007'
-                 subjects.append(subjectNode)
+                 keyword = GMD.keyword()
+                 CharacterString = GCO.CharacterString(subject)
+                 keyword.append(CharacterString)
+                 MD_Keywords.append(keyword)
+         
+             # Add Discipline as keywords
+             descriptiveKeywords.append(MD_Keywords)
+             MD_DataIdentification.append(descriptiveKeywords)
 
-
-             # Subjects - Tags
-             list_subjects = data['Tag'] 
-             if isinstance(list_subjects, list)==False:
-                 list_subjects = [list_subjects] 
-             for subject in list_subjects:
-                 subjectNode = NONE.subject(subject)
-                 subjectNode.attrib['subjectScheme'] = 'Keyword'
-                 subjects.append(subjectNode)
- 
-
-             # Subjects - Collection name
-             subjectNode = NONE.subject( data['Collection_Name'])
-             subjectNode.attrib['subjectScheme'] = 'collection'
-             subjects.append(subjectNode)
-
-             datacite.append(subjects)
-         except KeyError:
+         except (IndexError,KeyError) as e:
              pass
 
-         # Subject - special fields geo schemas
-         # To BE DONE
-         subject_fields = ["Main_Setting", 
-            "Process_Hazard", 
+
+         # Add Discipline as keywords 
+         MD_DataIdentification.append(MD_Keywords)
+
+         # TAGS - all in 1 set
+         try:
+             descriptiveKeywords = GMD.descriptiveKeywords() # Base of each keyword alike type
+             MD_Keywords = GMD.MD_Keywords()
+
+             # Subjects - Tags
+             list_subjects = data['Tag']
+             if isinstance(list_subjects, list)==False:
+                 list_subjects = [list_subjects]
+             for subject in list_subjects:
+                 keyword = GMD.keyword()
+                 CharacterString = GCO.CharacterString(subject)
+                 keyword.append(CharacterString)
+                 MD_Keywords.append(keyword)
+
+             # Add Tags as keywords
+             descriptiveKeywords.append(MD_Keywords)
+             MD_DataIdentification.append(descriptiveKeywords)
+
+         except (IndexError,KeyError) as e:
+             pass
+          
+
+         # Next descriptipe Keyword set  COLLECTION NAME (=ILAB)
+         try:
+             descriptiveKeywords = GMD.descriptiveKeywords() # Base of the keywords loop.
+             MD_Keywords = GMD.MD_Keywords()
+
+             # Subjects - Collection name
+             keyword = GMD.keyword()
+             CharacterString = GCO.CharacterString(data['Collection_Name'])
+             keyword.append(CharacterString)
+             MD_Keywords.append(keyword)
+             
+             descriptiveKeywords.append(MD_Keywords)
+             MD_DataIdentification.append(descriptiveKeywords)
+
+         except (IndexError,KeyError) as e:
+             pass
+
+         # Next descriptipe Keyword set  GEO SPECIFIC
+         descriptiveKeywords = GMD.descriptiveKeywords() # Base of the keywords loop.
+         MD_Keywords = GMD.MD_Keywords()
+
+         subject_fields = ["Main_Setting",
+            "Process_Hazard",
             "Geological_Structure",
             "Geomorphical_Feature",
             "Material",
@@ -160,125 +414,247 @@ class ISO(object):
             "Software",
             "Measured_Property"]
 
-	 for subject_field in subject_fields:
+         for subject_field in subject_fields:
              try:
                  list_subjects = data[subject_field]
                  if isinstance(list_subjects, list)==False:
                      list_subjects = [list_subjects]
                  for subject in list_subjects:
-                     subjectNode = NONE.subject(subject)
-                     subjectNode.attrib['subjectScheme'] = subject_field
-                     subjects.append(subjectNode)
+                     keyword = GMD.keyword()
+                     CharacterString = GCO.CharacterString(subject)
+                     keyword.append(CharacterString)
+                     MD_Keywords.append(keyword)
+                 
+                 # Add Tags as keywords
+                 descriptiveKeywords.append(MD_Keywords)
+                 MD_DataIdentification.append(descriptiveKeywords)
 
              except KeyError:
                  continue
 
-         # Contributors
+## RIGHTS
+         # Transform Yoda to ISO classification codes
+         classCode = {'Public':'unclassified',
+                'Basic':'restricted',
+                'Sensitive':'confidential',
+                'Critical':'topSecret'
+         }
+
          try:
-             contributors = NONE.contributors()
-             
-             contributor_list = data['Contributor']
-             if isinstance(contributor_list, list)==False:
-                 contributor_list = [contributor_list]
-             
-             for dccontributor in contributor_list:
-                 contributor = NONE.contributor()
-                 contributor.attrib['contributorType'] = dccontributor['Contributor_Type']
+             securityClassCode = classCode[data['Data_Classification']]
 
-                 name = dccontributor['Name']['First_Name'] + ' ' + dccontributor['Name']['Last_Name']
-                 contributor.append(NONE.contributorName(name))
+             MD_ClassificationCode = GMD.MD_ClassificationCode()
+             MD_ClassificationCode.attrib['codeList'] = 'http://www.isotc211.org/2005/resources/codeList.xml#MD_ClassificationCode'
+             MD_ClassificationCode.attrib['codeListValue'] = securityClassCode
 
-                 affiliation_list = dccontributor['Affiliation']
-                 if isinstance(affiliation_list, list)==False:
-                     affiliation_list = [affiliation_list]
+         except (IndexError, KeyError) as e:
+             pass
 
-                 for affiliation in affiliation_list:
-                     contributor.append(NONE.affiliation(affiliation))
+         # Resource contstraints
+         try:
+             license = data['License']
+             license_uri = data['System']['License_URI']
 
-                 idf_list =  dccontributor['Person_Identifier']
-                 if isinstance(idf_list, list)==False:
-                     idf_list = [idf_list]
-                 for identifier in idf_list:
-                     nameIdf = NONE.nameIdentifier(identifier['Name_Identifier'])
-                     nameIdf.attrib['nameIdentifierScheme'] = identifier['Name_Identifier_Scheme']
-                     contributor.append(nameIdf)
+             resourceConstraints = GMD.resourceConstraints()
+             resourceConstraints.attrib['xlink']=license_uri
+             MD_Constraints = GMD.MD_Constraints()
+             useLimitation = GMD.useLimitation()
+             useLimitation.append(GCO.CharacterString(license))
+             MD_Constraints.append(useLimitation)
+             resourceConstraints.append(MD_Constraints)
 
-                 contributors.append(contributor)
+             MD_DataIdentification.append(resourceConstraints)
+
+         except (IndexError, KeyError) as e:
+             pass
 
 
-	     # GEO 'Contact person' is a special case of contributerType: contactPerson	
-             contributor_list = data['Contact']
-             if isinstance(contributor_list, list)==False:
-                 contributor_list = [contributor_list]
-             for dccontributor in contributor_list:
-                 contributor = NONE.contributor()
-                 contributor.attrib['contributorType'] = 'ContactPerson'
-                 name = dccontributor['Name']['First_Name'] + ' ' + dccontributor['Name']['Last_Name']
-                 contributor.append(NONE.contributorName(name))
+         # Legal constraints
+         try:
+             access_restriction = data['Data_Access_Restriction']
+             access_rights = ''
+             access_rightsURI = ''
+             if access_restriction:
+                 if access_restriction.startswith('Open'):
+                     access_rights = 'unrestricted' #'Open Access'
+                     access_rightsURI = 'info:eu-repo/semantics/openAccess'
+                 elif access_restriction.startswith('Restricted'):
+                     access_rights = 'restricted' #'Restricted Access'
+                     access_rightsURI = 'info:eu-repo/semantics/restrictedAccess'
+                 elif access_restriction.startswith('Closed'):
+                     access_rights = 'private' #'Closed Access'
+                     access_rightsURI = 'info:eu-repo/semantics/closedAccess'
 
-                 affiliation_list = dccontributor['Affiliation']
-                 if isinstance(affiliation_list, list)==False:
-                     affiliation_list = [affiliation_list]
+             resourceConstraints = GMD.resourceConstraints()
+             MD_LegalConstraints = GMD.MD_LegalConstraints()
+             accessConstraints = GMD.accessConstraints()
 
-                 for affiliation in affiliation_list:
-                     contributor.append(NONE.affiliation(affiliation))
+             MD_RestrictionCode = GMD.MD_RestrictionCode()
+             MD_RestrictionCode.attrib['codeList'] = 'http://www.isotc211.org/2005/resources/codeList.xml#MD_RestrictionCode'
+             MD_RestrictionCode.attrib['codeListValue'] = access_rights
 
-                 idf_list =  dccontributor['Person_Identifier']
-                 if isinstance(idf_list, list)==False:
-                     idf_list = [idf_list]
-                 for identifier in idf_list:
-                     nameIdf = NONE.nameIdentifier(identifier['Name_Identifier'])
-                     nameIdf.attrib['nameIdentifierScheme'] = identifier['Name_Identifier_Scheme']
-                     contributor.append(nameIdf)
+             accessConstraints.append(MD_RestrictionCode)
+             otherConstraints = GMD.otherConstraints()
+             otherConstraints.append(GCO.CharacterString(license))
+             accessConstraints.append(otherConstraints)
 
-                 contributors.append(contributor)
+             MD_LegalConstraints.append(accessConstraints)
+             resourceConstraints.append(MD_LegalConstraints)
+             MD_DataIdentification.append(resourceConstraints)
 
-             datacite.append(contributors)
+         except (IndexError, KeyError) as e:
+             pass
+
+
+# Related datapackages, References, cites, IsSupplementTo
+
+         # Related identifiers
+         try:
+             for identifier in data['Related_Datapackage']:
+                 aggregationInfo = GMD.aggregationInfo()
+                 MD_AggregateInformation = GMD.MD_AggregateInformation()
+                 aggregateDataSetIdentifier = GMD.aggregateDataSetIdentifier()
+                 RS_Identifier = GMD.RS_Identifier()
+
+                 code = GMD.code()
+                 code.append(GCO.CharacterString(identifier['Persistent_Identifier']['Identifier']))
+                 RS_Identifier.append(code)
+
+                 codeSpace = GMD.codeSpace()
+                 codeSpace.append(GCO.CharacterString(identifier['Persistent_Identifier']['Identifier_Scheme']))
+
+                 RS_Identifier.append(codeSpace)
+                 aggregateDataSetIdentifier.append(RS_Identifier)
+                 MD_AggregateInformation.append(aggregateDataSetIdentifier) 
+
+                 relation_type = identifier['Relation_Type'].split(':')[0]
+                 DS_AssociationTypeCode = GMD.DS_AssociationTypeCode(relation_type)
+                 DS_AssociationTypeCode.attrib['codeList'] = 'http://datacite.org/schema/kernel-4'
+                 DS_AssociationTypeCode.attrib['codeListValue'] = relation_type
+                
+                 associationType = GMD.associationType()
+                 associationType.append(DS_AssociationTypeCode)
+                 MD_AggregateInformation.append(associationType)
+
+                 aggregationInfo.append(MD_AggregateInformation)
+
+                 #Add each related identifier
+                 MD_DataIdentification.append(aggregationInfo)
          except KeyError:
              pass
 
-         # Date handling
-         # -Updated
-         dataciteDates = NONE.dates()
-         try:
-             date = data['System']['Last_Modified_Date']
-             dataciteDate = NONE.date(date)
-             dataciteDate.attrib['dateType'] = 'Updated'
-             dataciteDates.append(dataciteDate)
-             datacite.append(dataciteDates)
-         except KeyError:
-             pass
 
-         # -Available
-         try:
-             date = data['Embargo_End_Date']
-             dataciteDate = NONE.date(date)
-             dataciteDate.attrib['dateType'] = 'Available'
-             dataciteDates.append(dataciteDate)
-             datacite.append(dataciteDates)
-         except KeyError:
-             pass
 
-         # -Start / end collected
-         try:
-             date_start = data['Collected']['Start_Date']
-             date_end   = data['Collected']['End_Date']
-             dataciteDate = NONE.date(date_start + '/' + date_end)
-             dataciteDate.attrib['dateType'] = 'Collection'
-             dataciteDates.append(dataciteDate)
-             datacite.append(dataciteDates)
-         except KeyError:
-             pass
-
-         datacite.append(dataciteDates)
-
+# LANGUAGE - defined higher in hierarchy as well
          # Language
+         language = GMD.language()
+         language.append(GCO.CharacterString(languageVal))
+
+         MD_DataIdentification.append(language)
+
+
+
+# GEO LOCATION INFO
+         # GeoLocation
          try:
-             datacite.append(NONE.language(language))
-         except KeyError:
+             extent = GMD.extent()
+             location_present = False
+             for geoloc in data['GeoLocation']:
+                 EX_Extent = GMD.EX_Extent()
+
+                 location_present = True
+                 temp_description_start = geoloc['Description_Temporal']['Start_Date']
+                 temp_description_end = geoloc['Description_Temporal']['End_Date']
+                 spatial_description = geoloc['Description_Spatial']
+
+                 lon0 = str(geoloc['geoLocationBox']['westBoundLongitude'])
+                 lat0 = str(geoloc['geoLocationBox']['northBoundLatitude'])
+                 lon1 = str(geoloc['geoLocationBox']['eastBoundLongitude'])
+                 lat1 = str(geoloc['geoLocationBox']['southBoundLatitude'])
+
+                 if spatial_description:
+                     description = GMD.description()
+                     description.append(GCO.CharacterString(spatial_description))
+                     EX_Extent.append(description)
+
+                 geographicElement = GMD.geographicElement() # only one per cycle
+
+                 if lon0==lon1 and lat0==lat1: # dealing with a point, nog uitzoeken ISO
+                     EX_GeographicBoundingBox = GMD.EX_GeographicBoundingBox()
+                     #geoLocationPoint = GMD.geoLocationPoint()
+                     #geoLocationPoint.append(GMD.pointLongitude(lon0))
+                     #geoLocationPoint.append(GMD.pointLatitude(lat0))
+                     #geoLocation.append(geoLocationPoint)
+                     EX_Extent.append(EX_GeographicBoundingBox)
+                 else:
+                     EX_GeographicBoundingBox = GMD.EX_GeographicBoundingBox()
+
+                     westBoundLongitude = GMD.westBoundLongitude()
+                     westBoundLongitude.append(GCO.Decimal(lon0))
+                     eastBoundLongitude = GMD.eastBoundLongitude()
+                     eastBoundLongitude.append(GCO.Decimal(lon1))
+                     
+                     southBoundLatitude = GMD.southBoundLatitude() 
+                     southBoundLatitude.append(GCO.Decimal(lat0))
+                     northBoundLatitude = GMD.northBoundLatitude()
+                     northBoundLatitude.append(GCO.Decimal(lat1))
+
+                     EX_GeographicBoundingBox.append(westBoundLongitude)
+                     EX_GeographicBoundingBox.append(eastBoundLongitude)
+                     EX_GeographicBoundingBox.append(southBoundLatitude)
+                     EX_GeographicBoundingBox.append(northBoundLatitude)
+                     EX_Extent.append(EX_GeographicBoundingBox)
+
+                 extent.append(EX_Extent)
+
+             # alleen toevoegen als er werkelijk locaties zijn
+             if location_present:
+                 MD_DataIdentification.append(extent)
+
+         except (IndexError, KeyError) as e:
              pass
 
-         # ResourceType
+
+         identificationInfo.append(MD_DataIdentification)
+         iso.append(identificationInfo)
+         element.append(iso)
+
+         return
+
+###############################################################################################################
+
+'''
+
+# Contributors - ook weer Responsible parties!
+
+
+   Contributor types:   -> will all default in ISO role 'contributor' for now. 
+        "ContactPerson",
+        "DataCollector",
+        "DataCurator",
+        "DataManager",
+        "Distributor",
+        "Editor",
+        "HostingInstitution",
+        "Producer",
+        "ProjectLeader",
+        "ProjectManager",
+        "ProjectMember",
+        "RegistrationAgency",
+        "RegistrationAuthority",
+        "RelatedPerson",
+        "Researcher",
+        "ResearchGroup",
+        "RightsHolder",
+        "Sponsor",
+        "Supervisor",
+        "WorkPackageLeader"
+'''
+
+
+
+'''
+         # ResourceType # DATACITE specifiek! Hoe dit in ISO onderbrengen!!!???
 
          # List as defined by Ton/Maarten/Frans 20190603
          dictResourceTypes = {'Dataset'  : 'Research Data',
@@ -289,134 +665,22 @@ class ISO(object):
          try:
              resourceTypeGeneral = data['Data_Type']
              resourceTypeLabel = dictResourceTypes[resourceTypeGeneral]
-             resourceType = NONE.resourceType(resourceTypeLabel)
+             resourceType = GMD.resourceType(resourceTypeLabel)
              resourceType.attrib['resourceTypeGeneral'] = resourceTypeGeneral
              datacite.append(resourceType)
          except KeyError:
-	     resourceType = NONE.resourceType('Other Document')
+	     resourceType = GMD.resourceType('Other Document')
              resourceType.attrib['resourceTypeGeneral'] = 'Text'
              datacite.append(resourceType)
              pass
+'''
 
-         # Related identifiers
+
+'''
+         # Version  ## HOE DIT IN ISO te vatten!?
          try:
-             relatedIdentifiers = NONE.relatedIdentifiers()
-             for identifier in data['Related_Datapackage']:
-                 relatedIdentifier = NONE.relatedIdentifier(identifier['Persistent_Identifier']['Identifier'])
-                 relatedIdentifier.attrib['relatedIdentifierType'] = identifier['Persistent_Identifier']['Identifier_Scheme']
-                 relatedIdentifier.attrib['relationType'] = identifier['Relation_Type'].split(':')[0]
-                 relatedIdentifiers.append(relatedIdentifier)
-
-             datacite.append(relatedIdentifiers)
+             datacite.append(GMD.version(data['Version']))
          except KeyError:
              pass
 
-         # Version
-         try:
-             datacite.append(NONE.version(data['Version']))
-         except KeyError:
-             pass
-
-         # Rights
-         try:
-             license = data['License']
-             license_uri = data['System']['License_URI']
-
-             access_restriction = data['Data_Access_Restriction']
-             access_rights = ''
-	     access_rightsURI = ''
-	     if access_restriction:
-                 if access_restriction.startswith('Open'):
-                     access_rights = 'Open Access'
-                     access_rightsURI = 'info:eu-repo/semantics/openAccess'
-                 elif access_restriction.startswith('Restricted'):
-                     access_rights = 'Restricted Access'
-                     access_rightsURI = 'info:eu-repo/semantics/restrictedAccess'
-                 elif access_restriction.startswith('Closed'):
-                     access_rights = 'Closed Access'
-                     access_rightsURI = 'info:eu-repo/semantics/closedAccess'
-
-             rightsList = NONE.rightsList()
-             rights = NONE.rights(license)
-             rights.attrib['rightsURI'] = license_uri
-             rightsList.append(rights)
-             rights = NONE.rights(access_rights)
-             rights.attrib['rightsURI'] = access_rightsURI
-             rightsList.append(rights)
-             datacite.append(rightsList)
-         except (IndexError, KeyError) as e:
-             pass
-
-         # Descriptions
-         try:
-             descriptions = NONE.descriptions()
-             descriptionNode = NONE.description(data['Description'])
-             descriptionNode.attrib['descriptionType'] = 'Abstract'
-             descriptions.append(descriptionNode)
-
-             datacite.append(descriptions)
-         except KeyError:
-             pass
-
-
-	 # GeoLocation
-         try:
-             geoLocations = NONE.geoLocations()
-             location_present = False
-             for geoloc in data['GeoLocation']:
-                 location_present = True
-                 temp_description_start = geoloc['Description_Temporal']['Start_Date']
-                 temp_description_end = geoloc['Description_Temporal']['End_Date']
-                 spatial_description = geoloc['Description_Spatial']
-                 
-                 lon0 = str(geoloc['geoLocationBox']['westBoundLongitude'])
-                 lat0 = str(geoloc['geoLocationBox']['northBoundLatitude'])
-                 lon1 = str(geoloc['geoLocationBox']['eastBoundLongitude'])
-                 lat1 = str(geoloc['geoLocationBox']['southBoundLatitude'])
-
-                 geoLocation = NONE.geoLocation()
-
-                 if spatial_description: 
-                     geoLocationPlace = NONE.geoLocationPlace(spatial_description)
-                     geoLocation.append(geoLocationPlace)
- 
-                 if lon0==lon1 and lat0==lat1: # dealing with a point
-                     geoLocationPoint = NONE.geoLocationPoint()
-                     geoLocationPoint.append(NONE.pointLongitude(lon0))
-                     geoLocationPoint.append(NONE.pointLatitude(lat0))
-                     geoLocation.append(geoLocationPoint)
-                 else:
-                     geoLocationBox = NONE.geoLocationBox()
-                     geoLocationBox.append(NONE.westBoundLongitude(lon0))
-                     geoLocationBox.append(NONE.eastBoundLongitude(lon1))
-                     geoLocationBox.append(NONE.southBoundLatitude(lat0))
-                     geoLocationBox.append(NONE.northBoundLatitude(lat1))
-                     geoLocation.append(geoLocationBox)
-
-                 geoLocations.append(geoLocation)
-
-             # alleen toevoegen als er werkelijk locaties zijn
-             if location_present: 
-                 datacite.append(geoLocations)
-
-         except (IndexError, KeyError) as e:
-             pass
-
-         # OK Funding references
-         try:
-             fundingReferences = NONE.fundingReferences()
-             for reference in data['Funding_Reference']:
-                 fundingRef = NONE.fundingReference()
-                 fundingRef.append(NONE.funderName(reference['Funder_Name']))
-                 try:
-                     fundingRef.append(NONE.awardNumber(reference['Award_Number']))
-                 except KeyError:
-                     pass
-                 fundingReferences.append(fundingRef)
-
-             datacite.append(fundingReferences)
-         except KeyError:
-             pass
-
-         # Add entire structure
-         element.append(datacite)
+'''         
