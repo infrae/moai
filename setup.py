@@ -47,7 +47,7 @@ setup(
     'moai.format':[
          'oai_dc=moai.metadata.oaidc:OAIDC',
          'oai_datacite=moai.metadata.datacite:DataCite',
-         'iso19139=moai.metadata.datacite:Iso',
+         'iso19139=moai.metadata.iso:Iso',
          'mods=moai.metadata.mods:MODS',
          'nl_mods=moai.metadata.mods:NL_MODS',
          'didl=moai.metadata.didl:DIDL',
