@@ -131,13 +131,8 @@ class Iso(object):
              # The dicts assume, for now, that only one date of each datetype will exist.
              dates = {'revision': data['System']['Last_Modified_Date'],
                       'creation': data['System']['Publication_Date'][0:4]}
-#             dateRevision = data['System']['Last_Modified_Date']
-#             dateCreation = data['System']['Publication_Date'][0:4]
-
              
              for dateTypeCode,thedate in dates.items():
-                 #dateTypeCode = dateInfo[0]
-                 #thedate = dateInfo[1]
                  datelevel1 = GMD.date()
                  CI_Date = GMD.CI_Date()
                  datelevel2 =  GMD.date()
