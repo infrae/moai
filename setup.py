@@ -3,7 +3,7 @@ from os.path import join, dirname
 
 setup(
     name='MOAI',
-    version='2.3.4',
+    version='2.3.5',
     author='Infrae',
     author_email='info@infrae.com',
     url='http://infrae.com/products/moai',
@@ -46,12 +46,9 @@ setup(
      ],
     'moai.format':[
          'oai_dc=moai.metadata.oaidc:OAIDC',
+         'datacite=moai.metadata.datacite:DataCite',
          'oai_datacite=moai.metadata.datacite:DataCite',
-         'iso19139=moai.metadata.datacite:Iso',
-         'mods=moai.metadata.mods:MODS',
-         'nl_mods=moai.metadata.mods:NL_MODS',
-         'didl=moai.metadata.didl:DIDL',
-         'nl_didl=moai.metadata.dare_didl:DareDIDL'
+         'iso19139=moai.metadata.iso:Iso'
      ],
     },
     install_requires=[
