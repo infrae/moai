@@ -41,11 +41,6 @@ class OAIDC(object):
             self.ns['oai_dc'],
             self.schemas['oai_dc'])
 
-
-#        oai_dc.append(DC.harm('HARM'))
-
-
-
 # Title
         try:
             oai_dc.append(DC.title(data['Title']))
@@ -208,8 +203,6 @@ class OAIDC(object):
         except (IndexError,KeyError) as e:
             pass
 
-
-
 # Rights    
         try:
             license = data['License']
@@ -235,5 +228,4 @@ class OAIDC(object):
             pass
 
         element.append(oai_dc)
-        return
 
