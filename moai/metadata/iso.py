@@ -414,15 +414,19 @@ class Iso(object):
                  list_subjects = data[subject_field]
                  if isinstance(list_subjects, list)==False:
                      list_subjects = [list_subjects]
+                 subject_counter = 0
                  for subject in list_subjects:
-                     keyword = GMD.keyword()
-                     CharacterString = GCO.CharacterString(subject)
-                     keyword.append(CharacterString)
-                     MD_Keywords.append(keyword)
+                     if isinstance(subject, basestring) and len(subject):
+                         subject_counter += 1
+                         keyword = GMD.keyword()
+                         CharacterString = GCO.CharacterString(subject)
+                         keyword.append(CharacterString)
+                         MD_Keywords.append(keyword)
                  
                  # Add Tags as keywords
-                 descriptiveKeywords.append(MD_Keywords)
-                 MD_DataIdentification.append(descriptiveKeywords)
+                 if subject_counter:
+                     descriptiveKeywords.append(MD_Keywords)
+                     MD_DataIdentification.append(descriptiveKeywords)
 
              except KeyError:
                  continue

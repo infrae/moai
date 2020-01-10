@@ -166,9 +166,10 @@ class DataCite(object):
                  if isinstance(list_subjects, list)==False:
                      list_subjects = [list_subjects]
                  for subject in list_subjects:
-                     subjectNode = NONE.subject(subject)
-                     subjectNode.attrib['subjectScheme'] = subject_field
-                     subjects.append(subjectNode)
+                     if isinstance(subject, basestring) and len(subject):
+		         subjectNode = NONE.subject(subject)
+                         subjectNode.attrib['subjectScheme'] = subject_field
+                         subjects.append(subjectNode)
 
              except KeyError:
                  continue

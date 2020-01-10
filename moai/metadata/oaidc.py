@@ -66,6 +66,7 @@ class OAIDC(object):
         except (IndexError,KeyError) as e:
             pass
 
+
 # Subject  - collection of Disciplines / tags etc
         try:
             # Disciplines and Tags
@@ -73,7 +74,8 @@ class OAIDC(object):
             if isinstance(list_subjects, list)==False:
                 list_subjects = [list_subjects]
             for subject in list_subjects:
-                oai_dc.append(DC.subject(subject))
+                if len(subject):
+		    oai_dc.append(DC.subject(subject))
 
             # ILAB specific - collection name
             try: 
@@ -98,13 +100,13 @@ class OAIDC(object):
                     if isinstance(list_subjects, list)==False:
                         list_subjects = [list_subjects]
                     for subject in list_subjects:
-                         oai_dc.append(DC.subject(subject))
+			if isinstance(subject, basestring) and len(subject):
+                            oai_dc.append(DC.subject(subject))
                 except (IndexError,KeyError) as e:
                     continue
 
         except (IndexError,KeyError) as e:
             pass
-
 
 # Description
         try:
