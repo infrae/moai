@@ -128,6 +128,8 @@ class DataCite(object):
                  subjectNode.attrib['subjectScheme'] = 'OECD FOS 2007'
                  subjects.append(subjectNode)
 
+             datacite.append(subjects)
+
 
              # Subjects - Tags
              list_subjects = data['Tag'] 
@@ -184,7 +186,10 @@ class DataCite(object):
              
              for dccontributor in contributor_list:
                  contributor = NONE.contributor()
-                 contributor.attrib['contributorType'] = dccontributor['Contributor_Type']
+                 try: # not present in GEO schemas
+                     contributor.attrib['contributorType'] = dccontributor['Contributor_Type']
+		 except KeyError:
+                     pass                 
 
                  name = dccontributor['Name']['First_Name'] + ' ' + dccontributor['Name']['Last_Name']
                  contributor.append(NONE.contributorName(name))
@@ -205,7 +210,6 @@ class DataCite(object):
                      contributor.append(nameIdf)
 
                  contributors.append(contributor)
-
 
 	     # GEO 'Contact person' is a special case of contributerType: contactPerson	
              try:
