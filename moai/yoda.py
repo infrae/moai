@@ -24,7 +24,7 @@ class YodaContent(object):
         except Exception:
             log = get_moai_log()
             log.warning("Could not load JSON metadata file: {}".format(path))
-            return
+            return False
 
 	    # Modified and id are required for the system to operate
         persistent_identifier_datapackage = dictJsonData['System']['Persistent_Identifier_Datapackage']['Identifier']
