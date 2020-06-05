@@ -16,28 +16,20 @@ class YodaContent(object):
         self.metadata = dict()
 
     def update(self, path):
-        log = get_moai_log()
+        try:
+            with open(path, 'r') as myfile:
+                jsonSchemaData = myfile.read()
 
-        log.warning(path)
+            dictJsonData = json.loads(jsonSchemaData)
+        except Exception:
+            log = get_moai_log()
+            log.warning("Could not load JSON metadata file: {}".format(path))
+            return
 
-
- 
-        with open(path, 'r') as myfile:
-            jsonSchemaData = myfile.read()
-
-        log = get_moai_log()
-        log.warning(jsonSchemaData)
-
-        dictJsonData = json.loads(jsonSchemaData)
-
-	# Modified and id are required for the system to operate
-        
-        # dictJsonData['System']['Last_Modified_Date']
+	    # Modified and id are required for the system to operate
         persistent_identifier_datapackage = dictJsonData['System']['Persistent_Identifier_Datapackage']['Identifier']
 
-	self.id = 'oai:%s' % persistent_identifier_datapackage   #i.decode('unicode-escape')
+        self.id = 'oai:%s' % persistent_identifier_datapackage   #i.decode('unicode-escape')
         self.modified = datetime.now() - timedelta(days=1)
-
         self.metadata['identifier'] = [persistent_identifier_datapackage]
-
-        self.metadata['metadata'] = dictJsonData  
+        self.metadata['metadata'] = dictJsonData
