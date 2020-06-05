@@ -6,11 +6,12 @@ import logging.handlers
 
 def get_moai_log():
     log = logging.getLogger('moai')
-    log.setLevel(logging.DEBUG)
-    handler = logging.handlers.RotatingFileHandler('moai.log')
-    handler.setFormatter(logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
-    log.addHandler(handler)
+    if len(log.handlers) == 0:
+        log.setLevel(logging.DEBUG)
+        handler = logging.handlers.RotatingFileHandler('moai.log')
+        handler.setFormatter(logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+        log.addHandler(handler)
     return log
 
 def get_duration(starttime):
