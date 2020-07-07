@@ -3,9 +3,9 @@ from lxml.builder import ElementMaker
 XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
 
 class Iso(object):
-     """The standard Datacite.
+     """The standard ISO19139.
 
-     It is registered under the name 'datacite'
+     It is registered under the name 'iso19139'
      """
 
      def __init__(self, prefix, config, db):
@@ -13,16 +13,17 @@ class Iso(object):
          self.config = config
          self.db = db
 
-         self.ns =   {'gmd': 'http://www.isotc211.org/2005/gmd', 
+         self.ns =   {'iso19139': 'http://www.isotc211.org/2005/gmd',
+                      'gmd': 'http://www.isotc211.org/2005/gmd',
                       'gco': 'http://www.isotc211.org/2005/gco',
                       'gmx': 'http://www.isotc211.org/2005/gmx',
-                      'gml': 'http://www.opengis.net/gml/3.2', 
+                      'gml': 'http://www.opengis.net/gml/3.2',
                       'xlink': 'http://www.w3.org/1999/xlink',
                       'xsi':  'http://www.w3.org/2001/XMLSchema-instance'
          }
 
-         self.schemas = {'iso': 'http://www.isotc211.org/2005/gmd/gmd.xsd'}
-
+         self.schemas = {'iso': 'http://www.isotc211.org/2005/gmd/gmd.xsd',
+                         'iso19139': 'http://www.isotc211.org/2005/gmd/gmd.xsd'}
 
      def get_namespace(self):
          return self.ns[self.prefix]
@@ -32,19 +33,19 @@ class Iso(object):
 
      def __call__(self, element, metadata):
          try:
-             data = metadata.record['metadata']['metadata'] 
+             data = metadata.record['metadata']['metadata']
          except:
              pass
 
          # Is deze nog nodig?????
          # Basic - will this be used as all will be GMD
          #NONE =  ElementMaker(namespace=self.ns['gmd'],
-         #                    nsmap =self.ns) 
+         #                    nsmap =self.ns)
 
-         # GMD based elements    
+         # GMD based elements
          GMD = ElementMaker(namespace=self.ns['gmd'],
-                             nsmap =self.ns) 
-         # GCO based elements 
+                             nsmap =self.ns)
+         # GCO based elements
          GCO = ElementMaker(namespace=self.ns['gco'],
                              nsmap =self.ns)
 
@@ -66,16 +67,16 @@ class Iso(object):
 # DOI
          fileIdentifier = GMD.fileIdentifier()
          fileIdentifier.append(GCO.CharacterString('doi:'+data['System']['Persistent_Identifier_Datapackage']['Identifier']))
-         iso.append(fileIdentifier)  
+         iso.append(fileIdentifier)
 
 # Language
          language = GMD.language()
          LanguageCode = GMD.LanuageCode(languageVal)
-         LanguageCode.attrib['codeList'] = 'http://www.loc.gov/standards/iso639-2/' 
-         LanguageCode.attrib['codeListValue'] = languageVal    
+         LanguageCode.attrib['codeList'] = 'http://www.loc.gov/standards/iso639-2/'
+         LanguageCode.attrib['codeListValue'] = languageVal
 
          language.append(LanguageCode)
-         iso.append(language)          
+         iso.append(language)
 
 # Publisher - Hardcoded
          contact = GMD.contact()
@@ -98,7 +99,7 @@ class Iso(object):
          # Add to main level - contact
          contact.append(CI_ResponsibleParty)
 
-         iso.append(contact) 
+         iso.append(contact)
 
 
 # Create base nodes
@@ -123,7 +124,7 @@ class Iso(object):
              CI_Citation.append(title)
 
          except (IndexError,KeyError) as e:
-             pass         
+             pass
 
 
 # DATE HANDLING
@@ -131,7 +132,7 @@ class Iso(object):
              # The dicts assume, for now, that only one date of each datetype will exist.
              dates = {'revision': data['System']['Last_Modified_Date'],
                       'creation': data['System']['Publication_Date'][0:4]}
-             
+
              for dateTypeCode,thedate in dates.items():
                  datelevel1 = GMD.date()
                  CI_Date = GMD.CI_Date()
@@ -161,16 +162,16 @@ class Iso(object):
              code.append(CharacterString)
              MD_Identifier.append(code)
              identifier.append(MD_Identifier)
-             
+
              CI_Citation.append(identifier)
- 
+
          except (IndexError, KeyError) as e:
              pass
 
 
 # Author / Creator
           # Role 'author' can be hardcoded. Will not change
-         
+
          role = GMD.role()
          CI_RoleCode = GMD.CI_RoleCode('author') # Can be hardcoded
          CI_RoleCode.attrib['codeList'] = 'http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode'
@@ -200,7 +201,7 @@ class Iso(object):
                  CI_ResponsibleParty.append(role)
 
                  citedResponsibleParty.append(CI_ResponsibleParty)
-  
+
                  CI_Citation.append(citedResponsibleParty)
 
          except KeyError:
@@ -280,7 +281,7 @@ class Iso(object):
              abstract = GMD.abstract()
              CharacterString = GCO.CharacterString(data['Description'])
              abstract.append(CharacterString)
-             
+
              MD_DataIdentification.append(abstract)
          except (IndexError,KeyError) as e:
              pass
@@ -288,7 +289,7 @@ class Iso(object):
 # pointOfContact
 # CONTACT PERSONS   ONDER MD_DataIdentification
          pointOfContact = GMD.pointOfContact()
-         
+
          role = GMD.role()
          CI_RoleCode = GMD.CI_RoleCode('pointOfContact')
          CI_RoleCode.attrib['codeList'] = 'http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode'
@@ -319,19 +320,19 @@ class Iso(object):
                  pointOfContact.append(CI_ResponsibleParty)
 
                  MD_DataIdentification.append(pointOfContact)
-         
+
          except (IndexError,KeyError) as e:
              pass
 
 
 # Keywords
 # Tags and disciplines - sluit aan op level MD_DataIdentification
- 
-         # DISCIPLINES - all in 1 set 
+
+         # DISCIPLINES - all in 1 set
          try:
              descriptiveKeywords = GMD.descriptiveKeywords() # Base of each keyword alike type
              MD_Keywords = GMD.MD_Keywords()
-         
+
              # Keep the listed values as one set of decriptiveKeywords
 
              # Subjects - Disciplines
@@ -343,7 +344,7 @@ class Iso(object):
                  CharacterString = GCO.CharacterString(subject)
                  keyword.append(CharacterString)
                  MD_Keywords.append(keyword)
-         
+
              # Add Discipline as keywords
              descriptiveKeywords.append(MD_Keywords)
              MD_DataIdentification.append(descriptiveKeywords)
@@ -352,7 +353,7 @@ class Iso(object):
              pass
 
 
-         # Add Discipline as keywords 
+         # Add Discipline as keywords
          MD_DataIdentification.append(MD_Keywords)
 
          # TAGS - all in 1 set
@@ -376,7 +377,7 @@ class Iso(object):
 
          except (IndexError,KeyError) as e:
              pass
-          
+
 
          # Next descriptipe Keyword set  COLLECTION NAME (=ILAB)
          try:
@@ -388,7 +389,7 @@ class Iso(object):
              CharacterString = GCO.CharacterString(data['Collection_Name'])
              keyword.append(CharacterString)
              MD_Keywords.append(keyword)
-             
+
              descriptiveKeywords.append(MD_Keywords)
              MD_DataIdentification.append(descriptiveKeywords)
 
@@ -422,7 +423,7 @@ class Iso(object):
                          CharacterString = GCO.CharacterString(subject)
                          keyword.append(CharacterString)
                          MD_Keywords.append(keyword)
-                 
+
                  # Add Tags as keywords
                  if subject_counter:
                      descriptiveKeywords.append(MD_Keywords)
@@ -524,13 +525,13 @@ class Iso(object):
 
                  RS_Identifier.append(codeSpace)
                  aggregateDataSetIdentifier.append(RS_Identifier)
-                 MD_AggregateInformation.append(aggregateDataSetIdentifier) 
+                 MD_AggregateInformation.append(aggregateDataSetIdentifier)
 
                  relation_type = identifier['Relation_Type'].split(':')[0]
                  DS_AssociationTypeCode = GMD.DS_AssociationTypeCode(relation_type)
                  DS_AssociationTypeCode.attrib['codeList'] = 'http://datacite.org/schema/kernel-4'
                  DS_AssociationTypeCode.attrib['codeListValue'] = relation_type
-                
+
                  associationType = GMD.associationType()
                  associationType.append(DS_AssociationTypeCode)
                  MD_AggregateInformation.append(associationType)
@@ -592,8 +593,8 @@ class Iso(object):
                      westBoundLongitude.append(GCO.Decimal(lon0))
                      eastBoundLongitude = GMD.eastBoundLongitude()
                      eastBoundLongitude.append(GCO.Decimal(lon1))
-                     
-                     southBoundLatitude = GMD.southBoundLatitude() 
+
+                     southBoundLatitude = GMD.southBoundLatitude()
                      southBoundLatitude.append(GCO.Decimal(lat0))
                      northBoundLatitude = GMD.northBoundLatitude()
                      northBoundLatitude.append(GCO.Decimal(lat1))
@@ -627,7 +628,7 @@ class Iso(object):
 # Contributors - ook weer Responsible parties!
 
 
-   Contributor types:   -> will all default in ISO role 'contributor' for now. 
+   Contributor types:   -> will all default in ISO role 'contributor' for now.
         "ContactPerson",
         "DataCollector",
         "DataCurator",
@@ -682,4 +683,4 @@ class Iso(object):
          except KeyError:
              pass
 
-'''         
+'''

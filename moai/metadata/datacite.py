@@ -16,9 +16,9 @@ class DataCite(object):
          self.db = db
 
          self.ns = {'datacite': 'http://datacite.org/schema/kernel-4',
-                    'xml': XML_NS
-         }
-         self.schemas = {'datacite': 'http://schema.datacite.org/meta/kernel-4/metadata.xsd'}
+                    'oai_datacite': 'http://datacite.org/schema/kernel-4'}
+         self.schemas = {'datacite': 'http://schema.datacite.org/meta/kernel-4/metadata.xsd',
+                         'oai_datacite': 'http://schema.datacite.org/meta/kernel-4/metadata.xsd'}
 
      def get_namespace(self):
          return self.ns[self.prefix]
@@ -28,7 +28,7 @@ class DataCite(object):
 
      def __call__(self, element, metadata):
          try:
-             data = metadata.record['metadata']['metadata'] 
+             data = metadata.record['metadata']['metadata']
          except:
              pass
 
@@ -42,7 +42,7 @@ class DataCite(object):
              self.ns['datacite'],
              self.schemas['datacite'])
 
-         # Language	
+         # Language
          try:
             language = data['Language'][0:2]
          except (IndexError, KeyError) as e:
@@ -68,14 +68,14 @@ class DataCite(object):
 
              for dccreator in creator_list:
                  creator = NONE.creator()
-                 
+
                  name = dccreator['Name']['First_Name'] + ' ' +  dccreator['Name']['Last_Name']
                  creator.append(NONE.creatorName(name))
 
                  affiliation_list = dccreator['Affiliation']
                  if isinstance(affiliation_list, list)==False:
                      affiliation_list = [affiliation_list]
- 
+
                  for affiliation in affiliation_list:
                      creator.append(NONE.affiliation(affiliation))
 
@@ -132,14 +132,14 @@ class DataCite(object):
 
 
              # Subjects - Tags
-             list_subjects = data['Tag'] 
+             list_subjects = data['Tag']
              if isinstance(list_subjects, list)==False:
-                 list_subjects = [list_subjects] 
+                 list_subjects = [list_subjects]
              for subject in list_subjects:
                  subjectNode = NONE.subject(subject)
                  subjectNode.attrib['subjectScheme'] = 'Keyword'
                  subjects.append(subjectNode)
- 
+
 
              # Subjects - Collection name
              subjectNode = NONE.subject( data['Collection_Name'])
@@ -152,8 +152,8 @@ class DataCite(object):
 
          # Subject - special fields geo schemas
          # To BE DONE
-         subject_fields = ["Main_Setting", 
-            "Process_Hazard", 
+         subject_fields = ["Main_Setting",
+            "Process_Hazard",
             "Geological_Structure",
             "Geomorphical_Feature",
             "Material",
@@ -179,17 +179,17 @@ class DataCite(object):
          # Contributors
          try:
              contributors = NONE.contributors()
-             
+
              contributor_list = data['Contributor']
              if isinstance(contributor_list, list)==False:
                  contributor_list = [contributor_list]
-             
+
              for dccontributor in contributor_list:
                  contributor = NONE.contributor()
                  try: # not present in GEO schemas
                      contributor.attrib['contributorType'] = dccontributor['Contributor_Type']
 		 except KeyError:
-                     pass                 
+                     pass
 
                  name = dccontributor['Name']['First_Name'] + ' ' + dccontributor['Name']['Last_Name']
                  contributor.append(NONE.contributorName(name))
@@ -211,7 +211,7 @@ class DataCite(object):
 
                  contributors.append(contributor)
 
-	     # GEO 'Contact person' is a special case of contributerType: contactPerson	
+	     # GEO 'Contact person' is a special case of contributerType: contactPerson
              try:
                  contributor_list = data['Contact']
                  if isinstance(contributor_list, list)==False:
@@ -377,7 +377,7 @@ class DataCite(object):
                  temp_description_start = geoloc['Description_Temporal']['Start_Date']
                  temp_description_end = geoloc['Description_Temporal']['End_Date']
                  spatial_description = geoloc['Description_Spatial']
-                 
+
                  lon0 = str(geoloc['geoLocationBox']['westBoundLongitude'])
                  lat0 = str(geoloc['geoLocationBox']['northBoundLatitude'])
                  lon1 = str(geoloc['geoLocationBox']['eastBoundLongitude'])
@@ -385,10 +385,10 @@ class DataCite(object):
 
                  geoLocation = NONE.geoLocation()
 
-                 if spatial_description: 
+                 if spatial_description:
                      geoLocationPlace = NONE.geoLocationPlace(spatial_description)
                      geoLocation.append(geoLocationPlace)
- 
+
                  if lon0==lon1 and lat0==lat1: # dealing with a point
                      geoLocationPoint = NONE.geoLocationPoint()
                      geoLocationPoint.append(NONE.pointLongitude(lon0))
@@ -405,7 +405,7 @@ class DataCite(object):
                  geoLocations.append(geoLocation)
 
              # alleen toevoegen als er werkelijk locaties zijn
-             if location_present: 
+             if location_present:
                  datacite.append(geoLocations)
 
          except (IndexError, KeyError) as e:
