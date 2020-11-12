@@ -69,7 +69,7 @@ class DataCite(object):
              for dccreator in creator_list:
                  creator = NONE.creator()
 
-                 name = dccreator['Name']['First_Name'] + ' ' +  dccreator['Name']['Last_Name']
+                 name = dccreator['Name']['Given_Name'] + ' ' +  dccreator['Name']['Family_Name']
                  creator.append(NONE.creatorName(name))
 
                  affiliation_list = dccreator['Affiliation']
@@ -188,10 +188,10 @@ class DataCite(object):
                  contributor = NONE.contributor()
                  try: # not present in GEO schemas
                      contributor.attrib['contributorType'] = dccontributor['Contributor_Type']
-		 except KeyError:
+                 except KeyError:
                      pass
 
-                 name = dccontributor['Name']['First_Name'] + ' ' + dccontributor['Name']['Last_Name']
+                 name = dccontributor['Name']['Given_Name'] + ' ' +  dccontributor['Name']['Family_Name']
                  contributor.append(NONE.contributorName(name))
 
                  affiliation_list = dccontributor['Affiliation']

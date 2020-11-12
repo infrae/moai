@@ -47,21 +47,21 @@ class OAIDC(object):
         except (IndexError,KeyError) as e:
             pass
 
-# Creator        
+# Creator
         try:
             creator_list = data['Creator']
             if isinstance(creator_list, list)==False:
                 creator_list = [creator_list]
 
             for dccreator in creator_list:
-                name = dccreator['Name']['First_Name'] + ' ' +  dccreator['Name']['Last_Name']
+                name = dccreator['Name']['Given_Name'] + ' ' +  dccreator['Name']['Family_Name']
 
                 affiliation_list = dccreator['Affiliation']
                 if isinstance(affiliation_list, list)==False:
                     affiliation_list = [affiliation_list]
 
                 # Compile creatorData
-                creatorData = name + ' (' + ', '.join(affiliation_list)  + ')' 
+                creatorData = name + ' (' + ', '.join(affiliation_list)  + ')'
                 oai_dc.append(DC.creator(creatorData))
         except (IndexError,KeyError) as e:
             pass
@@ -78,11 +78,11 @@ class OAIDC(object):
 		    oai_dc.append(DC.subject(subject))
 
             # ILAB specific - collection name
-            try: 
+            try:
                 oai_dc.append(DC.subject(data['Collection_Name']))
             except (IndexError,KeyError) as e:
                 pass
-            
+
             # GEO specific
             subject_fields = ["Main_Setting",
                 "Process_Hazard",
@@ -95,7 +95,7 @@ class OAIDC(object):
                 "Measured_Property"]
 
             for subject_field in subject_fields:
-                try: 
+                try:
                     list_subjects = data[subject_field]
                     if isinstance(list_subjects, list)==False:
                         list_subjects = [list_subjects]
@@ -127,7 +127,7 @@ class OAIDC(object):
                 con_list = [con_list]
 
             for dccon in creator_list:
-                name = dccon['Name']['First_Name'] + ' ' +  dccon['Name']['Last_Name']
+                name = dccon['Name']['Given_Name'] + ' ' +  dccon['Name']['Family_Name']
 
                 affiliation_list = dccon['Affiliation']
                 if isinstance(affiliation_list, list)==False:
@@ -167,7 +167,7 @@ class OAIDC(object):
         except (IndexError,KeyError) as e:
             pass
 
-        try: 
+        try:
             perioddates = [data['Covered_Period/Start_Date'], data['Covered_Period/End_Date']]
             period = "/".join([d for d in perioddates if d])
             oai_dc.append(DC.coverage(period))
@@ -190,9 +190,9 @@ class OAIDC(object):
                 lat1 = str(geoloc['geoLocationBox']['southBoundLatitude'])
 
                 geoData = '(' + lat0 + ' ,' + lon0 + ') (' + lat1 + ', ' + lon1 + ')'
-                 
+
                 if spatial_description:
-                    geoData += ' | ' + spatial_description 
+                    geoData += ' | ' + spatial_description
 
                 if temp_description_start:
                     geoData += ' | ' + temp_description_start
@@ -205,12 +205,12 @@ class OAIDC(object):
         except (IndexError,KeyError) as e:
             pass
 
-# Rights    
+# Rights
         try:
             license = data['License']
             rightLicenseURL = data['System']['License_URI']
 
-            accessRestriction = data['Data_Access_Restriction'] 
+            accessRestriction = data['Data_Access_Restriction']
             if accessRestriction.startswith('Open'):
                 accessRights = 'Open Access'
                 accessRightsURI = 'info:eu-repo/semantics/openAccess'
@@ -220,14 +220,13 @@ class OAIDC(object):
             elif accessRestriction.startswith('Closed'):
                 accessRights = 'Closed Access'
                 accessRightsURI = 'info:eu-repo/semantics/closedAccess'
-            
+
             rights = license + ' (' + rightLicenseURL + ')'
             rights += ' | ' + accessRights + ' (' + accessRightsURI + ')'
 
-            oai_dc.append(DC.rights(rights)) 
+            oai_dc.append(DC.rights(rights))
 
         except (IndexError,KeyError) as e:
             pass
 
         element.append(oai_dc)
-
