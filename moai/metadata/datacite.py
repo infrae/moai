@@ -123,10 +123,12 @@ class DataCite(object):
              list_subjects = data['Discipline']
              if isinstance(list_subjects, list)==False:
                  list_subjects = [list_subjects]
+
              for subject in list_subjects:
-                 subjectNode = NONE.subject(subject)
-                 subjectNode.attrib['subjectScheme'] = 'OECD FOS 2007'
-                 subjects.append(subjectNode)
+                 if subject is not None:
+                     subjectNode = NONE.subject(subject)
+                     subjectNode.attrib['subjectScheme'] = 'OECD FOS 2007'
+                     subjects.append(subjectNode)
 
              datacite.append(subjects)
 
@@ -136,9 +138,10 @@ class DataCite(object):
              if isinstance(list_subjects, list)==False:
                  list_subjects = [list_subjects]
              for subject in list_subjects:
-                 subjectNode = NONE.subject(subject)
-                 subjectNode.attrib['subjectScheme'] = 'Keyword'
-                 subjects.append(subjectNode)
+                 if subject is not None:
+                     subjectNode = NONE.subject(subject)
+                     subjectNode.attrib['subjectScheme'] = 'Keyword'
+                     subjects.append(subjectNode)
 
 
              # Subjects - Collection name
