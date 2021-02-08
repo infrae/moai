@@ -222,7 +222,7 @@ class DataCite(object):
                  for dccontributor in contributor_list:
                      contributor = NONE.contributor()
                      contributor.attrib['contributorType'] = 'ContactPerson'
-                     name = dccontributor['Name']['First_Name'] + ' ' + dccontributor['Name']['Last_Name']
+                     name = dccontributor['Name']['Given_Name'] + ' ' + dccontributor['Name']['Family_Name']
                      contributor.append(NONE.contributorName(name))
 
                      affiliation_list = dccontributor['Affiliation']

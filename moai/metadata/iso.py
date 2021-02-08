@@ -187,7 +187,7 @@ class Iso(object):
                  citedResponsibleParty = GMD.citedResponsibleParty()
                  CI_ResponsibleParty = GMD.CI_ResponsibleParty()
 
-                 individualName = dccreator['Name']['First_Name'] + ' ' +  dccreator['Name']['Last_Name']
+                 individualName = dccreator['Name']['Given_Name'] + ' ' +  dccreator['Name']['Family_Name']
                  CI_ResponsibleParty.append(GMD.individualName(GCO.CharacterString(individualName)))
 
 
@@ -252,7 +252,7 @@ class Iso(object):
                  citedResponsibleParty = GMD.citedResponsibleParty()
                  CI_ResponsibleParty = GMD.CI_ResponsibleParty()
 
-                 individualName = contrib['Name']['First_Name'] + ' ' +  contrib['Name']['Last_Name']
+                 individualName = contrib['Name']['Given_Name'] + ' ' +  contrib['Name']['Family_Name']
                  CI_ResponsibleParty.append(GMD.individualName(GCO.CharacterString(individualName)))
 
 
@@ -306,7 +306,7 @@ class Iso(object):
              for dccontributor in contributor_list:
                  CI_ResponsibleParty = GMD.CI_ResponsibleParty()
 
-                 individualName = dccreator['Name']['First_Name'] + ' ' +  dccreator['Name']['Last_Name']
+                 individualName = dccreator['Name']['Given_Name'] + ' ' +  dccreator['Name']['Family_Name']
                  CI_ResponsibleParty.append(GMD.individualName(GCO.CharacterString(individualName)))
 
                  affiliation_list = dccontributor['Affiliation']
