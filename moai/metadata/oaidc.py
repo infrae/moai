@@ -66,8 +66,7 @@ class OAIDC(object):
         except (IndexError,KeyError) as e:
             pass
 
-
-# Subject  - collection of Disciplines / tags etc
+        # Subject  - collection of Disciplines / tags etc
         try:
             # Disciplines and Tags
             list_subjects = data['Discipline'] +  data['Tag']
@@ -75,7 +74,7 @@ class OAIDC(object):
                 list_subjects = [list_subjects]
             for subject in list_subjects:
                 if len(subject):
-		    oai_dc.append(DC.subject(subject))
+                    oai_dc.append(DC.subject(subject))
 
             # ILAB specific - collection name
             try:
@@ -100,7 +99,7 @@ class OAIDC(object):
                     if isinstance(list_subjects, list)==False:
                         list_subjects = [list_subjects]
                     for subject in list_subjects:
-			if isinstance(subject, basestring) and len(subject):
+                        if isinstance(subject, str) and len(subject):
                             oai_dc.append(DC.subject(subject))
                 except (IndexError,KeyError) as e:
                     continue
@@ -108,19 +107,19 @@ class OAIDC(object):
         except (IndexError,KeyError) as e:
             pass
 
-# Description
+        # Description
         try:
             oai_dc.append(DC.description(data['Description']))
         except (IndexError,KeyError) as e:
             pass
 
-# Publisher
+        # Publisher
         try:
             oai_dc.append(DC.publisher('Utrecht University'))
         except (IndexError,KeyError) as e:
             pass
 
-# Contributor
+        # Contributor
         try:
             con_list = data['Contributor']
             if isinstance(con_list, list)==False:
@@ -139,26 +138,26 @@ class OAIDC(object):
         except (IndexError,KeyError) as e:
             pass
 
-# Identifier
+        # Identifier
         try:
             doi = data['System']['Persistent_Identifier_Datapackage']['Identifier']
             oai_dc.append(DC.identifier('doi:' + doi))
         except (IndexError,KeyError) as e:
             pass
 
-# Language
+        # Language
         try:
             oai_dc.append(DC.language(data['Language']))
         except (IndexError,KeyError) as e:
             pass
 
-# Date
+        # Date
         try:
             oai_dc.append(DC.date(data['System']['Publication_Date']))
         except (IndexError,KeyError) as e:
             pass
 
-# COVERAGE
+        # COVERAGE
         # Default metadata schema
         try:
             text_locations = data['Covered_Geolocation_Place']
@@ -205,7 +204,7 @@ class OAIDC(object):
         except (IndexError,KeyError) as e:
             pass
 
-# Rights
+        # Rights
         try:
             license = data['License']
             rightLicenseURL = data['System']['License_URI']

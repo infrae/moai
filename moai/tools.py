@@ -4,7 +4,7 @@ import time
 import datetime
 import pkg_resources
 from pkg_resources import iter_entry_points
-import ConfigParser
+import configparser
 
 from optparse import OptionParser
 
@@ -14,7 +14,7 @@ from moai.utils import (get_duration,
 from moai.database import SQLDatabase
 
 VERSION = pkg_resources.working_set.by_key['moai'].version
-                 
+
 def update_moai():
     usage = "usage: %prog [options] profilename"
     version = "%%prog %s" % VERSION
@@ -36,7 +36,7 @@ def update_moai():
     parser.add_option("", "--date", dest="from_date",
                       help="Only update database from a specific date",
                       action="store")
-        
+
     options, args = parser.parse_args()
     if not len(args):
         profile_name = 'default'
@@ -53,7 +53,7 @@ def update_moai():
                          'Start script from other directory '
                          'or use --config option\n''' % config_path)
         sys.exit(1)
-    configfile = ConfigParser.ConfigParser()
+    configfile = configparser.ConfigParser()
     configfile.read(config_path)
     profiles = []
     config = {}
@@ -65,7 +65,7 @@ def update_moai():
         if profile_name == section.split(':', 1)[1]:
             for option in configfile.options(section):
                 config[option] = configfile.get(section, option)
-            
+
     if not profile_name in profiles:
         if profile_name == 'default':
             sys.stderr.write(
@@ -113,7 +113,7 @@ def update_moai():
     starttime = time.time()
 
     sys.stderr.write('Updating content provider..')
-    count = 0    
+    count = 0
     for id in provider.update(from_date):
         if not options.quiet and not options.verbose:
             progress.animate('Updating content provider: %s' % id)
@@ -121,11 +121,11 @@ def update_moai():
 
     if not options.quiet and not options.verbose:
         progress.write('')
-        print
-        print >> sys.stderr, ('Content provider returned %s '
-                              'new/modified objects' % count)
-        print >> sys.stderr
-    
+        print()
+        print(('Content provider returned %s '
+                              'new/modified objects' % count), file=sys.stderr)
+        print(file=sys.stderr)
+
     total = provider.count()
 
     count = 0
@@ -136,7 +136,7 @@ def update_moai():
         count += 1
         try:
             raw_data = provider.get_content_by_id(content_id)
-        except Exception, err:
+        except Exception as err:
             if options.debug:
                 raise
             log.error('Error retrieving data %s from provider: %s' % (
@@ -148,7 +148,7 @@ def update_moai():
         try:
             content = ContentClass(provider)
             success = content.update(raw_data)
-        except Exception, err:
+        except Exception as err:
             if options.debug:
                 raise
             log.error('Error converting data %s to content: %s' % (
@@ -156,20 +156,20 @@ def update_moai():
             error_count += 1
             progress.tick(count, total)
             continue
-        
+
         if success is False:
             log.warning('Ignoring %s' % content_id)
             ignore_count += 1
             progress.tick(count, total)
             continue
-        
+
         try:
             database.update_record(content.id,
                                    content.modified,
                                    content.deleted,
                                    content.sets,
                                    content.metadata)
-        except Exception, err:
+        except Exception as err:
             if options.debug:
                 raise
             log.error('Error inserting %s into database: %s' % (
@@ -177,20 +177,20 @@ def update_moai():
             error_count += 1
             progress.tick(count, total)
             continue
-            
+
         if count % flush_threshold == 0:
             log.info('Flushing database')
             database.flush()
         progress.tick(count, total)
-        
+
     log.info('Flushing database')
     database.flush()
     duration = get_duration(starttime)
-    print >> sys.stderr, ''
+    print('', file=sys.stderr)
     msg = 'Updating database with %s objects took %s' % (total, duration)
     log.info(msg)
     if not options.verbose and not options.quiet:
-        print >> sys.stderr, msg
+        print(msg, file=sys.stderr)
 
     if error_count:
         msg = '%s error%s occurred during updating' % (
@@ -198,5 +198,4 @@ def update_moai():
             {1: ''}.get(error_count, 's'))
         log.warning(msg)
         if not options.verbose and not options.quiet:
-            print >> sys.stderr, msg
-
+            print(msg, file=sys.stderr)

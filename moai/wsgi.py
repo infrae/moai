@@ -58,7 +58,7 @@ class WSGIRequest(object):
         response = Response()
         response.content_type = mimetype
         response.status = int(code.split()[0])
-        response.body = msg
+        response.text = msg
         return response
 
 
@@ -132,7 +132,7 @@ class FileIterator(object):
             self.length = None
     def __iter__(self):
         return self
-    def next(self):
+    def __next__(self):
         if self.length is not None and self.length <= 0:
             raise StopIteration
         chunk = self.fileobj.read(self.chunk_size)

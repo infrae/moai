@@ -3,7 +3,7 @@ from os.path import join, dirname
 
 setup(
     name='MOAI',
-    version='2.3.5',
+    version='3.0.0',
     author='Infrae',
     author_email='info@infrae.com',
     url='http://infrae.com/products/moai',
@@ -45,10 +45,10 @@ setup(
         'fedora=moai.provider.feadora:FedoraBasedContentProvider'
      ],
     'moai.format':[
-         'oai_dc=moai.metadata.oaidc:OAIDC',
-         'datacite=moai.metadata.datacite:DataCite',
-         'oai_datacite=moai.metadata.datacite:DataCite',
-         'iso19139=moai.metadata.iso:Iso'
+        'oai_dc=moai.metadata.oaidc:OAIDC',
+        'datacite=moai.metadata.datacite:DataCite',
+        'oai_datacite=moai.metadata.datacite:DataCite',
+        'iso19139=moai.metadata.iso:Iso'
      ],
     },
     install_requires=[
@@ -60,6 +60,13 @@ setup(
     'pasteDeploy',
     'pasteScript',
     'sqlalchemy',
+    'xmltodict',
+    'mod-wsgi==4.7.1',
+    'wsgiserver',
+    'requests'
+    ],
+    dependency_links=[
+        'git+https://github.com/shasha79/pastescript'
     ],
     test_suite='moai.test.suite'
 )

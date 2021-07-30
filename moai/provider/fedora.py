@@ -1,5 +1,5 @@
 import os
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import hashlib
 
 from lxml import etree
@@ -42,7 +42,7 @@ class FOXMLFile(object):
             xml = etree.tostring(child, encoding='UTF8', pretty_print=True)
             break
         xml = xml.strip()
-        if not isinstance(xml, unicode):
+        if not isinstance(xml, str):
             xml = xml.decode('utf8')
         return xml
 
@@ -83,7 +83,7 @@ class FOXMLFile(object):
         if not labels:
             return
         label = labels[-1]
-        if not isinstance(label, unicode):
+        if not isinstance(label, str):
             label = label.decode('utf8')
         return label
         
@@ -126,15 +126,15 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
         if self._user and self._pass:
             password = ('%s:%s' % (self._user, self._pass)).strip().encode('base64')
             headers = {'Authorization': 'Basic %s' % password}
-            request = urllib2.Request(url, headers=headers)
+            request = urllib.request.Request(url, headers=headers)
         else:
-            request = urllib2.Request(url)
+            request = urllib.request.Request(url)
 
         try:
-            fp = urllib2.urlopen(request)
+            fp = urllib.request.urlopen(request)
             xml_data = fp.read()
             fp.close()
-        except urllib2.HTTPError, err:
+        except urllib.error.HTTPError as err:
             self._log.warning('HTTP %s -> Can not get Fedora data: %s' % (err.code, url))
             return False
 

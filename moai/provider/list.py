@@ -18,7 +18,7 @@ class ListBasedContentProvider(object):
 
     def get_content_ids(self, from_date=None):
         if from_date is None:
-            return range(len(self._content))
+            return list(range(len(self._content)))
         else:
             from_time = time.mktime(from_date.timetuple())
 

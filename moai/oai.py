@@ -8,6 +8,7 @@ import oaipmh
 import oaipmh.metadata
 import oaipmh.server
 import oaipmh.error
+from oaipmh.common import Header, Metadata
 
 def get_writer(prefix, config, db):
     for writer in iter_entry_points(group='moai.format', name=prefix):
@@ -109,7 +110,7 @@ class OAIServer(object):
             if setspec in self.config.sets_deleted:
                 deleted = True
                 break
-        return oaipmh.common.Header(None,
+        return oaipmh.common.Header(record,
                                     record['id'],
                                     record['modified'],
                                     record['sets'],
@@ -117,7 +118,7 @@ class OAIServer(object):
 
     def _createHeaderAndMetadata(self, record):
         header = self._createHeader(record)
-        metadata = oaipmh.common.Metadata(None, record)
+        metadata = oaipmh.common.Metadata(record, record['metadata'])
         metadata.record = record
         return header, metadata
 
@@ -167,4 +168,3 @@ def OAIServerFactory(db, config):
         metadata_registry=metadata_registry,
         resumption_batch_size=config.batch_size
         )
-

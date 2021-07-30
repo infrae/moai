@@ -79,9 +79,9 @@ class DataCite(object):
                  for affiliation in affiliation_list:
                      creator.append(NONE.affiliation(affiliation))
 
-                 idf_list =  dccreator['Person_Identifier']
+                 idf_list = dccreator['Person_Identifier']
                  if isinstance(idf_list, list)==False:
-		     idf_list = [idf_list]
+                     idf_list = [idf_list]
                  for identifier in idf_list:
                      nameIdf = NONE.nameIdentifier(identifier['Name_Identifier'])
                      nameIdf.attrib['nameIdentifierScheme'] = identifier['Name_Identifier_Scheme']
@@ -165,14 +165,14 @@ class DataCite(object):
             "Software",
             "Measured_Property"]
 
-	 for subject_field in subject_fields:
+         for subject_field in subject_fields:
              try:
                  list_subjects = data[subject_field]
                  if isinstance(list_subjects, list)==False:
                      list_subjects = [list_subjects]
                  for subject in list_subjects:
-                     if isinstance(subject, basestring) and len(subject):
-		         subjectNode = NONE.subject(subject)
+                     if isinstance(subject, str) and len(subject):
+                         subjectNode = NONE.subject(subject)
                          subjectNode.attrib['subjectScheme'] = subject_field
                          subjects.append(subjectNode)
 
@@ -214,7 +214,7 @@ class DataCite(object):
 
                  contributors.append(contributor)
 
-	     # GEO 'Contact person' is a special case of contributerType: contactPerson
+             # GEO 'Contact person' is a special case of contributerType: contactPerson
              try:
                  contributor_list = data['Contact']
                  if isinstance(contributor_list, list)==False:
@@ -305,7 +305,7 @@ class DataCite(object):
              resourceType.attrib['resourceTypeGeneral'] = resourceTypeGeneral
              datacite.append(resourceType)
          except KeyError:
-	     resourceType = NONE.resourceType('Other Document')
+             resourceType = NONE.resourceType('Other Document')
              resourceType.attrib['resourceTypeGeneral'] = 'Text'
              datacite.append(resourceType)
              pass
@@ -336,8 +336,8 @@ class DataCite(object):
 
              access_restriction = data['Data_Access_Restriction']
              access_rights = ''
-	     access_rightsURI = ''
-	     if access_restriction:
+             access_rightsURI = ''
+             if access_restriction:
                  if access_restriction.startswith('Open'):
                      access_rights = 'Open Access'
                      access_rightsURI = 'info:eu-repo/semantics/openAccess'
@@ -370,8 +370,7 @@ class DataCite(object):
          except KeyError:
              pass
 
-
-	 # GeoLocation
+         # GeoLocation
          try:
              geoLocations = NONE.geoLocations()
              location_present = False

@@ -417,7 +417,7 @@ class Iso(object):
                      list_subjects = [list_subjects]
                  subject_counter = 0
                  for subject in list_subjects:
-                     if isinstance(subject, basestring) and len(subject):
+                     if isinstance(subject, str) and len(subject):
                          subject_counter += 1
                          keyword = GMD.keyword()
                          CharacterString = GCO.CharacterString(subject)

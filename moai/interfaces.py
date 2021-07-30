@@ -32,15 +32,15 @@ class IContentProvider(Interface):
 
 class IContentObject(Interface):
 
-    id = Attribute(u"Id of the content object")
-    label = Attribute(u"Name of the object")
-    content_type = Attribute(u"Type of the content object")
-    when_modified = Attribute(u"Modification date of the object")
-    deleted = Attribute(u"Boolean that tells if object is deleted or not")
-    sets = Attribute(u"A list of ids from sets that this object belongs to")
-    is_set = Attribute(u"Boolean indicating if this object is a set")
+    id = Attribute("Id of the content object")
+    label = Attribute("Name of the object")
+    content_type = Attribute("Type of the content object")
+    when_modified = Attribute("Modification date of the object")
+    deleted = Attribute("Boolean that tells if object is deleted or not")
+    sets = Attribute("A list of ids from sets that this object belongs to")
+    is_set = Attribute("Boolean indicating if this object is a set")
 
-    provider = Attribute(u"ContentProvider instance that created this object")
+    provider = Attribute("ContentProvider instance that created this object")
 
     def update(data, provider):
         """Called by IContentProvider, to fill the object with data
@@ -267,30 +267,30 @@ class IDatabase(IReadOnlyDatabase):
         
 class IFeedConfig(Interface):
 
-    id = Attribute(u"Id of the OAI Server instance")
-    name = Attribute(u"Name of this OAI Server instance (for identify)")
-    url = Attribute(u"Base URL of the OAI Server (for identify)")
-    log = Attribute(u"Logger instance that logs activity and errors")
-    admins = Attribute(u"List of email addresses that can be contacted, "
+    id = Attribute("Id of the OAI Server instance")
+    name = Attribute("Name of this OAI Server instance (for identify)")
+    url = Attribute("Base URL of the OAI Server (for identify)")
+    log = Attribute("Logger instance that logs activity and errors")
+    admins = Attribute("List of email addresses that can be contacted, "
                       "for questions about the feed")
     metadata_prefixes = Attribute(
-        u"List of metadataPrefixes this server can handle"
+        "List of metadataPrefixes this server can handle"
         "by default the list has 'oai_dc' included")
                    
     # some filter attributes
 
-    content_type = Attribute(u"Type of content objects being served")
-    scope = Attribute(u"Only serve objects with a specific (or lower) scope")
-    sets_allowed = Attribute(u"Objects served must have one of these sets")
+    content_type = Attribute("Type of content objects being served")
+    scope = Attribute("Only serve objects with a specific (or lower) scope")
+    sets_allowed = Attribute("Objects served must have one of these sets")
     sets_disallowed = Attribute(
-        u"Objects served must not have one of these sets")
+        "Objects served must not have one of these sets")
     filter_sets = Attribute(
-        u"Objects served must have one of these sets, besides the "
+        "Objects served must have one of these sets, besides the "
         "conforming to the (dis-)allowed sets")
     sets_deleted = Attribute(
-        u"Records in this set will always be served as deleted OAI records "
+        "Records in this set will always be served as deleted OAI records "
         "this can be used as an alternative to sets_dissallowed.")
-    delay = Attribute(u"number of miliseconds to delay the feed")
+    delay = Attribute("number of miliseconds to delay the feed")
 
 
     def get_oai_id(internal_id):

@@ -37,20 +37,20 @@ def check_type(object,
 
     object_type = type(object)
     if not isinstance(object, expected_type):
-        
+
         raise TypeError(('%s expected "%s", got "%s" %s' % (
             prefix,
             expected_type.__name__,
             object.__class__.__name__,
             suffix)).strip())
     if unicode_keys and object_type is dict:
-        check_type(object.keys(),
+        check_type(list(object.keys()),
                    list,
                    unicode_values=True,
                    prefix=prefix,
                    suffix=suffix)
     if unicode_values and object_type is dict:
-        check_type(object.values(),
+        check_type(list(object.values()),
                    list,
                    unicode_keys=unicode_keys,
                    unicode_values=True,
@@ -95,17 +95,17 @@ class XPath(object):
         for stuff in self.doc.xpath(xpath, namespaces=self.nsmap):
             if isinstance(stuff, str):
                 result.append(stuff.strip().decode('utf8'))
-            elif isinstance(stuff, unicode):
+            elif isinstance(stuff, str):
                 # convert to real unicode object, not lxml proxy
-                result.append(unicode(stuff.strip()))
+                result.append(str(stuff.strip()))
             elif hasattr(stuff, 'text'):
                 if isinstance(stuff.text, str):
                     result.append(stuff.text.strip().decode('utf8'))
-                elif isinstance(stuff.text, unicode):
+                elif isinstance(stuff.text, str):
                     # convert to real unicode object, not lxml proxy
-                    result.append(unicode(stuff.text.strip()))
+                    result.append(str(stuff.text.strip()))
         return result
-    
+
     def number(self, xpath):
         return (self.numbers(xpath) or [None])[0]
 
@@ -173,7 +173,7 @@ class XPath(object):
                 else:
                     result.append(stuff.tag.decode('utf8'))
         return result
-    
+
     def __call__(self, xpath):
         result = self.doc.xpath(xpath, namespaces=self.nsmap)
         return result
@@ -202,7 +202,7 @@ class ProgressBar(object):
         lstot = len(str(total))
         awidth = self.width - 10 - lstot
         arrow = ('=' * int(awidth * (float(perc)/100.0)-1))+'>'
-        
+
         self.write(('%5s%%[%-'+str(awidth)+'s] %'+str(lstot)+'d') % (perc,
                                                                      arrow,
                                                                      count))
@@ -214,6 +214,3 @@ class ProgressBar(object):
         self.animstate+=1
         if self.animstate == len(anim):
             self.animstate = 0
-
-
-
