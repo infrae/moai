@@ -1,12 +1,13 @@
+import fnmatch
 import os
 import time
-import fnmatch
 
 
 class FileBasedContentProvider(object):
     """Provides content by reading directories of files
     Implements the :ref:`IContentProvider` interface
     """
+
     def __init__(self, uri, content_filter="*"):
         assert uri.startswith('file://'), 'unknown uri format'
         path = uri[7:]
@@ -41,8 +42,8 @@ class FileBasedContentProvider(object):
                 if not fnmatch.fnmatch(file, self._filter):
                     continue
                 path = os.path.join(p, file)
-                if not from_time is None:
-                    mtime= os.path.getmtime(path)
+                if from_time is not None:
+                    mtime = os.path.getmtime(path)
                     if mtime < from_time:
                         continue
                 id = os.path.basename(path)

@@ -1,10 +1,11 @@
 import datetime
 import json
-from pkg_resources import iter_entry_points
 
 import sqlalchemy as sql
+from pkg_resources import iter_entry_points
 
 from moai.utils import check_type
+
 
 def get_database(uri, config=None):
     prefix = uri.split(':')[0]
@@ -31,21 +32,21 @@ class SQLDatabase(object):
         self._sets = self._db.tables['sets']
         self._setrefs = self._db.tables['setrefs']
         self._reset_cache()
-        
+
     def _connect(self):
         dburi = self._uri
         if dburi is None:
             dburi = 'sqlite:///:memory:'
-            
+
         engine = sql.create_engine(dburi)
         db = sql.MetaData(engine)
-        
+
         sql.Table('records', db,
                   sql.Column('record_id', sql.Unicode, primary_key=True),
                   sql.Column('modified', sql.DateTime, index=True),
                   sql.Column('deleted', sql.Boolean),
                   sql.Column('metadata', sql.String))
-        
+
         sql.Table('sets', db,
                   sql.Column('set_id', sql.Unicode, primary_key=True),
                   sql.Column('hidden', sql.Boolean),
@@ -53,13 +54,13 @@ class SQLDatabase(object):
                   sql.Column('description', sql.Unicode))
 
         sql.Table('setrefs', db,
-                  sql.Column('record_id', sql.Integer, 
+                  sql.Column('record_id', sql.Integer,
                              sql.ForeignKey('records.record_id'),
                              index=True, primary_key=True),
                   sql.Column('set_id', sql.Integer,
                              sql.ForeignKey('sets.set_id'),
                              index=True, primary_key=True))
-        
+
         db.create_all()
         return db
 
@@ -78,7 +79,6 @@ class SQLDatabase(object):
         inserted_sets = []
         inserted_setrefs = []
 
-        
         for oai_id, item in list(self._cache['records'].items()):
             if oai_id in oai_ids:
                 # record allready exists
@@ -97,23 +97,23 @@ class SQLDatabase(object):
             deleted_setrefs.append(record_id)
             for set_id in set_ids:
                 inserted_setrefs.append(
-                    {'record_id':record_id, 'set_id': set_id})
+                    {'record_id': record_id, 'set_id': set_id})
 
         # delete all processed records before inserting
         if deleted_records:
             self._records.delete(
                 self._records.c.record_id == sql.bindparam('record_id')
-                ).execute(
+            ).execute(
                 [{'record_id': rid} for rid in deleted_records])
         if deleted_sets:
             self._sets.delete(
                 self._sets.c.set_id == sql.bindparam('set_id')
-                ).execute(
+            ).execute(
                 [{'set_id': sid} for sid in deleted_sets])
         if deleted_setrefs:
             self._setrefs.delete(
                 self._setrefs.c.record_id == sql.bindparam('record_id')
-                ).execute(
+            ).execute(
                 [{'record_id': rid} for rid in deleted_setrefs])
 
         # batch inserts
@@ -128,8 +128,7 @@ class SQLDatabase(object):
 
     def _reset_cache(self):
         self._cache = {'records': {}, 'sets': {}, 'setrefs': {}}
-        
-            
+
     def update_record(self, oai_id, modified, deleted, sets, metadata):
         # adds a record, call flush to actually store in db
 
@@ -169,11 +168,11 @@ class SQLDatabase(object):
         self._cache['setrefs'][oai_id] = []
         for set_id in sets:
             self._cache['sets'][set_id] = dict(
-                name = sets[set_id]['name'],
-                description = sets[set_id].get('description'),
-                hidden = sets[set_id].get('hidden', False))
+                name=sets[set_id]['name'],
+                description=sets[set_id].get('description'),
+                hidden=sets[set_id].get('hidden', False))
             self._cache['setrefs'][oai_id].append(set_id)
-            
+
     def get_record(self, oai_id):
         row = self._records.select(
             self._records.c.record_id == oai_id).execute().fetchone()
@@ -200,11 +199,11 @@ class SQLDatabase(object):
         set_ids = []
         query = sql.select([self._setrefs.c.set_id])
         query.append_whereclause(self._setrefs.c.record_id == oai_id)
-        if include_hidden_sets == False:
+        if not include_hidden_sets:
             query.append_whereclause(
                 sql.and_(self._sets.c.set_id == self._setrefs.c.set_id,
                          self._sets.c.hidden == include_hidden_sets))
-        
+
         for row in query.execute():
             set_ids.append(row[0])
         set_ids.sort()
@@ -217,7 +216,7 @@ class SQLDatabase(object):
     def set_count(self):
         return sql.select([sql.func.count('*')],
                           from_obj=[self._sets]).execute().fetchone()[0]
-        
+
     def remove_record(self, oai_id):
         self._records.delete(
             self._records.c.record_id == oai_id).execute()
@@ -232,8 +231,8 @@ class SQLDatabase(object):
 
     def oai_sets(self, offset=0, batch_size=20):
         for row in self._sets.select(
-              self._sets.c.hidden == False
-            ).offset(offset).limit(batch_size).execute():
+            not self._sets.c.hidden
+        ).offset(offset).limit(batch_size).execute():
             yield {'id': row.set_id,
                    'name': row.name,
                    'description': row.description}
@@ -245,7 +244,7 @@ class SQLDatabase(object):
         if row:
             return row[0]
         return datetime.datetime(1970, 1, 1)
-    
+
     def oai_query(self,
                   offset=0,
                   batch_size=20,
@@ -263,9 +262,8 @@ class SQLDatabase(object):
             batch_size = 0
 
         # make sure until date is set, and not in future
-        if until_date == None or until_date > datetime.datetime.utcnow():
+        if until_date is None or until_date > datetime.datetime.utcnow():
             until_date = datetime.datetime.utcnow()
-
 
         query = self._records.select(
             order_by=[sql.desc(self._records.c.modified)])
@@ -273,33 +271,32 @@ class SQLDatabase(object):
         # filter dates
         query.append_whereclause(self._records.c.modified <= until_date)
 
-        if not identifier is None:
+        if identifier is not None:
             query.append_whereclause(self._records.c.record_id == identifier)
 
-        if not from_date is None:
+        if from_date is not None:
             query.append_whereclause(self._records.c.modified >= from_date)
 
         # filter sets
-
         setclauses = []
         for set_id in needed_sets:
             alias = self._setrefs.alias()
             setclauses.append(
                 sql.and_(
-                alias.c.set_id == set_id,
-                alias.c.record_id == self._records.c.record_id))
-            
+                    alias.c.set_id == set_id,
+                    alias.c.record_id == self._records.c.record_id))
+
         if setclauses:
             query.append_whereclause((sql.and_(*setclauses)))
-            
+
         allowed_setclauses = []
         for set_id in allowed_sets:
             alias = self._setrefs.alias()
             allowed_setclauses.append(
                 sql.and_(
-                alias.c.set_id == set_id,
-                alias.c.record_id == self._records.c.record_id))
-            
+                    alias.c.set_id == set_id,
+                    alias.c.record_id == self._records.c.record_id))
+
         if allowed_setclauses:
             query.append_whereclause(sql.or_(*allowed_setclauses))
 
@@ -309,12 +306,12 @@ class SQLDatabase(object):
             disallowed_setclauses.append(
                 sql.exists([self._records.c.record_id],
                            sql.and_(
-                alias.c.set_id == set_id,
-                alias.c.record_id == self._records.c.record_id)))
-            
+                    alias.c.set_id == set_id,
+                    alias.c.record_id == self._records.c.record_id)))
+
         if disallowed_setclauses:
             query.append_whereclause(sql.not_(sql.or_(*disallowed_setclauses)))
-            
+
         for row in query.distinct().offset(offset).limit(batch_size).execute():
             yield {'id': row.record_id,
                    'deleted': row.deleted,
@@ -322,4 +319,3 @@ class SQLDatabase(object):
                    'metadata': json.loads(row.metadata),
                    'sets': self.get_setrefs(row.record_id)
                    }
-

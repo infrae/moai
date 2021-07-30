@@ -1,8 +1,9 @@
-import sys
 import datetime
-import time
 import logging
 import logging.handlers
+import sys
+import time
+
 
 def get_moai_log():
     log = logging.getLogger('moai')
@@ -14,18 +15,20 @@ def get_moai_log():
         log.addHandler(handler)
     return log
 
+
 def get_duration(starttime):
-    h,m,s = time.asctime(
+    h, m, s = time.asctime(
         time.gmtime(time.time() - starttime)).split(' ')[-2].split(':')
     s = int(s)
     m = int(m)
     h = int(h)
-    duration = '%s second%s' % (int(s), {1:''}.get(s, 's'))
+    duration = '%s second%s' % (int(s), {1: ''}.get(s, 's'))
     if m:
-        duration = '%s minute%s, %s' % (int(m), {1:''}.get(m, 's'), duration)
+        duration = '%s minute%s, %s' % (int(m), {1: ''}.get(m, 's'), duration)
     if h:
-        duration = '%s hour%s, %s' % (int(h), {1:''}.get(h, 's'), duration)
+        duration = '%s hour%s, %s' % (int(h), {1: ''}.get(h, 's'), duration)
     return duration
+
 
 def check_type(object,
                expected_type,
@@ -82,6 +85,7 @@ def check_type(object,
                                prefix=prefix,
                                suffix=suffix)
 
+
 class XPath(object):
     def __init__(self, doc, nsmap={}):
         self.doc = doc
@@ -115,11 +119,11 @@ class XPath(object):
             try:
                 value = int(value)
                 result.append(value)
-            except:
+            except BaseException:
                 try:
                     value = float(value)
                     result.append(value)
-                except:
+                except BaseException:
                     raise ValueError('Unknown number format: %s' % value)
         return result
 
@@ -187,13 +191,13 @@ class ProgressBar(object):
         self.oldperc = '0.0'
         self.animstate = 0
 
-    def write(self,line):
+    def write(self, line):
         self.out.write('\r%s' % line)
         self.out.flush()
 
     def tick(self, count, total):
         if total:
-            perc = '%0.1f' % (count / (total/100.0))
+            perc = '%0.1f' % (count / (total / 100.0))
         else:
             perc = '0.0'
         if perc == self.oldperc and not count == total:
@@ -201,16 +205,16 @@ class ProgressBar(object):
         self.oldperc = perc
         lstot = len(str(total))
         awidth = self.width - 10 - lstot
-        arrow = ('=' * int(awidth * (float(perc)/100.0)-1))+'>'
+        arrow = ('=' * int(awidth * (float(perc) / 100.0) - 1)) + '>'
 
-        self.write(('%5s%%[%-'+str(awidth)+'s] %'+str(lstot)+'d') % (perc,
-                                                                     arrow,
-                                                                     count))
+        self.write(('%5s%%[%-' + str(awidth) + 's] %' + str(lstot) + 'd') % (perc,
+                                                                             arrow,
+                                                                             count))
 
     def animate(self, msg):
         anim = ['|', '/', '-', '\\']
-        rest = self.width - (len(msg) +2)
-        self.write('%s %s%s'% (anim[self.animstate], msg, ' '*rest))
-        self.animstate+=1
+        rest = self.width - (len(msg) + 2)
+        self.write('%s %s%s' % (anim[self.animstate], msg, ' ' * rest))
+        self.animstate += 1
         if self.animstate == len(anim):
             self.animstate = 0

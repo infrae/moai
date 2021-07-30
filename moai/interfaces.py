@@ -1,4 +1,5 @@
-from zope.interface import Interface, Attribute
+from zope.interface import Attribute, Interface
+
 
 class IContentProvider(Interface):
     """Object that provides the content used to build the database
@@ -30,6 +31,7 @@ class IContentProvider(Interface):
         """Return content of a specific id
         """
 
+
 class IContentObject(Interface):
 
     id = Attribute("Id of the content object")
@@ -45,7 +47,7 @@ class IContentObject(Interface):
     def update(data, provider):
         """Called by IContentProvider, to fill the object with data
         """
-        
+
     def field_names():
         """Return a list of field names, used in this object
         """
@@ -67,28 +69,28 @@ class IContentObject(Interface):
         - metadata          - dictionary with lists of strings as values holding
                               additional metadata
         """
-        
 
-        
+
 class IContentValidator(Interface):
 
     content_type = Attribute("The type of objects this validator can validate")
 
     def set_logger(logger_instance):
-       """Make the validator use a specific custom logger
-       (will probably be set automaticly in __init__)
-       """
-   
+        """Make the validator use a specific custom logger
+        (will probably be set automaticly in __init__)
+        """
+
     def validate_object(content_object):
         """Validates an object, return a Boolean to indicate validity,
         Alle warnings and errors, should also be logged with the log object
         that's provided as an argument of the set_logger method
         """
-    
+
+
 class IDatabaseUpdater(Interface):
 
     flush_limit = Attribute('''
-        Flush database after processing n records. 
+        Flush database after processing n records.
         Defaults to -1, which only flushes the database
         at the end''')
 
@@ -106,11 +108,11 @@ class IDatabaseUpdater(Interface):
         """Sets the class to be used to create the content objects
         from the provider data
         """
-    
+
     def set_logger(logger_instance):
-       """Make the updater use a specific custom logger
-       (will probably be set automaticly in __init__)
-       """
+        """Make the updater use a specific custom logger
+        (will probably be set automaticly in __init__)
+        """
 
     def update_provider(from_date=None):
         """Iterates through update_provider_iterate in a loop,
@@ -118,15 +120,15 @@ class IDatabaseUpdater(Interface):
         """
 
     def update_provider_iterate(from_date=None):
-       """Updates the provider from a specific date,
-       yields the ids that where updated
-       """
-   
+        """Updates the provider from a specific date,
+        yields the ids that where updated
+        """
+
     def update_database(validate=True, supress_errors=False):
         """Iterates through update_database_iterate in a loop,
         returns the number of errors that occured (int)
         """
-    
+
     def update_database_iterate(validate=True, supress_errors=False):
         """Update the database with the content_provider
         this will update the content_provider, optionally
@@ -150,6 +152,7 @@ class IDatabaseUpdater(Interface):
         implement a batching strategy
         """
 
+
 class IReadOnlyDatabase(Interface):
 
     def oai_sets(offset=0, batch_size=20):
@@ -159,9 +162,9 @@ class IReadOnlyDatabase(Interface):
         [{'id': <string>,
           'name': <string>,
           'description': <string>}]
-          
+
         """
-    
+
     def oai_query(offset=0,
                   batch_size=20,
                   sets=[],
@@ -179,7 +182,6 @@ class IReadOnlyDatabase(Interface):
         ]
         """
 
-        
     def get_record(id):
         """Returns a dictionary of data that is available from the
         object with the specific id. The dictionary should contain at least
@@ -198,7 +200,7 @@ class IReadOnlyDatabase(Interface):
         """Returns a dictionary with additional data.
         Keys are always a string, values are always lists of python
         objects.
-        
+
         If the id does not exist, None is returned
         """
 
@@ -211,7 +213,7 @@ class IReadOnlyDatabase(Interface):
         - id
         - name
         - description
-        
+
         If the id does not exist, None is returned
         """
 
@@ -224,9 +226,10 @@ class IReadOnlyDatabase(Interface):
         - md5
         - absolute_uri
         - metadata
-        
+
         Where metadata is a dictionary with additional lists of string values
         """
+
 
 class IDatabase(IReadOnlyDatabase):
 
@@ -235,7 +238,7 @@ class IDatabase(IReadOnlyDatabase):
         (depending on the flush_threshold attribute in DatabaseUpdater)
         This allows the database to implement a batching strategy
         """
-        
+
     def remove_content(id):
         """Remove all the content of a given id, returns a boolean to indicate
         if the removal was succesful
@@ -260,11 +263,11 @@ class IDatabase(IReadOnlyDatabase):
         """
 
     def empty_database():
-        """Removes all data from the database, but doesn't remove the 
+        """Removes all data from the database, but doesn't remove the
         table structures. Mainly used for testing.
         """
 
-        
+
 class IFeedConfig(Interface):
 
     id = Attribute("Id of the OAI Server instance")
@@ -272,11 +275,11 @@ class IFeedConfig(Interface):
     url = Attribute("Base URL of the OAI Server (for identify)")
     log = Attribute("Logger instance that logs activity and errors")
     admins = Attribute("List of email addresses that can be contacted, "
-                      "for questions about the feed")
+                       "for questions about the feed")
     metadata_prefixes = Attribute(
         "List of metadataPrefixes this server can handle"
         "by default the list has 'oai_dc' included")
-                   
+
     # some filter attributes
 
     content_type = Attribute("Type of content objects being served")
@@ -291,7 +294,6 @@ class IFeedConfig(Interface):
         "Records in this set will always be served as deleted OAI records "
         "this can be used as an alternative to sets_dissallowed.")
     delay = Attribute("number of miliseconds to delay the feed")
-
 
     def get_oai_id(internal_id):
         """Rename internal id into oai_id"""
@@ -310,6 +312,7 @@ class IFeedConfig(Interface):
         an internal id the asset data dict containing
         filename, md5, url and metadata
         """
+
 
 class IServerRequest(Interface):
 
@@ -338,6 +341,7 @@ class IServerRequest(Interface):
         """Return a status code to the user
         """
 
+
 class IServer(Interface):
 
     def add_config(config):
@@ -347,11 +351,11 @@ class IServer(Interface):
     def get_config(id):
         """Get a ServerConfig by id
         """
-    
+
     def download_asset(req, url, config):
         """Download an asset from a url
         """
-    
+
     def allow_download(url, config):
         """Is user allowed to download this asset (returns bool)
         """
@@ -359,7 +363,7 @@ class IServer(Interface):
     def is_asset_url(url, config):
         """Is this url pointing to an asset (returns bool)
         """
-            
+
     def handle_request(req):
         """Serve this request this method goes through the following steps:
         1. check if url is valid

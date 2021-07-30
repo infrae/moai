@@ -1,9 +1,7 @@
-from lxml import etree
+import json
 from datetime import datetime, timedelta
 
-from moai.utils import XPath, get_moai_log
-
-import json
+from moai.utils import get_moai_log
 
 
 class YodaContent(object):
@@ -26,10 +24,10 @@ class YodaContent(object):
             log.warning("Could not load JSON metadata file: {}".format(path))
             return False
 
-	    # Modified and id are required for the system to operate
+            # Modified and id are required for the system to operate
         persistent_identifier_datapackage = dictJsonData['System']['Persistent_Identifier_Datapackage']['Identifier']
 
-        self.id = 'oai:%s' % persistent_identifier_datapackage   #i.decode('unicode-escape')
+        self.id = 'oai:%s' % persistent_identifier_datapackage  # i.decode('unicode-escape')
         self.modified = datetime.now() - timedelta(days=1)
         self.metadata['identifier'] = [persistent_identifier_datapackage]
         self.metadata['metadata'] = dictJsonData

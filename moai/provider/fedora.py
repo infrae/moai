@@ -1,10 +1,13 @@
-import os
-import urllib.request, urllib.error, urllib.parse
 import hashlib
+import os
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from lxml import etree
 
 from moai.provider.oai import OAIBasedContentProvider
+
 
 class FOXMLFile(object):
 
@@ -15,27 +18,30 @@ class FOXMLFile(object):
     def get_property(self, name):
         properties = self._doc.xpath(
             '//foxml:property[@NAME="%s"]' % name,
-            namespaces={'foxml':self._ns})
-        if not properties: return
+            namespaces={'foxml': self._ns})
+        if not properties:
+            return
         value = properties[-1].get('VALUE')
-        if value: return value.decode('utf8')
-        
+        if value:
+            return value.decode('utf8')
+
     def get_xml_ids(self):
         ids = self._doc.xpath(
             '//foxml:datastream[@CONTROL_GROUP="X"]/@ID',
-            namespaces={'foxml':self._ns})
+            namespaces={'foxml': self._ns})
         return [i.decode('utf8') for i in ids]
+
     def get_ids(self):
         ids = self._doc.xpath(
             '//foxml:datastream/@ID',
-            namespaces={'foxml':self._ns})
+            namespaces={'foxml': self._ns})
         return [i.decode('utf8') for i in ids]
 
     def get_xml(self, id):
         contents = self._doc.xpath(
             ('//foxml:datastream[@CONTROL_GROUP="X" and '
              '@ID="%s"]/foxml:datastreamVersion/foxml:xmlContent' % id),
-            namespaces={'foxml':self._ns})
+            namespaces={'foxml': self._ns})
         if not contents:
             return
         for child in contents[-1]:
@@ -51,42 +57,42 @@ class FOXMLFile(object):
             ('//foxml:datastream['
              '@ID="%s"]/foxml:datastreamVersion/'
              'foxml:contentLocation[@TYPE="URL"]/@REF' % id),
-            namespaces={'foxml':self._ns})
+            namespaces={'foxml': self._ns})
         if not locations:
             return
         return locations[-1].decode('utf8')
-    
+
     def get_digest(self, id):
         digests = self._doc.xpath(
             ('//foxml:datastream['
              '@ID="%s"]/foxml:datastreamVersion/'
              'foxml:contentDigest[@TYPE="MD5"]/@DIGEST' % id),
-            namespaces={'foxml':self._ns})
+            namespaces={'foxml': self._ns})
         if not digests:
             return
         return digests[-1].decode('utf8')
-    
+
     def get_mimetype(self, id):
         mimes = self._doc.xpath(
             ('//foxml:datastream['
              '@ID="%s"]/foxml:datastreamVersion/@MIMETYPE' % id),
-            namespaces={'foxml':self._ns})
+            namespaces={'foxml': self._ns})
         if not mimes:
             return
         return mimes[-1].decode('utf8')
-        
+
     def get_label(self, id):
         labels = self._doc.xpath(
             ('//foxml:datastream['
              '@ID="%s"]/foxml:datastreamVersion/@LABEL' % id),
-            namespaces={'foxml':self._ns})
+            namespaces={'foxml': self._ns})
         if not labels:
             return
         label = labels[-1]
         if not isinstance(label, str):
             label = label.decode('utf8')
         return label
-        
+
 
 class FedoraBasedContentProvider(OAIBasedContentProvider):
     """Providers content by harvesting a Fedora Commons OAI feed.
@@ -94,7 +100,7 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
     full foxml file if no datastream is provided
     Implements the :ref:`IContentProvider` interface
     """
-    
+
     def __init__(self, fedora_url, output_path,
                  datastream_name=None, username=None, password=None):
         oai_url = '%s/oai' % fedora_url
@@ -113,14 +119,14 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
     def _process_record(self, header, element):
 
         fedora_id = self._get_id(header)
-        
+
         if self._stream is None:
             url = '%s/objects/%s/objectXML' % (self._fedora_url,
                                                fedora_id)
         else:
             # get only a specific data stream
             url = '%s/get/%s/%s' % (self._fedora_url,
-                                    fedora_id, 
+                                    fedora_id,
                                     self._stream)
 
         if self._user and self._pass:
@@ -143,9 +149,9 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
         path = os.path.join(self._path, directory)
         if not os.path.isdir(path):
             os.mkdir(path)
-                
+
         path = os.path.join(path, '%s.xml' % fedora_id)
-        
+
         fp = open(path, 'w')
         fp.write(xml_data)
         fp.close()

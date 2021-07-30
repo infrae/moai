@@ -1,19 +1,20 @@
 import os
 
-from zope.interface import implements
-from oaipmh.client import Client
-from oaipmh.metadata import MetadataRegistry
-from oaipmh.error import NoRecordsMatchError
 from lxml import etree
+from oaipmh.client import Client
+from oaipmh.error import NoRecordsMatchError
+from oaipmh.metadata import MetadataRegistry
+from zope.interface import implements
 
 from moai.interfaces import IContentProvider
 from moai.provider.file import FileBasedContentProvider
+
 
 class OAIBasedContentProvider(FileBasedContentProvider):
     """Providers content by harvesting OAI feeds.
     Implements the :ref:`IContentProvider` interface
     """
-    
+
     implements(IContentProvider)
 
     def __init__(self, oai_url, output_path, metadata_prefix='oai_dc'):
@@ -31,9 +32,9 @@ class OAIBasedContentProvider(FileBasedContentProvider):
 
         client = Client(self._url, registry)
         try:
-            for header, element, about in client.listRecords(
-                metadataPrefix = self._prefix,
-                from_ = from_date):
+            for header, element, _about in client.listRecords(
+                    metadataPrefix=self._prefix,
+                    from_=from_date):
                 added = self._process_record(header, element)
                 if added:
                     yield self._get_id(header)
@@ -53,4 +54,3 @@ class OAIBasedContentProvider(FileBasedContentProvider):
         fp.write(etree.tostring(element, encoding="utf8"))
         fp.close()
         return True
-

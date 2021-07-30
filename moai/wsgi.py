@@ -2,19 +2,21 @@ import os
 
 from webob import Request, Response
 
-from moai.server import Server, FeedConfig
 from moai.database import get_database
+from moai.server import FeedConfig, Server
+
 
 class WSGIRequest(object):
     """This is a request object that can be used in a WSGI environment.
     It implements :ref:`IServerRequest` interface.
     """
+
     def __init__(self, request):
         self._req = request
 
     def url(self):
         return self._req.url
-    
+
     def redirect(self, url):
         """Redirect to this url
         """
@@ -37,7 +39,7 @@ class WSGIRequest(object):
         # with acrobat IE plugin
         response.headers['Accept-Ranges'] = 'none'
         return response
-    
+
     def query_dict(self):
         """Return a dictionary with QueryString values of the
         request
@@ -63,14 +65,15 @@ class WSGIRequest(object):
 
 
 class MOAIWSGIApp(object):
-    # the wsgi app, calls the IServer with the IServerRequest 
+    # the wsgi app, calls the IServer with the IServerRequest
     def __init__(self, server):
         self.server = server
-        
+
     def __call__(self, environ, start_response):
         request = Request(environ)
         response = self.server.handle_request(WSGIRequest(request))
         return response(environ, start_response)
+
 
 def app_factory(global_config,
                 name,
@@ -105,8 +108,9 @@ def app_factory(global_config,
                             sets_needed=sets_needed,
                             extra_args=kwargs)
     server = Server(url, database, feedconfig)
-    
+
     return MOAIWSGIApp(server)
+
 
 class FileIterable(object):
     # Helper objects to stream asset files
@@ -114,13 +118,17 @@ class FileIterable(object):
         self.filename = filename
         self.start = start
         self.stop = stop
+
     def __iter__(self):
         return FileIterator(self.filename, self.start, self.stop)
+
     def app_iter_range(self, start, stop):
         return self.__class__(self.filename, start, stop)
 
+
 class FileIterator(object):
     chunk_size = 4096
+
     def __init__(self, filename, start, stop):
         self.filename = filename
         self.fileobj = open(self.filename, 'rb')
@@ -130,8 +138,10 @@ class FileIterator(object):
             self.length = stop - start
         else:
             self.length = None
+
     def __iter__(self):
         return self
+
     def __next__(self):
         if self.length is not None and self.length <= 0:
             raise StopIteration

@@ -1,5 +1,6 @@
 import time
 
+
 class ListBasedContentProvider(object):
     """Provides content from a python list,
     implementation of :ref:`IContentProvider`"""
@@ -28,7 +29,7 @@ class ListBasedContentProvider(object):
 
                 if when_mod != '':
                     when_mod = time.mktime(when_mod.timetuple())
-                
+
                     if from_time <= when_mod:
                         result.append(id)
 
@@ -36,6 +37,3 @@ class ListBasedContentProvider(object):
 
     def get_content_by_id(self, id):
         return self._content[id]
-
-
-

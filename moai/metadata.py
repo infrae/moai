@@ -2,36 +2,37 @@
 from lxml.builder import ElementMaker
 
 XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
-  
+
+
 class OAIDC(object):
     """The standard OAI Dublin Core metadata format.
-    
+
     Every OAI feed should at least provide this format.
 
     It is registered under the name 'oai_dc'
     """
-    
+
     def __init__(self, prefix, config, db):
         self.prefix = prefix
         self.config = config
         self.db = db
 
         self.ns = {'oai_dc': 'http://www.openarchives.org/OAI/2.0/oai_dc/',
-                   'dc':'http://purl.org/dc/elements/1.1/'}
+                   'dc': 'http://purl.org/dc/elements/1.1/'}
         self.schemas = {'oai_dc': 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd'}
-        
+
     def get_namespace(self):
         return self.ns[self.prefix]
 
     def get_schema_location(self):
         return self.schemas[self.prefix]
-    
+
     def __call__(self, element, metadata):
 
         data = metadata.record
-        
-        OAI_DC =  ElementMaker(namespace=self.ns['oai_dc'],
-                               nsmap =self.ns)
+
+        OAI_DC = ElementMaker(namespace=self.ns['oai_dc'],
+                              nsmap=self.ns)
         DC = ElementMaker(namespace=self.ns['dc'])
 
         oai_dc = OAI_DC.dc()
@@ -48,34 +49,34 @@ class OAIDC(object):
                 if field == 'identifier' and data['metadata'].get('url'):
                     value = data['metadata']['url'][0]
                 oai_dc.append(el(value))
-        
+
         element.append(oai_dc)
+
 
 class MODS(object):
     """This is the minimods formats as defined by DARE.
 
     It is registered as prefix 'mods'.'
     """
-    
+
     def __init__(self, prefix, config, db):
         self.prefix = prefix
         self.config = config
         self.db = db
 
         self.ns = {'mods': 'http://www.loc.gov/mods/v3',
-                   'xml':'http://www.w3.org/XML/1998/namespace',
+                   'xml': 'http://www.w3.org/XML/1998/namespace',
                    'dai': 'info:eu-repo/dai'}
 
         self.schemas = {
-           'mods': 'http://www.loc.gov/standards/mods/v3/mods-3-2.xsd'}
-        
-        
+            'mods': 'http://www.loc.gov/standards/mods/v3/mods-3-2.xsd'}
+
     def get_namespace(self):
         return self.ns[self.prefix]
 
     def get_schema_location(self):
         return self.schemas[self.prefix]
-    
+
     def __call__(self, element, metadata):
 
         data = metadata.record
@@ -93,14 +94,13 @@ class MODS(object):
         if data['metadata'].get('title'):
             titleInfo = MODS.titleInfo(
                 MODS.title(data['metadata']['title'][0])
-                )
+            )
             titleInfo.attrib['{%s}lang' % self.ns['xml']] = data['metadata'].get(
                 'language', ['en'])[0]
             mods.append(titleInfo)
-            
+
         if data['metadata'].get('description'):
             mods.append(MODS.abstract(data['metadata']['description'][0]))
-
 
         for ctype in ['author', 'editor', 'advisor']:
             contributor_data = []
@@ -112,9 +112,9 @@ class MODS(object):
             if data['metadata'].get('%s_data' % ctype):
                 contributor_data = [s for s in data['metadata'][
                     '%s_data' % ctype]]
-        
-            if not contributor_data:            
-                contributor_data = [{'name':[a]} for a in data[
+
+            if not contributor_data:
+                contributor_data = [{'name': [a]} for a in data[
                     'metadata'].get(ctype, [])]
 
             dai_list = []
@@ -122,13 +122,13 @@ class MODS(object):
                 unique_id = data['record']['id'] + '_' + contributor.get(
                     'id', contributor['name'][0])
                 if unique_id[0].isdigit():
-                    unique_id = '_'+unique_id
+                    unique_id = '_' + unique_id
                 unique_id = unique_id.replace(':', '')
                 name = MODS.name(
                     MODS.displayForm(contributor['name'][0]),
                     type='personal',
                     ID=unique_id
-                    )
+                )
                 surname = contributor.get('surname')
                 if surname:
                     name.append(MODS.namePart(surname[0], type="family"))
@@ -140,13 +140,13 @@ class MODS(object):
                 if role:
                     role = role[0]
                 else:
-                    roles = {'author': 'aut', 'editor': 'edt', 'advisor':'ths'}
+                    roles = {'author': 'aut', 'editor': 'edt', 'advisor': 'ths'}
                     role = roles[ctype]
-                name.append(                    
+                name.append(
                     MODS.role(
-                    MODS.roleTerm(role,
-                                  type='code',
-                                  authority='marcrelator')
+                        MODS.roleTerm(role,
+                                      type='code',
+                                      authority='marcrelator')
                     ))
                 mods.append(name)
                 dai = contributor.get('dai')
@@ -159,18 +159,17 @@ class MODS(object):
                         dai[0],
                         IDref=id,
                         authority='info:eu-repo/dai/nl'))
-                
-                mods.append(MODS.extension(daiList))
 
+                mods.append(MODS.extension(daiList))
 
         dgg = data['metadata'].get('degree_grantor')
         if dgg:
             mods.append(MODS.name(
                 MODS.namePart(dgg[0]),
                 MODS.role(
-                  MODS.roleTerm('dgg',
-                                authority="marcrelator",
-                                type="code")
+                    MODS.roleTerm('dgg',
+                                  authority="marcrelator",
+                                  type="code")
                 ),
                 type="corporate"))
 
@@ -216,9 +215,9 @@ class MODS(object):
             if data['metadata'].get('%s_publisher' % host):
                 relitem.append(
                     MODS.originInfo(
-                      MODS.publisher(
-                        data['metadata']['%s_publisher' % host][0])))
-                
+                        MODS.publisher(
+                            data['metadata']['%s_publisher' % host][0])))
+
             mods.append(relitem)
 
         origin = MODS.originInfo()
@@ -227,13 +226,12 @@ class MODS(object):
             origin.append(MODS.publisher(data['metadata']['publisher'][0]))
         if data['metadata'].get('date'):
             origin.append(MODS.dateIssued(data['metadata']['date'][0],
-                                        encoding='iso8601'))
+                                          encoding='iso8601'))
 
-        mods.append(MODS.typeOfResource('text'))        
+        mods.append(MODS.typeOfResource('text'))
         if data['metadata'].get('dare_type'):
             mods.append(MODS.genre(data['metadata']['dare_type'][0]))
 
-        
         classifications = data['metadata'].get('classification', [])
         for classification in classifications:
             if classification.count('#') == 1:
@@ -241,7 +239,7 @@ class MODS(object):
                 mods.append(MODS.classification(value, authority=authority))
             else:
                 mods.append(MODS.classification(classification))
-        
+
         subjects = data['metadata'].get('subject', [])
         if subjects:
             s_el = MODS.subject()
@@ -251,11 +249,9 @@ class MODS(object):
 
         if data['metadata'].get('rights'):
             mods.append(MODS.accessCondition(data['metadata']['rights'][0]))
-        
-            
+
         mods.attrib['{%s}schemaLocation' % XSI_NS] = '%s %s' % (
             self.ns['mods'],
             self.schemas['mods'])
-        
-        element.append(mods)
 
+        element.append(mods)

@@ -1,19 +1,20 @@
-import sys
-import os
-import time
-import datetime
-import pkg_resources
-from pkg_resources import iter_entry_points
 import configparser
-
+import datetime
+import os
+import sys
+import time
 from optparse import OptionParser
 
+import pkg_resources
+from pkg_resources import iter_entry_points
+
+from moai.database import SQLDatabase
 from moai.utils import (get_duration,
                         get_moai_log,
                         ProgressBar)
-from moai.database import SQLDatabase
 
 VERSION = pkg_resources.working_set.by_key['moai'].version
+
 
 def update_moai():
     usage = "usage: %prog [options] profilename"
@@ -66,7 +67,7 @@ def update_moai():
             for option in configfile.options(section):
                 config[option] = configfile.get(section, option)
 
-    if not profile_name in profiles:
+    if profile_name not in profiles:
         if profile_name == 'default':
             sys.stderr.write(
                 'No profile name specified, use --help for more info\n')
@@ -99,7 +100,7 @@ def update_moai():
     provider_name = config['provider'].split(':', 1)[0]
     provider = None
     for provider_point in iter_entry_points(group='moai.provider',
-                                           name=provider_name):
+                                            name=provider_name):
         provider = provider_point.load()(config['provider'])
 
     if provider is None:
@@ -123,7 +124,7 @@ def update_moai():
         progress.write('')
         print()
         print(('Content provider returned %s '
-                              'new/modified objects' % count), file=sys.stderr)
+               'new/modified objects' % count), file=sys.stderr)
         print(file=sys.stderr)
 
     total = provider.count()
