@@ -71,8 +71,14 @@ class OAIServer(object):
         return result
 
     def listSets(self, cursor=0, batch_size=20):
-        for set in self.db.oai_sets(cursor, batch_size):
-            yield [set['id'], set['name'], set['description']]
+        raise oaipmh.error.NoSetHierarchyError
+        # check table following link:
+        # http://www.openarchives.org/OAI/openarchivesprotocol.html#ErrorConditions
+        # Keep in mind that the names in the table differ slightly from the names used in this code
+
+        # Original code:
+        # for set in self.db.oai_sets(cursor, batch_size):
+        #    yield [set['id'], set['name'], set['description']]
 
     def listRecords(self, metadataPrefix, set=None, from_=None, until=None,
                     cursor=0, batch_size=10):
