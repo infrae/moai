@@ -17,7 +17,8 @@ class DataCite(object):
         self.db = db
 
         self.ns = {'datacite': 'http://datacite.org/schema/kernel-4',
-                   'oai_datacite': 'http://datacite.org/schema/kernel-4'}
+                   'oai_datacite': 'http://datacite.org/schema/kernel-4',
+                   'xml': XML_NS}
         self.schemas = {'datacite': 'http://schema.datacite.org/meta/kernel-4/metadata.xsd',
                         'oai_datacite': 'http://schema.datacite.org/meta/kernel-4/metadata.xsd'}
 
@@ -295,7 +296,16 @@ class DataCite(object):
         dictResourceTypes = {'Dataset': 'Research Data',
                              'DataPaper': 'Method Description',
                              'Software': 'Computer Code',
+                             'Model': 'Model',
                              'Text': 'Other Document'}
+
+        ''' teclab / hptlab  for now only Model has been added in the dict above
+        "Dataset": "Datapackage",
+        "DataPaper": "Method",
+        "Software": "Software",
+        "Model": "Model",
+        "Text": "Other document"
+        '''
 
         try:
             resourceTypeGeneral = data['Data_Type']
