@@ -358,9 +358,10 @@ class DataCite(object):
                     access_rightsURI = 'info:eu-repo/semantics/closedAccess'
 
             rightsList = NONE.rightsList()
-            rights = NONE.rights(license)
-            rights.attrib['rightsURI'] = license_uri
-            rightsList.append(rights)
+            if license != "Custom":
+                rights = NONE.rights(license)
+                rights.attrib['rightsURI'] = license_uri
+                rightsList.append(rights)
             rights = NONE.rights(access_rights)
             rights.attrib['rightsURI'] = access_rightsURI
             rightsList.append(rights)
