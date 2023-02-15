@@ -129,7 +129,7 @@ class Iso(object):
             dates = {'revision': data['System']['Last_Modified_Date'],
                      'creation': data['System']['Publication_Date'][0:4]}
 
-            for dateTypeCode, thedate in dates.items():
+            for dateTypeCode, thedate in list(dates.items()):
                 datelevel1 = GMD.date()
                 CI_Date = GMD.CI_Date()
                 datelevel2 = GMD.date()

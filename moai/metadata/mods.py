@@ -43,7 +43,7 @@ class MODS(object):
         if data['metadata'].get('identifier'):
             mods.append(MODS.identifier(data['metadata']['identifier'][0],
                                         type="uri"))
-        for key, value in data['metadata'].get('identifier_data', {}).items():
+        for key, value in list(data['metadata'].get('identifier_data', {}).items()):
             mods.append(MODS.identifier(value, type=key))
 
         if data['metadata'].get('title'):
@@ -120,7 +120,7 @@ class MODS(object):
                     surname = surname[0]
                     prefix = contributor.get('prefix')
                     if prefix:
-                        surname = u'%s, %s' % (surname, prefix[0])
+                        surname = '%s, %s' % (surname, prefix[0])
                     name.append(MODS.namePart(surname, type="family"))
                 initials = contributor.get('initials')
                 firstname = contributor.get('firstname')
@@ -294,7 +294,7 @@ class MODS(object):
                 record_info_el.append(MODS.recordContentSource(info['source']))
             if info.get('identifier'):
                 record_info_el.append(MODS.recordIdentifier(info['identifier']))
-            for key, value in info.get('identifier_data', {}).items():
+            for key, value in list(info.get('identifier_data', {}).items()):
                 record_info_el.append(MODS.recordIdentifier(value, source=key))
             if info.get('origin'):
                 record_info_el.append(MODS.recordOrigin(info['origin']))
