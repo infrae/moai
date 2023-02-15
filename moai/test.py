@@ -2,14 +2,11 @@
 import datetime
 import doctest
 import os
-import urllib.error
-import urllib.parse
-import urllib.request
 from unittest import makeSuite, TestCase, TestSuite
 
-import wsgi_intercept
+import requests
 from lxml import etree
-from wsgi_intercept.urllib2_intercept import install_opener
+from wsgi_intercept import add_wsgi_intercept, requests_intercept
 
 from moai.database import Database
 from moai.example import ExampleContent
@@ -17,7 +14,6 @@ from moai.provider.file import FileBasedContentProvider
 from moai.server import FeedConfig, Server
 from moai.utils import XPath
 from moai.wsgi import MOAIWSGIApp
-install_opener()
 
 FLAGS = doctest.NORMALIZE_WHITESPACE + doctest.ELLIPSIS
 GLOBS = {}
@@ -413,65 +409,62 @@ class ServerTest(TestCase):
                                  metadata_prefixes=['oai_dc', 'mods', 'didl'])
         self.server = Server('http://test', self.db, self.config)
         self.app = MOAIWSGIApp(self.server)
-        wsgi_intercept.add_wsgi_intercept('test', 80, lambda: self.app)
+        requests_intercept.install()
+        add_wsgi_intercept('test', 80, lambda: self.app)
 
     def tearDown(self):
 
-        wsgi_intercept.remove_wsgi_intercept('test', 80)
+        requests_intercept.uninstall()
         del self.app
         del self.server
         del self.db
         del self.config
 
     def test_identify(self):
-        xml = urllib.request.urlopen('http://test?verb=Identify').read()
-        doc = etree.fromstring(xml)
+        response = requests.get('http://test?verb=Identify')
+        doc = etree.fromstring(response.content)
         xpath = XPath(doc, nsmap={"oai": "http://www.openarchives.org/OAI/2.0/"})
         self.assertEqual(xpath.string('//oai:repositoryName'), 'Test Server')
 
     def test_list_identifiers(self):
-        xml = urllib.request.urlopen('http://test?verb=ListIdentifiers'
-                                     '&metadataPrefix=oai_dc').read()
-        doc = etree.fromstring(xml)
+        response = requests.get('http://test?verb=ListIdentifiers&metadataPrefix=oai_dc')
+        doc = etree.fromstring(response.content)
         xpath = XPath(doc, nsmap={"oai": "http://www.openarchives.org/OAI/2.0/"})
         self.assertEqual(xpath.strings('//oai:identifier'),
                          ['oai:ham', 'oai:spam', 'oai:spamspamspam'])
 
     def test_list_with_dates(self):
-        xml = urllib.request.urlopen('http://test?verb=ListIdentifiers'
-                                     '&metadataPrefix=oai_dc&from=2010-01-01').read()
-        doc = etree.fromstring(xml)
+        response_from = requests.get('http://test?verb=ListIdentifiers&metadataPrefix=oai_dc&from=2010-01-01')
+        doc = etree.fromstring(response_from.content)
         xpath = XPath(doc, nsmap={"oai": "http://www.openarchives.org/OAI/2.0/"})
         self.assertEqual(xpath.strings('//oai:identifier'),
                          ['oai:ham'])
-        xml = urllib.request.urlopen('http://test?verb=ListIdentifiers'
-                                     '&metadataPrefix=oai_dc&until=2010-01-01').read()
-        doc = etree.fromstring(xml)
+        response_until = requests.get('http://test?verb=ListIdentifiers&metadataPrefix=oai_dc&until=2010-01-01')
+        doc = etree.fromstring(response_until.content)
         xpath = XPath(doc, nsmap={"oai": "http://www.openarchives.org/OAI/2.0/"})
         self.assertEqual(xpath.strings('//oai:identifier'),
                          ['oai:spam', 'oai:spamspamspam'])
 
     def test_list_records(self):
-        xml = urllib.request.urlopen('http://test?verb=ListRecords'
-                                     '&metadataPrefix=oai_dc').read()
-        doc = etree.fromstring(xml)
+        response1 = requests.get('http://test?verb=ListRecords&metadataPrefix=oai_dc')
+        doc = etree.fromstring(response1.content)
         xpath = XPath(doc, nsmap={"oai": "http://www.openarchives.org/OAI/2.0/",
                                   "dc": "http://purl.org/dc/elements/1.1/"})
         self.assertEqual(xpath.strings('//oai:identifier'),
                          ['oai:ham', 'oai:spam', 'oai:spamspamspam'])
         self.assertEqual(xpath.strings('//dc:title'),
                          ['Ham!', 'Spam!', 'Spam Spam Spam!'])
-        xml = urllib.request.urlopen('http://test?verb=ListRecords'
-                                     '&metadataPrefix=didl').read()
-        doc = etree.fromstring(xml)
+
+        response2 = requests.get('http://test?verb=ListRecords&metadataPrefix=didl')
+        doc = etree.fromstring(response2.content)
         xpath = XPath(doc, nsmap={"oai": "http://www.openarchives.org/OAI/2.0/",
                                   "mods": "http://www.loc.gov/mods/v3"})
         self.assertEqual(xpath.strings('//mods:titleInfo/mods:title'),
                          ['Ham!', 'Spam!', 'Spam Spam Spam!'])
 
     def test_list_sets(self):
-        xml = urllib.request.urlopen('http://test?verb=ListSets').read()
-        doc = etree.fromstring(xml)
+        response = requests.get('http://test?verb=ListSets')
+        doc = etree.fromstring(response.content)
         xpath = XPath(doc, nsmap={"oai": "http://www.openarchives.org/OAI/2.0/"})
         self.assertEqual(sorted(xpath.strings('//oai:setName')),
                          ['hamset', 'spamset', 'testset'])
@@ -486,8 +479,8 @@ class ServerTest(TestCase):
         # note that we change the set through the record. It is important
         # that all the records have the same values for each set
         self.db.flush()
-        xml = urllib.request.urlopen('http://test?verb=ListSets').read()
-        doc = etree.fromstring(xml)
+        response = requests.get('http://test?verb=ListSets')
+        doc = etree.fromstring(response.content)
         xpath = XPath(doc, nsmap={"oai": "http://www.openarchives.org/OAI/2.0/"})
         # a hidden set should not show up in a listSets request
         self.assertEqual(sorted(xpath.strings('//oai:setName')),
@@ -495,9 +488,8 @@ class ServerTest(TestCase):
 
         # however, we can use the hidden set to filter on
         self.config.sets_disallowed.append('test')
-        xml = urllib.request.urlopen('http://test?verb=ListIdentifiers'
-                                     '&metadataPrefix=oai_dc').read()
-        doc = etree.fromstring(xml)
+        response = requests.get('http://test?verb=ListIdentifiers&metadataPrefix=oai_dc')
+        doc = etree.fromstring(response.content)
         xpath = XPath(doc, nsmap={"oai": "http://www.openarchives.org/OAI/2.0/"})
         self.assertEqual(xpath.strings('//oai:identifier'),
                          ['oai:spamspamspam'])
