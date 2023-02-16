@@ -48,7 +48,7 @@ class Server(object):
                 'The asset file "%s" does not exist' % filename)
 
         return req.send_file(asset['path'],
-                             asset['mimetype'].encode('ascii'))
+                             asset['mimetype'])
 
     def allow_download(self, url, config):
         """Returns a boolean indicating if it is okay to download an

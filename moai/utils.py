@@ -98,13 +98,13 @@ class XPath(object):
         result = []
         for stuff in self.doc.xpath(xpath, namespaces=self.nsmap):
             if isinstance(stuff, str):
-                result.append(stuff.strip().decode('utf8'))
+                result.append(stuff.strip())
             elif isinstance(stuff, str):
                 # convert to real unicode object, not lxml proxy
                 result.append(str(stuff.strip()))
             elif hasattr(stuff, 'text'):
                 if isinstance(stuff.text, str):
-                    result.append(stuff.text.strip().decode('utf8'))
+                    result.append(stuff.text.strip())
                 elif isinstance(stuff.text, str):
                     # convert to real unicode object, not lxml proxy
                     result.append(str(stuff.text.strip()))
@@ -173,9 +173,9 @@ class XPath(object):
         for stuff in self.doc.xpath(xpath, namespaces=self.nsmap):
             if hasattr(stuff, 'tag'):
                 if '}' in stuff.tag:
-                    result.append(stuff.tag.split('}', 1)[1].decode('utf8'))
+                    result.append(stuff.tag.split('}', 1)[1])
                 else:
-                    result.append(stuff.tag.decode('utf8'))
+                    result.append(stuff.tag)
         return result
 
     def __call__(self, xpath):
