@@ -8,7 +8,7 @@ import requests
 from lxml import etree
 from wsgi_intercept import add_wsgi_intercept, requests_intercept
 
-from moai.database import Database
+from moai.database import SQLDatabase
 from moai.example import ExampleContent
 from moai.provider.file import FileBasedContentProvider
 from moai.server import FeedConfig, Server
@@ -90,7 +90,7 @@ class XPathUtilTest(TestCase):
 
 class DatabaseTest(TestCase):
     def setUp(self):
-        self.db = Database()
+        self.db = SQLDatabase()
 
     def tearDown(self):
         del self.db
@@ -359,7 +359,7 @@ class ProviderTest(TestCase):
         path = os.path.abspath(os.path.dirname(__file__))
         self.provider = FileBasedContentProvider(
             'file://%s/example*.xml' % path)
-        self.db = Database()
+        self.db = SQLDatabase()
 
     def tearDown(self):
         del self.provider
@@ -387,7 +387,7 @@ class ProviderTest(TestCase):
 
 class ServerTest(TestCase):
     def setUp(self):
-        self.db = Database()
+        self.db = SQLDatabase()
         self.db.update_record('oai:spam',
                               datetime.datetime(2009, 10, 13, 12, 30, 00),
                               False, {'spam': dict(name='spamset'),
