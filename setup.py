@@ -63,6 +63,7 @@ setup(
     'xmltodict',
     'mod-wsgi==4.9.3',
     'wsgiserver',
+    'lxml==4.9.2',
     'requests==2.28.2'
     ],
     dependency_links=[
