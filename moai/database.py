@@ -300,10 +300,10 @@ class SQLDatabase(object):
         disallowed_setclauses = []
         for set_id in disallowed_sets:
             alias = self._setrefs.alias()
-            query = sql.select(self._records.c.record_id).where(
+            dsc_query = sql.select(self._records.c.record_id).where(
                 alias.c.set_id == set_id,
                 alias.c.record_id == self._records.c.record_id)
-            disallowed_setclauses.append(sql.exists(query))
+            disallowed_setclauses.append(sql.exists(dsc_query))
 
         if disallowed_setclauses:
             query = query.where(sql.not_(sql.or_(*disallowed_setclauses)))
