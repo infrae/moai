@@ -151,8 +151,6 @@ class SQLDatabase(object):
                    suffix='for parameter "deleted"')
         check_type(sets,
                    dict,
-                   unicode_values=True,
-                   recursive=True,
                    prefix="record %s" % oai_id,
                    suffix='for parameter "sets"')
         check_type(metadata,
