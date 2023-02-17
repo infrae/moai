@@ -59,7 +59,7 @@ setup(
     'paste',
     'pasteDeploy',
     'pasteScript',
-    'sqlalchemy',
+    'sqlalchemy==2.0.3',
     'xmltodict',
     'mod-wsgi==4.9.3',
     'wsgiserver',
