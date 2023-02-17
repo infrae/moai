@@ -31,7 +31,7 @@ class OAIDC(object):
     def __call__(self, element, metadata):
 
         # data = metadata.record
-        data = metadata.record['metadata']['metadata']
+        data = metadata.record['metadata']
 
         OAI_DC = ElementMaker(namespace=self.ns['oai_dc'],
                               nsmap=self.ns)
