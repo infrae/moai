@@ -37,7 +37,6 @@ class SQLDatabase(object):
         dburi = self._uri
         if dburi is None:
             dburi = 'sqlite:///:memory:'
-            #dburi = 'sqlite:///test.db'
 
         engine = sql.create_engine(dburi)
         self._conn = engine.connect()
@@ -103,20 +102,18 @@ class SQLDatabase(object):
 
         # delete all processed records before inserting
         if deleted_records:
-            query = sql.delete(self._records).where(
-                self._records.c.record_id == sql.bindparam('record_id'))
+            query = sql.delete(self._records).where(self._records.c.record_id == sql.bindparam('record_id'))
             self._conn.execute(query,
-                [{'record_id': rid} for rid in deleted_records])
+                               [{'record_id': rid} for rid in deleted_records])
         if deleted_sets:
-            query = sql.delete(self._sets).where(
-                self._sets.c.set_id == sql.bindparam('set_id'))
+            query = sql.delete(self._sets).where(self._sets.c.set_id == sql.bindparam('set_id'))
             self._conn.execute(query,
-                [{'set_id': sid} for sid in deleted_sets])
+                               [{'set_id': sid} for sid in deleted_sets])
         if deleted_setrefs:
             query = sql.delete(self._setrefs).where(
                 self._setrefs.c.record_id == sql.bindparam('record_id'))
             self._conn.execute(query,
-                [{'record_id': rid} for rid in deleted_setrefs])
+                               [{'record_id': rid} for rid in deleted_setrefs])
 
         # batch inserts
         if inserted_records:
@@ -203,7 +200,7 @@ class SQLDatabase(object):
     def get_setrefs(self, oai_id, include_hidden_sets=False):
         set_ids = []
         query = sql.select(self._setrefs.c.set_id).where(
-                           self._setrefs.c.record_id == oai_id)
+            self._setrefs.c.record_id == oai_id)
         if not include_hidden_sets:
             query = query.where(
                 sql.and_(self._sets.c.set_id == self._setrefs.c.set_id,
@@ -243,7 +240,7 @@ class SQLDatabase(object):
 
     def oai_earliest_datestamp(self):
         query = sql.select(self._records.c.modified).order_by(
-                           sql.asc(self._records.c.modified)).limit(1)
+            sql.asc(self._records.c.modified)).limit(1)
         row = self._conn.execute(query).fetchone()
         return row[0] if row else datetime.datetime(1970, 1, 1)
 
@@ -268,8 +265,8 @@ class SQLDatabase(object):
             until_date = datetime.datetime.utcnow()
 
         query = sql.select(self._records).order_by(
-                sql.desc(self._records.c.modified)).where(
-                self._records.c.modified <= until_date)
+            sql.desc(self._records.c.modified)).where(
+            self._records.c.modified <= until_date)
 
         if identifier is not None:
             query = query.where(self._records.c.record_id == identifier)
@@ -304,8 +301,8 @@ class SQLDatabase(object):
         for set_id in disallowed_sets:
             alias = self._setrefs.alias()
             query = sql.select(self._records.c.record_id).where(
-                    alias.c.set_id == set_id,
-                    alias.c.record_id == self._records.c.record_id)
+                alias.c.set_id == set_id,
+                alias.c.record_id == self._records.c.record_id)
             disallowed_setclauses.append(sql.exists(query))
 
         if disallowed_setclauses:

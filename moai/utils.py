@@ -35,13 +35,13 @@ def check_type(object,
                prefix='',
                suffix=''):
 
-    object_type = type(object)
     if not isinstance(object, expected_type):
         raise TypeError(('%s expected "%s", got "%s" %s' % (
             prefix,
             expected_type.__name__,
             object.__class__.__name__,
             suffix)).strip())
+
 
 class XPath(object):
     def __init__(self, doc, nsmap={}):

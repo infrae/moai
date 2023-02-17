@@ -3,8 +3,8 @@ import os
 import urllib.error
 import urllib.parse
 import urllib.request
-
 from base64 import b64encode
+
 from lxml import etree
 
 from moai.provider.oai import OAIBasedContentProvider
