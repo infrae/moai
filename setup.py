@@ -52,7 +52,7 @@ setup(
      ],
     },
     install_requires=[
-    'pyoai',
+    'pyoai==2.5.0',
     'WSGIUtils',
     'wsgi_intercept',
     'webob',
