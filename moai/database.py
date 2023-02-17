@@ -83,14 +83,14 @@ class SQLDatabase(object):
 
         for oai_id, item in list(self._cache['records'].items()):
             if oai_id in oai_ids:
-                # record allready exists
+                # record already exists
                 deleted_records.append(oai_id)
             item['record_id'] = oai_id
             inserted_records.append(item)
 
         for oai_id, item in list(self._cache['sets'].items()):
             if oai_id in oai_ids:
-                # set allready exists
+                # set already exists
                 deleted_sets.append(oai_id)
             item['set_id'] = oai_id
             inserted_sets.append(item)
