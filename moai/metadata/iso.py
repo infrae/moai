@@ -332,6 +332,9 @@ class Iso(object):
             if not isinstance(list_subjects, list):
                 list_subjects = [list_subjects]
             for subject in list_subjects:
+                if subject is None:
+                    continue
+
                 keyword = GMD.keyword()
                 CharacterString = GCO.CharacterString(subject)
                 keyword.append(CharacterString)

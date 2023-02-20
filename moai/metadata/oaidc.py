@@ -91,7 +91,7 @@ class OAIDC(object):
             if not isinstance(list_subjects, list):
                 list_subjects = [list_subjects]
             for subject in list_subjects:
-                if len(subject):
+                if subject is not None and len(subject):
                     oai_dc.append(DC.subject(subject))
 
             # ILAB specific - collection name
