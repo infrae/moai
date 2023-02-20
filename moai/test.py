@@ -275,13 +275,13 @@ class DatabaseTest(TestCase):
         # records with a timestamp in the future should never
         # be returned, this feature can be used to create embargo dates
         self.db.update_record('oai:spam',
-                              datetime.datetime(2020, 0o1, 0o1, 00, 00, 00),
+                              datetime.datetime(2040, 0o1, 0o1, 00, 00, 00),
                               False, {'spamset': {'name': 'spam'}},
                               {})
         self.db.flush()
         self.assertEqual(list(self.db.oai_query()), [])
         self.assertEqual(list(self.db.oai_query(
-            until_date=datetime.datetime(2030, 0o1, 0o1, 00, 00, 00))), [])
+            until_date=datetime.datetime(2050, 0o1, 0o1, 00, 00, 00))), [])
         self.assertEqual(list(self.db.oai_query(identifier='oai:spam')), [])
 
     def test_oai_sets(self):
