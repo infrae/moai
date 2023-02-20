@@ -464,9 +464,9 @@ class ServerTest(TestCase):
 
     def test_list_sets(self):
         response = requests.get('http://test?verb=ListSets')
-        doc = etree.fromstring(response.content)
         # Sets have been disabled in the UU version of MOAI
         self.assertTrue('<error code="noSetHierarchy"></error>' in str(response.content))
+
 
 def suite():
     test_suite = TestSuite()
