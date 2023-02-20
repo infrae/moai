@@ -1,0 +1,32 @@
+<publication xmlns="http://example.org/data">
+  <id>2345</id>
+  <title>A Secret Example Test Publication</title>
+  <abstract>
+    This is a piece of example data that is used to 
+    demonstrate how arbitrary data can be loaded into
+    the MOAI OAIPMH server.
+    Data is not limited to XML files, it could also come
+    from an SQL database, in which case a different data
+    provider should be used.
+  </abstract>
+  <subject>example</subject>
+  <subject>test</subject>
+  <author>
+    <givenName>Jane</givenName>
+    <familyName>Doe</familyName>
+    <author-id>41431324</author-id>
+  </author>
+  <author>
+    <givenName>John</givenName>
+    <familyName>Doe</familyName>
+  </author>
+  <access>private</access>
+  <issued>2009-10-10T15:53:00Z</issued>
+  <modified>2009-10-12T15:56:00Z</modified>
+  <asset>
+    <type>application/pdf</type>
+    <name>example.pdf</name>
+    <description>example pdf</description>
+    <access>private</access>
+  </asset>
+</publication>

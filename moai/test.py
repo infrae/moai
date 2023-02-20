@@ -358,7 +358,7 @@ class ProviderTest(TestCase):
     def setUp(self):
         path = os.path.abspath(os.path.dirname(__file__))
         self.provider = FileBasedContentProvider(
-            'file://%s/example*.xml' % path)
+            'file://%s/testdata/example*.xml' % path)
         self.db = SQLDatabase()
 
     def tearDown(self):
