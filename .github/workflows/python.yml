@@ -28,6 +28,7 @@ jobs:
 
       - name: Install test dependencies
         run: |
+          sudo apt -y install apache2-dev
           python -m pip install wheel
           python -m pip install -r requirements.txt
 
