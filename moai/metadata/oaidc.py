@@ -42,15 +42,32 @@ class OAIDC(object):
             self.ns['oai_dc'],
             self.schemas['oai_dc'])
 
+        """ Fetch metadata - try original first, then in lowercase (e.g. "title"), then
+            fall back to capitalized (e.g. "Title"). Throw KeyError if neither
+            is found.
+        """
+        def get_ci(name):
+            if name in data:
+                return data[name]
+            elif name.lower() in data:
+                return data[name.lower()]
+            else:
+                return data[name.lower().capitalize()]
+
+        """ Unpack lists with a single element
+        """
+        def unpack_single(arg):
+            return arg[0] if type(arg) == list and len(arg) == 1 else arg
+
         # Title
         try:
-            oai_dc.append(DC.title(data['Title']))
+            oai_dc.append(DC.title(unpack_single(get_ci("Title"))))
         except (IndexError, KeyError):
             pass
 
         # Creator
         try:
-            creator_list = data['Creator']
+            creator_list = get_ci('Creator')
             if not isinstance(creator_list, list):
                 creator_list = [creator_list]
 
@@ -70,7 +87,7 @@ class OAIDC(object):
         # Subject  - collection of Disciplines / tags etc
         try:
             # Disciplines and Tags
-            list_subjects = data['Discipline'] + data['Tag']
+            list_subjects = get_ci('Discipline') + get_ci('Tag')
             if not isinstance(list_subjects, list):
                 list_subjects = [list_subjects]
             for subject in list_subjects:
@@ -79,7 +96,7 @@ class OAIDC(object):
 
             # ILAB specific - collection name
             try:
-                oai_dc.append(DC.subject(data['Collection_Name']))
+                oai_dc.append(DC.subject(get_ci('Collection_Name')))
             except (IndexError, KeyError):
                 pass
 
@@ -99,7 +116,7 @@ class OAIDC(object):
 
             for subject_field in subject_fields:
                 try:
-                    list_subjects = data[subject_field]
+                    list_subjects = get_ci(subject_field)
                     if not isinstance(list_subjects, list):
                         list_subjects = [list_subjects]
                     for subject in list_subjects:
@@ -113,7 +130,7 @@ class OAIDC(object):
 
         # Description
         try:
-            oai_dc.append(DC.description(data['Description']))
+            oai_dc.append(DC.description(get_ci('Description')))
         except (IndexError, KeyError):
             pass
 
@@ -125,7 +142,7 @@ class OAIDC(object):
 
         # Contributor
         try:
-            con_list = data['Contributor']
+            con_list = get_ci('Contributor')
             if not isinstance(con_list, list):
                 con_list = [con_list]
 
@@ -144,34 +161,34 @@ class OAIDC(object):
 
         # Identifier
         try:
-            doi = data['System']['Persistent_Identifier_Datapackage']['Identifier']
+            doi = get_ci('System')['Persistent_Identifier_Datapackage']['Identifier']
             oai_dc.append(DC.identifier('doi:' + doi))
         except (IndexError, KeyError):
             pass
 
         # Language
         try:
-            oai_dc.append(DC.language(data['Language']))
+            oai_dc.append(DC.language(get_ci('Language')))
         except (IndexError, KeyError):
             pass
 
         # Date
         try:
-            oai_dc.append(DC.date(data['System']['Publication_Date']))
+            oai_dc.append(DC.date(get_ci('System')['Publication_Date']))
         except (IndexError, KeyError):
             pass
 
         # COVERAGE
         # Default metadata schema
         try:
-            text_locations = data['Covered_Geolocation_Place']
+            text_locations = get_ci('Covered_Geolocation_Place')
             for location in text_locations:
                 oai_dc.append(DC.coverage(location))
         except (IndexError, KeyError):
             pass
 
         try:
-            perioddates = [data['Covered_Period/Start_Date'], data['Covered_Period/End_Date']]
+            perioddates = [get_ci('Covered_Period/Start_Date'), get_ci('Covered_Period/End_Date')]
             period = "/".join([d for d in perioddates if d])
             oai_dc.append(DC.coverage(period))
         except (IndexError, KeyError):
@@ -180,7 +197,7 @@ class OAIDC(object):
         # GEO schemas
         try:
             # GEO schemas hold combination of geobox/text/date range
-            for geoloc in data['GeoLocation']:
+            for geoloc in get_ci('GeoLocation'):
                 temp_description_start = geoloc['Description_Temporal']['Start_Date']
                 temp_description_end = geoloc['Description_Temporal']['End_Date']
                 spatial_description = geoloc['Description_Spatial']
@@ -208,10 +225,10 @@ class OAIDC(object):
 
         # Rights
         try:
-            license = data['License']
-            rightLicenseURL = data['System']['License_URI']
+            license = get_ci('License')
+            rightLicenseURL = get_ci('System')['License_URI']
 
-            accessRestriction = data['Data_Access_Restriction']
+            accessRestriction = get_ci('Data_Access_Restriction')
             if accessRestriction.startswith('Open'):
                 accessRights = 'Open Access'
                 accessRightsURI = 'info:eu-repo/semantics/openAccess'
