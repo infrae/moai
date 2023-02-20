@@ -465,35 +465,8 @@ class ServerTest(TestCase):
     def test_list_sets(self):
         response = requests.get('http://test?verb=ListSets')
         doc = etree.fromstring(response.content)
-        xpath = XPath(doc, nsmap={"oai": "http://www.openarchives.org/OAI/2.0/"})
-        self.assertEqual(sorted(xpath.strings('//oai:setName')),
-                         ['hamset', 'spamset', 'testset'])
-
-    def test_list_hidden_sets(self):
-        self.db.update_record('oai:spam',
-                              datetime.datetime(2009, 10, 13, 12, 30, 00),
-                              False, {'spam': dict(name='spamset'),
-                                      'test': dict(name='testset',
-                                                   hidden=True)},
-                              {'title': ['Spam!']})
-        # note that we change the set through the record. It is important
-        # that all the records have the same values for each set
-        self.db.flush()
-        response = requests.get('http://test?verb=ListSets')
-        doc = etree.fromstring(response.content)
-        xpath = XPath(doc, nsmap={"oai": "http://www.openarchives.org/OAI/2.0/"})
-        # a hidden set should not show up in a listSets request
-        self.assertEqual(sorted(xpath.strings('//oai:setName')),
-                         ['hamset', 'spamset'])
-
-        # however, we can use the hidden set to filter on
-        self.config.sets_disallowed.append('test')
-        response = requests.get('http://test?verb=ListIdentifiers&metadataPrefix=oai_dc')
-        doc = etree.fromstring(response.content)
-        xpath = XPath(doc, nsmap={"oai": "http://www.openarchives.org/OAI/2.0/"})
-        self.assertEqual(xpath.strings('//oai:identifier'),
-                         ['oai:spamspamspam'])
-
+        # Sets have been disabled in the UU version of MOAI
+        self.assertTrue('<error code="noSetHierarchy"></error>' in str(response.content))
 
 def suite():
     test_suite = TestSuite()
