@@ -44,13 +44,19 @@ class OAIDC(object):
 
         """ Fetch metadata - try original first, then in lowercase (e.g. "title"), then
             fall back to capitalized (e.g. "Title"). Throw KeyError if neither
-            is found.
+            is found. Also try looking in ['metadata'] for Yoda metadata.
         """
         def get_ci(name):
             if name in data:
                 return data[name]
             elif name.lower() in data:
                 return data[name.lower()]
+            elif name in data['metadata']:
+                return data['metadata'][name]
+            elif name.lower() in data['metadata']:
+                return data['metadata'][name.lower()]
+            elif name.lower().capitalize() in data['metadata']:
+                return data['metadata'][name.lower().capitalize()]
             else:
                 return data[name.lower().capitalize()]
 
