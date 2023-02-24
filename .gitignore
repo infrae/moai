@@ -1,0 +1,18 @@
+*~*
+*.swp
+*.pyc
+
+# Local/Editor files
+.DS_Store
+.DS_STORE
+Thumbs.db
+.idea/
+.pytest_cache/
+
+# Pyenv files
+.python-version
+
+# Github defaults for Python
+# https://github.com/github/gitignore/blob/master/Python.gitignore
+__pycache__/
+*.py[cod]

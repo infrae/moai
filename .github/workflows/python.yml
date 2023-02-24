@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04]
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.7, 3.8, 3.9]
     steps:
       - uses: actions/checkout@v3
 
@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
+      - name: Install flake dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install flake8 flake8-import-order
@@ -25,3 +25,15 @@ jobs:
       - name: Lint with flake8
         run: |
           flake8 --statistics moai
+
+      - name: Install test dependencies
+        run: |
+          sudo apt -y install apache2-dev
+          python -m pip install wheel
+          python -m pip install -r requirements.txt
+          python -m pip install ./
+
+      - name: Run unit and integration tests
+        run: |
+          cd moai
+          python -m unittest

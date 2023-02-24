@@ -71,6 +71,7 @@ class OAIServer(object):
         return result
 
     def listSets(self, cursor=0, batch_size=20):
+        # Sets have been disabled on the UU version of MOAI, since they are not used.
         raise oaipmh.error.NoSetHierarchyError
         # check table following link:
         # http://www.openarchives.org/OAI/openarchivesprotocol.html#ErrorConditions

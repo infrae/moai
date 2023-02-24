@@ -1,28 +1,24 @@
-import sys
+# In Yoda, the moai.wsgi file is installed via the Yoda playbook. This
+# is a copy for use outside of Yoda (e.g. a standalone development or
+# test server)).
+#
+import configparser
 import os
-import site
-import tempfile
-import ConfigParser
+import sys
 
-os.environ['PYTHON_EGG_CACHE'] = tempfile.mkdtemp(prefix='moai-egg-cache-')
-
-site.addsitedir(os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                             'lib',
-                             'python%d.%d' % sys.version_info[:2],
-                             'site-packages'))
+activate_this = '/var/www/moai/yoda-moai/venv/bin/activate_this.py'
+with open(activate_this) as file_:
+    exec(file_.read(), dict(__file__=activate_this))
 
 from paste.deploy import loadapp
-
-if sys.version_info >= (2, 6):
-    from logging.config import fileConfig
-else:
-    from paste.script.util.logging_config import fileConfig
+from logging.config import fileConfig
 
 config_file = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                            'settings.ini')
+
 try:
     fileConfig(config_file)
-except ConfigParser.NoSectionError:
+except (configparser.NoSectionError,KeyError):
     # no logging configured
     pass
 

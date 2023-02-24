@@ -1,8 +1,0 @@
-lib
-local
-build
-bin
-MOAI.egg-info
-include
-
-\.pyc$

@@ -48,22 +48,25 @@ setup(
         'oai_dc=moai.metadata.oaidc:OAIDC',
         'datacite=moai.metadata.datacite:DataCite',
         'oai_datacite=moai.metadata.datacite:DataCite',
-        'iso19139=moai.metadata.iso:Iso'
+        'iso19139=moai.metadata.iso:Iso',
+        'mods=moai.metadata.mods:MODS',
+        'didl=moai.metadata.didl:DIDL'
      ],
     },
     install_requires=[
-    'pyoai',
+    'pyoai==2.5.0',
     'WSGIUtils',
     'wsgi_intercept',
     'webob',
     'paste',
     'pasteDeploy',
     'pasteScript',
-    'sqlalchemy',
+    'sqlalchemy==2.0.3',
     'xmltodict',
     'mod-wsgi==4.9.3',
     'wsgiserver',
-    'requests'
+    'lxml==4.9.2',
+    'requests==2.28.2'
     ],
     dependency_links=[
         'git+https://github.com/shasha79/pastescript'

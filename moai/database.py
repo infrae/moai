@@ -39,7 +39,8 @@ class SQLDatabase(object):
             dburi = 'sqlite:///:memory:'
 
         engine = sql.create_engine(dburi)
-        db = sql.MetaData(engine)
+        self._conn = engine.connect()
+        db = sql.MetaData()
 
         sql.Table('records', db,
                   sql.Column('record_id', sql.Unicode, primary_key=True),
@@ -61,14 +62,14 @@ class SQLDatabase(object):
                              sql.ForeignKey('sets.set_id'),
                              index=True, primary_key=True))
 
-        db.create_all()
+        db.create_all(bind=self._conn)
         return db
 
     def flush(self):
         oai_ids = set()
-        for row in sql.select([self._records.c.record_id]).execute():
+        for row in self._conn.execute(sql.select(self._records.c.record_id)):
             oai_ids.add(row[0])
-        for row in sql.select([self._sets.c.set_id]).execute():
+        for row in self._conn.execute(sql.select(self._sets.c.set_id)):
             oai_ids.add(row[0])
 
         deleted_records = []
@@ -81,14 +82,14 @@ class SQLDatabase(object):
 
         for oai_id, item in list(self._cache['records'].items()):
             if oai_id in oai_ids:
-                # record allready exists
+                # record already exists
                 deleted_records.append(oai_id)
             item['record_id'] = oai_id
             inserted_records.append(item)
 
         for oai_id, item in list(self._cache['sets'].items()):
             if oai_id in oai_ids:
-                # set allready exists
+                # set already exists
                 deleted_sets.append(oai_id)
             item['set_id'] = oai_id
             inserted_sets.append(item)
@@ -101,28 +102,29 @@ class SQLDatabase(object):
 
         # delete all processed records before inserting
         if deleted_records:
-            self._records.delete(
-                self._records.c.record_id == sql.bindparam('record_id')
-            ).execute(
-                [{'record_id': rid} for rid in deleted_records])
+            query = sql.delete(self._records).where(self._records.c.record_id == sql.bindparam('record_id'))
+            self._conn.execute(query,
+                               [{'record_id': rid} for rid in deleted_records])
         if deleted_sets:
-            self._sets.delete(
-                self._sets.c.set_id == sql.bindparam('set_id')
-            ).execute(
-                [{'set_id': sid} for sid in deleted_sets])
+            query = sql.delete(self._sets).where(self._sets.c.set_id == sql.bindparam('set_id'))
+            self._conn.execute(query,
+                               [{'set_id': sid} for sid in deleted_sets])
         if deleted_setrefs:
-            self._setrefs.delete(
-                self._setrefs.c.record_id == sql.bindparam('record_id')
-            ).execute(
-                [{'record_id': rid} for rid in deleted_setrefs])
+            query = sql.delete(self._setrefs).where(
+                self._setrefs.c.record_id == sql.bindparam('record_id'))
+            self._conn.execute(query,
+                               [{'record_id': rid} for rid in deleted_setrefs])
 
         # batch inserts
         if inserted_records:
-            self._records.insert().execute(inserted_records)
+            query = self._records.insert()
+            self._conn.execute(query, inserted_records)
         if inserted_sets:
-            self._sets.insert().execute(inserted_sets)
+            query = self._sets.insert()
+            self._conn.execute(query, inserted_sets)
         if inserted_setrefs:
-            self._setrefs.insert().execute(inserted_setrefs)
+            query = self._setrefs.insert()
+            self._conn.execute(query, inserted_setrefs)
 
         self._reset_cache()
 
@@ -146,8 +148,6 @@ class SQLDatabase(object):
                    suffix='for parameter "deleted"')
         check_type(sets,
                    dict,
-                   unicode_values=True,
-                   recursive=True,
                    prefix="record %s" % oai_id,
                    suffix='for parameter "sets"')
         check_type(metadata,
@@ -174,8 +174,9 @@ class SQLDatabase(object):
             self._cache['setrefs'][oai_id].append(set_id)
 
     def get_record(self, oai_id):
-        row = self._records.select(
-            self._records.c.record_id == oai_id).execute().fetchone()
+        query = sql.select(self._records).where(
+            self._records.c.record_id == oai_id)
+        row = self._conn.execute(query).fetchone()
         if row is None:
             return
         record = {'id': row.record_id,
@@ -186,8 +187,9 @@ class SQLDatabase(object):
         return record
 
     def get_set(self, oai_id):
-        row = self._sets.select(
-            self._sets.c.set_id == oai_id).execute().fetchone()
+        query = sql.select(self._sets).where(
+            self._sets.c.set_id == oai_id)
+        row = self._conn.execute(query).fetchone()
         if row is None:
             return
         return {'id': row.set_id,
@@ -197,53 +199,50 @@ class SQLDatabase(object):
 
     def get_setrefs(self, oai_id, include_hidden_sets=False):
         set_ids = []
-        query = sql.select([self._setrefs.c.set_id])
-        query.append_whereclause(self._setrefs.c.record_id == oai_id)
+        query = sql.select(self._setrefs.c.set_id).where(
+            self._setrefs.c.record_id == oai_id)
         if not include_hidden_sets:
-            query.append_whereclause(
+            query = query.where(
                 sql.and_(self._sets.c.set_id == self._setrefs.c.set_id,
                          self._sets.c.hidden == include_hidden_sets))
 
-        for row in query.execute():
+        for row in self._conn.execute(query):
             set_ids.append(row[0])
         set_ids.sort()
         return set_ids
 
     def record_count(self):
-        return sql.select([sql.func.count('*')],
-                          from_obj=[self._records]).execute().fetchone()[0]
+        query = sql.select(sql.func.count("*")).select_from(self._records)
+        return self._conn.execute(query).fetchone()[0]
 
     def set_count(self):
-        return sql.select([sql.func.count('*')],
-                          from_obj=[self._sets]).execute().fetchone()[0]
+        query = sql.select(sql.func.count("*")).select_from(self._sets)
+        return self._conn.execute(query).fetchone()[0]
 
     def remove_record(self, oai_id):
-        self._records.delete(
-            self._records.c.record_id == oai_id).execute()
-        self._setrefs.delete(
-            self._setrefs.c.record_id == oai_id).execute()
+        record_query = sql.delete(self._records).where(self._records.c.record_id == oai_id)
+        self._conn.execute(record_query)
+        setref_query = sql.delete(self._setrefs).where(self._setrefs.c.record_id == oai_id)
+        self._conn.execute(setref_query)
 
     def remove_set(self, oai_id):
-        self._sets.delete(
-            self._sets.c.set_id == oai_id).execute()
-        self._setrefs.delete(
-            self._setrefs.c.set_id == oai_id).execute()
+        set_query = sql.delete(self._sets).where(self._sets.c.set_id == oai_id)
+        self._conn.execute(set_query)
+        setref_query = sql.delete(self._setrefs).where(self._setrefs.c.set_id == oai_id)
+        self._conn.execute(setref_query)
 
     def oai_sets(self, offset=0, batch_size=20):
-        for row in self._sets.select(
-            not self._sets.c.hidden
-        ).offset(offset).limit(batch_size).execute():
+        query = sql.select(self._sets).where(sql.not_(self._sets.c.hidden)).offset(offset).limit(batch_size)
+        for row in self._conn.execute(query):
             yield {'id': row.set_id,
                    'name': row.name,
                    'description': row.description}
 
     def oai_earliest_datestamp(self):
-        row = sql.select([self._records.c.modified],
-                         order_by=[sql.asc(self._records.c.modified)]
-                         ).limit(1).execute().fetchone()
-        if row:
-            return row[0]
-        return datetime.datetime(1970, 1, 1)
+        query = sql.select(self._records.c.modified).order_by(
+            sql.asc(self._records.c.modified)).limit(1)
+        row = self._conn.execute(query).fetchone()
+        return row[0] if row else datetime.datetime(1970, 1, 1)
 
     def oai_query(self,
                   offset=0,
@@ -265,17 +264,15 @@ class SQLDatabase(object):
         if until_date is None or until_date > datetime.datetime.utcnow():
             until_date = datetime.datetime.utcnow()
 
-        query = self._records.select(
-            order_by=[sql.desc(self._records.c.modified)])
-
-        # filter dates
-        query.append_whereclause(self._records.c.modified <= until_date)
+        query = sql.select(self._records).order_by(
+            sql.desc(self._records.c.modified)).where(
+            self._records.c.modified <= until_date)
 
         if identifier is not None:
-            query.append_whereclause(self._records.c.record_id == identifier)
+            query = query.where(self._records.c.record_id == identifier)
 
         if from_date is not None:
-            query.append_whereclause(self._records.c.modified >= from_date)
+            query = query.where(self._records.c.modified >= from_date)
 
         # filter sets
         setclauses = []
@@ -287,7 +284,7 @@ class SQLDatabase(object):
                     alias.c.record_id == self._records.c.record_id))
 
         if setclauses:
-            query.append_whereclause((sql.and_(*setclauses)))
+            query = query.where((sql.and_(*setclauses)))
 
         allowed_setclauses = []
         for set_id in allowed_sets:
@@ -298,21 +295,20 @@ class SQLDatabase(object):
                     alias.c.record_id == self._records.c.record_id))
 
         if allowed_setclauses:
-            query.append_whereclause(sql.or_(*allowed_setclauses))
+            query = query.where(sql.or_(*allowed_setclauses))
 
         disallowed_setclauses = []
         for set_id in disallowed_sets:
             alias = self._setrefs.alias()
-            disallowed_setclauses.append(
-                sql.exists([self._records.c.record_id],
-                           sql.and_(
-                    alias.c.set_id == set_id,
-                    alias.c.record_id == self._records.c.record_id)))
+            dsc_query = sql.select(self._records.c.record_id).where(
+                alias.c.set_id == set_id,
+                alias.c.record_id == self._records.c.record_id)
+            disallowed_setclauses.append(sql.exists(dsc_query))
 
         if disallowed_setclauses:
-            query.append_whereclause(sql.not_(sql.or_(*disallowed_setclauses)))
+            query = query.where(sql.not_(sql.or_(*disallowed_setclauses)))
 
-        for row in query.distinct().offset(offset).limit(batch_size).execute():
+        for row in self._conn.execute(query.distinct().offset(offset).limit(batch_size)):
             yield {'id': row.record_id,
                    'deleted': row.deleted,
                    'modified': row.modified,
