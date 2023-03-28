@@ -61,8 +61,18 @@ class OAIDC(object):
                 if not isinstance(affiliation_list, list):
                     affiliation_list = [affiliation_list]
 
+                aff_list = []
+                for item in affiliation_list:
+                    if item is dict:
+                        aff_list.append(item["Affiliation_Name"])
+                    else:
+                        aff_list.append(item)
+                # conData = name + ' (' + ', '.join(aff_list) + ')'
+                # oai_dc.append(DC.contributor(conData))
+
+
                 # Compile creatorData
-                creatorData = name + ' (' + ', '.join(affiliation_list) + ')'
+                creatorData = name + ' (' + ', '.join(aff_list) + ')'
                 oai_dc.append(DC.creator(creatorData))
         except (IndexError, KeyError):
             pass
@@ -137,7 +147,13 @@ class OAIDC(object):
                     affiliation_list = [affiliation_list]
 
                 # Compile creatorData
-                conData = name + ' (' + ', '.join(affiliation_list) + ')'
+                aff_list = []
+                for item in affiliation_list:
+                    if item is dict:
+                        aff_list.append(item["Affiliation_Name"])
+                    else:
+                        aff_list.append(item)
+                conData = name + ' (' + ', '.join(aff_list) + ')'
                 oai_dc.append(DC.contributor(conData))
         except (IndexError, KeyError):
             pass

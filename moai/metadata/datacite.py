@@ -78,7 +78,16 @@ class DataCite(object):
                     affiliation_list = [affiliation_list]
 
                 for affiliation in affiliation_list:
-                    creator.append(NONE.affiliation(affiliation))
+                    if affiliation is dict:
+                        creatorAffil = NONE.affiliation(affiliation['Affiliation_Name'])
+                        if affiliation['Affiliation_Identifier']:
+                            creatorAffil.attrib['affiliationIdentifier'] = affiliation['Affiliation_Identifier']
+                            creatorAffil.attrib['affiliationIdentifierScheme'] = 'ROR'
+                        else:
+                            creatorAffil = NONE.affiliation(affiliation)
+                        creator.append(creatorAffil)
+                    else:
+                        creator.append(NONE.affiliation(affiliation))
 
                 idf_list = dccreator['Person_Identifier']
                 if not isinstance(idf_list, list):
@@ -203,7 +212,14 @@ class DataCite(object):
                     affiliation_list = [affiliation_list]
 
                 for affiliation in affiliation_list:
-                    contributor.append(NONE.affiliation(affiliation))
+                    if alliliation is dict:
+                        contribAffil = NONE.affiliation(affiliation['Affiliation_Name'])
+                        if affiliation['Affiliation_Identifier']:
+                            contribAffil.attrib['affiliationIdentifier'] = affiliation['Affiliation_Identifier']
+                            contribAffil.attrib['affiliationIdentifierScheme'] = 'ROR'
+                        contributor.append(contribAffil)
+                    else:
+                        contributor.append(NONE.affiliation(affiliation))
 
                 idf_list = dccontributor['Person_Identifier']
                 if not isinstance(idf_list, list):
@@ -231,7 +247,14 @@ class DataCite(object):
                         affiliation_list = [affiliation_list]
 
                     for affiliation in affiliation_list:
-                        contributor.append(NONE.affiliation(affiliation))
+                        if affilation is dict:
+                            contribAffil = NONE.affiliation(affiliation['Affiliation_Name'])
+                            if affiliation['Affiliation_Identifier']:
+                                contribAffil.attrib['affiliationIdentifier'] = affiliation['Affiliation_Identifier']
+                                contribAffil.attrib['affiliationIdentifierScheme'] = 'ROR'
+                            contributor.append(contribAffil)
+                        else:
+                            contributor.append(NONE.affiliation(affiliation))
 
                     idf_list = dccontributor['Person_Identifier']
                     if not isinstance(idf_list, list):

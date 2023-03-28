@@ -189,7 +189,10 @@ class Iso(object):
                     affiliation_list = [affiliation_list]
 
                 for affiliation in affiliation_list:
-                    CI_ResponsibleParty.append(GMD.organisationName(GCO.CharacterString(affiliation)))
+                    if alliation is dict:
+                        CI_ResponsibleParty.append(GMD.organisationName(GCO.CharacterString(affiliation["Affiliation_Name"])))
+                    else:
+                        CI_ResponsibleParty.append(GMD.organisationName(GCO.CharacterString(affiliation))
 
                 CI_ResponsibleParty.append(role)
 
@@ -253,7 +256,10 @@ class Iso(object):
                     affiliation_list = [affiliation_list]
 
                 for affiliation in affiliation_list:
-                    CI_ResponsibleParty.append(GMD.organisationName(GCO.CharacterString(affiliation)))
+                    if affiliation is dict:
+                        CI_ResponsibleParty.append(GMD.organisationName(GCO.CharacterString(affiliation["Affiliation_Name"])))
+                    else:
+                        CI_ResponsibleParty.append(GMD.organisationName(GCO.CharacterString(affiliation)))
 
                 CI_ResponsibleParty.append(role)
 
@@ -306,7 +312,10 @@ class Iso(object):
                     affiliation_list = [affiliation_list]
 
                 for affiliation in affiliation_list:
-                    CI_ResponsibleParty.append(GMD.organisationName(GCO.CharacterString(affiliation)))
+                    if affiliation is dict:
+                        CI_ResponsibleParty.append(GMD.organisationName(GCO.CharacterString(affiliation["Affiliation_Name"])))
+                    else:
+                        CI_ResponsibleParty.append(GMD.organisationName(GCO.CharacterString(affiliation)))
 
                 CI_ResponsibleParty.append(role)
                 pointOfContact.append(CI_ResponsibleParty)
