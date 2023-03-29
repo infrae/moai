@@ -1,5 +1,6 @@
 from lxml.builder import ElementMaker
 
+from moai.utils import get_moai_log
 
 XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
 XML_NS = 'https://www.w3.org/TR/xml-names/'
@@ -30,9 +31,13 @@ class DataCite(object):
 
     def __call__(self, element, metadata):
         try:
-            data = metadata.record['metadata']['metadata']
-        except BaseException:
-            pass
+            if 'metadata' in metadata.record['metadata']:
+                data = metadata.record['metadata']['metadata']
+            else:
+                data = metadata.record['metadata']
+        except KeyError:
+            get_moai_log().error("Could not find metadata for " + str(metadata.record))
+            return
 
         # TODO: is deze nog nodig?
         DATACITE = ElementMaker(namespace=self.ns['datacite'],
