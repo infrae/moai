@@ -189,10 +189,10 @@ class Iso(object):
                     affiliation_list = [affiliation_list]
 
                 for affiliation in affiliation_list:
-                    if alliation is dict:
+                    if affiliation is dict:
                         CI_ResponsibleParty.append(GMD.organisationName(GCO.CharacterString(affiliation["Affiliation_Name"])))
                     else:
-                        CI_ResponsibleParty.append(GMD.organisationName(GCO.CharacterString(affiliation))
+                        CI_ResponsibleParty.append(GMD.organisationName(GCO.CharacterString(affiliation)))
 
                 CI_ResponsibleParty.append(role)
 
