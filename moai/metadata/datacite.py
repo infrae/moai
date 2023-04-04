@@ -212,7 +212,7 @@ class DataCite(object):
                     affiliation_list = [affiliation_list]
 
                 for affiliation in affiliation_list:
-                    if alliliation is dict:
+                    if affiliation is dict:
                         contribAffil = NONE.affiliation(affiliation['Affiliation_Name'])
                         if affiliation['Affiliation_Identifier']:
                             contribAffil.attrib['affiliationIdentifier'] = affiliation['Affiliation_Identifier']
@@ -247,7 +247,7 @@ class DataCite(object):
                         affiliation_list = [affiliation_list]
 
                     for affiliation in affiliation_list:
-                        if affilation is dict:
+                        if affiliation is dict:
                             contribAffil = NONE.affiliation(affiliation['Affiliation_Name'])
                             if affiliation['Affiliation_Identifier']:
                                 contribAffil.attrib['affiliationIdentifier'] = affiliation['Affiliation_Identifier']

@@ -70,7 +70,6 @@ class OAIDC(object):
                 # conData = name + ' (' + ', '.join(aff_list) + ')'
                 # oai_dc.append(DC.contributor(conData))
 
-
                 # Compile creatorData
                 creatorData = name + ' (' + ', '.join(aff_list) + ')'
                 oai_dc.append(DC.creator(creatorData))
