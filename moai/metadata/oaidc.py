@@ -78,8 +78,14 @@ class OAIDC(object):
 
         # Subject  - collection of Disciplines / tags etc
         try:
-            # Disciplines and Tags
-            list_subjects = data['Discipline'] + data['Tag']
+            # Disciplines and Tags/Keywords
+            keywords = []
+            if 'Tag' in data:
+                keywords = data['Tag']
+            elif 'Keyword' in data:
+                keywords = data['Keyword']
+
+            list_subjects = data['Discipline'] + keywords
             if not isinstance(list_subjects, list):
                 list_subjects = [list_subjects]
             for subject in list_subjects:

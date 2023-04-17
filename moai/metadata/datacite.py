@@ -143,7 +143,12 @@ class DataCite(object):
             datacite.append(subjects)
 
             # Subjects - Tags
-            list_subjects = data['Tag']
+            list_subjects = []
+            if 'Tag' in data:
+                list_subjects = data['Tag']
+            elif 'Keyword' in data:
+                list_subjects = data['Keyword']
+
             if not isinstance(list_subjects, list):
                 list_subjects = [list_subjects]
             for subject in list_subjects:
@@ -343,11 +348,18 @@ class DataCite(object):
             pass
 
         # Related identifiers
+        # For backward compatibility check for Related_Datapackage as well
+        related_resources = []
+        if 'Related_Resource' in data:
+            related_resources = data['Related_Resource']
+        elif 'Related_Datapackage' in data:
+            related_resources = data['Related_Datapackage']
         try:
             relatedIdentifiers = NONE.relatedIdentifiers()
-            for identifier in data['Related_Datapackage']:
+            for identifier in related_resources:
                 relatedIdentifier = NONE.relatedIdentifier(identifier['Persistent_Identifier']['Identifier'])
                 relatedIdentifier.attrib['relatedIdentifierType'] = identifier['Persistent_Identifier']['Identifier_Scheme']
+                # For backward compatibilty keep the split here. It will not interfere with the new way Relation_Type is saved to yoda-metadata.json
                 relatedIdentifier.attrib['relationType'] = identifier['Relation_Type'].split(':')[0]
                 relatedIdentifiers.append(relatedIdentifier)
 
