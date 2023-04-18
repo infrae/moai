@@ -126,6 +126,7 @@ class SQLDatabase(object):
             query = self._setrefs.insert()
             self._conn.execute(query, inserted_setrefs)
 
+        self._conn.commit()
         self._reset_cache()
 
     def _reset_cache(self):
