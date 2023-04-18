@@ -167,6 +167,8 @@ def update_moai():
             continue
 
         try:
+            if options.verbose:
+                log.info("Updating record " + str(content.id) + " with metadata " + str(content.metadata))
             database.update_record(content.id,
                                    content.modified,
                                    content.deleted,
