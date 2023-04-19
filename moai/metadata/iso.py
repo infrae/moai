@@ -512,12 +512,12 @@ class Iso(object):
 
 # Related resources
 
-        # For backward compatibility check for Related_Datapackage as well 
+        # For backward compatibility check for Related_Datapackage as well
         related_resources = []
         if 'Related_Resource' in data:
             related_resources = data['Related_Resource']
         elif 'Related_Datapackage' in data:
-            related_resources = data['Related_Datapackage'] 
+            related_resources = data['Related_Datapackage']
         try:
             for identifier in related_resources:
                 aggregationInfo = GMD.aggregationInfo()
@@ -539,7 +539,7 @@ class Iso(object):
                 # For backward compatibility reasons the split is left in. It will not break the new Relation_Type handling (which is only an identifier)
                 relation_type = identifier['Relation_Type'].split(':')[0]
                 DS_AssociationTypeCode = GMD.DS_AssociationTypeCode(relation_type)
-                DS_AssociationTypeCode.attrib['codeList'] = 'http://datacite.org/schema/kernel-4'  #??
+                DS_AssociationTypeCode.attrib['codeList'] = 'http://datacite.org/schema/kernel-4'
                 DS_AssociationTypeCode.attrib['codeListValue'] = relation_type
 
                 associationType = GMD.associationType()
