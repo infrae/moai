@@ -3,6 +3,7 @@ import os
 import urllib.error
 import urllib.parse
 import urllib.request
+from base64 import b64encode
 
 from lxml import etree
 
@@ -23,19 +24,19 @@ class FOXMLFile(object):
             return
         value = properties[-1].get('VALUE')
         if value:
-            return value.decode('utf8')
+            return value
 
     def get_xml_ids(self):
         ids = self._doc.xpath(
             '//foxml:datastream[@CONTROL_GROUP="X"]/@ID',
             namespaces={'foxml': self._ns})
-        return [i.decode('utf8') for i in ids]
+        return ids
 
     def get_ids(self):
         ids = self._doc.xpath(
             '//foxml:datastream/@ID',
             namespaces={'foxml': self._ns})
-        return [i.decode('utf8') for i in ids]
+        return ids
 
     def get_xml(self, id):
         contents = self._doc.xpath(
@@ -49,7 +50,7 @@ class FOXMLFile(object):
             break
         xml = xml.strip()
         if not isinstance(xml, str):
-            xml = xml.decode('utf8')
+            xml = xml
         return xml
 
     def get_location(self, id):
@@ -60,7 +61,7 @@ class FOXMLFile(object):
             namespaces={'foxml': self._ns})
         if not locations:
             return
-        return locations[-1].decode('utf8')
+        return locations[-1]
 
     def get_digest(self, id):
         digests = self._doc.xpath(
@@ -70,7 +71,7 @@ class FOXMLFile(object):
             namespaces={'foxml': self._ns})
         if not digests:
             return
-        return digests[-1].decode('utf8')
+        return digests[-1]
 
     def get_mimetype(self, id):
         mimes = self._doc.xpath(
@@ -79,7 +80,7 @@ class FOXMLFile(object):
             namespaces={'foxml': self._ns})
         if not mimes:
             return
-        return mimes[-1].decode('utf8')
+        return mimes[-1]
 
     def get_label(self, id):
         labels = self._doc.xpath(
@@ -90,7 +91,7 @@ class FOXMLFile(object):
             return
         label = labels[-1]
         if not isinstance(label, str):
-            label = label.decode('utf8')
+            label = label
         return label
 
 
@@ -130,7 +131,7 @@ class FedoraBasedContentProvider(OAIBasedContentProvider):
                                     self._stream)
 
         if self._user and self._pass:
-            password = ('%s:%s' % (self._user, self._pass)).strip().encode('base64')
+            password = b64encode(('%s:%s' % (self._user, self._pass)).strip())
             headers = {'Authorization': 'Basic %s' % password}
             request = urllib.request.Request(url, headers=headers)
         else:

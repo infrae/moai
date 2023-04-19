@@ -116,12 +116,14 @@ def update_moai():
     sys.stderr.write('Updating content provider..')
     count = 0
     for id in provider.update(from_date):
-        if not options.quiet and not options.verbose:
+        if not options.quiet:
             progress.animate('Updating content provider: %s' % id)
             count += 1
 
     if not options.quiet and not options.verbose:
         progress.write('')
+
+    if not options.quiet:
         print()
         print(('Content provider returned %s '
                'new/modified objects' % count), file=sys.stderr)
@@ -165,6 +167,8 @@ def update_moai():
             continue
 
         try:
+            if options.verbose:
+                log.info("Updating record " + str(content.id) + " with metadata " + str(content.metadata))
             database.update_record(content.id,
                                    content.modified,
                                    content.deleted,
@@ -190,7 +194,7 @@ def update_moai():
     print('', file=sys.stderr)
     msg = 'Updating database with %s objects took %s' % (total, duration)
     log.info(msg)
-    if not options.verbose and not options.quiet:
+    if not options.quiet:
         print(msg, file=sys.stderr)
 
     if error_count:
@@ -198,5 +202,5 @@ def update_moai():
             error_count,
             {1: ''}.get(error_count, 's'))
         log.warning(msg)
-        if not options.verbose and not options.quiet:
+        if not options.quiet:
             print(msg, file=sys.stderr)

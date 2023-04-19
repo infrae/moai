@@ -32,58 +32,15 @@ def get_duration(starttime):
 
 def check_type(object,
                expected_type,
-               unicode_keys=False,
-               unicode_values=False,
-               recursive=False,
                prefix='',
                suffix=''):
 
-    object_type = type(object)
     if not isinstance(object, expected_type):
-
         raise TypeError(('%s expected "%s", got "%s" %s' % (
             prefix,
             expected_type.__name__,
             object.__class__.__name__,
             suffix)).strip())
-    if unicode_keys and object_type is dict:
-        check_type(list(object.keys()),
-                   list,
-                   unicode_values=True,
-                   prefix=prefix,
-                   suffix=suffix)
-    if unicode_values and object_type is dict:
-        check_type(list(object.values()),
-                   list,
-                   unicode_keys=unicode_keys,
-                   unicode_values=True,
-                   recursive=recursive,
-                   prefix=prefix,
-                   suffix=suffix)
-    if unicode_values and object_type is list:
-        for stuff in object:
-            if isinstance(stuff, str):
-                raise TypeError(('%s contains non unicode string "%s" %s' % (
-                    prefix,
-                    stuff,
-                    suffix)).strip())
-            if recursive:
-                if isinstance(stuff, list):
-                    check_type(stuff,
-                               list,
-                               unicode_keys=unicode_keys,
-                               unicode_values=True,
-                               recursive=True,
-                               prefix=prefix,
-                               suffix=suffix)
-                if isinstance(stuff, dict):
-                    check_type(stuff,
-                               dict,
-                               unicode_keys=unicode_keys,
-                               unicode_values=True,
-                               recursive=True,
-                               prefix=prefix,
-                               suffix=suffix)
 
 
 class XPath(object):
@@ -98,13 +55,13 @@ class XPath(object):
         result = []
         for stuff in self.doc.xpath(xpath, namespaces=self.nsmap):
             if isinstance(stuff, str):
-                result.append(stuff.strip().decode('utf8'))
+                result.append(stuff.strip())
             elif isinstance(stuff, str):
                 # convert to real unicode object, not lxml proxy
                 result.append(str(stuff.strip()))
             elif hasattr(stuff, 'text'):
                 if isinstance(stuff.text, str):
-                    result.append(stuff.text.strip().decode('utf8'))
+                    result.append(stuff.text.strip())
                 elif isinstance(stuff.text, str):
                     # convert to real unicode object, not lxml proxy
                     result.append(str(stuff.text.strip()))
@@ -173,9 +130,9 @@ class XPath(object):
         for stuff in self.doc.xpath(xpath, namespaces=self.nsmap):
             if hasattr(stuff, 'tag'):
                 if '}' in stuff.tag:
-                    result.append(stuff.tag.split('}', 1)[1].decode('utf8'))
+                    result.append(stuff.tag.split('}', 1)[1])
                 else:
-                    result.append(stuff.tag.decode('utf8'))
+                    result.append(stuff.tag)
         return result
 
     def __call__(self, xpath):
