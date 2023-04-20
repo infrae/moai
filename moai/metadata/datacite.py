@@ -98,9 +98,11 @@ class DataCite(object):
                 if not isinstance(idf_list, list):
                     idf_list = [idf_list]
                 for identifier in idf_list:
-                    nameIdf = NONE.nameIdentifier(identifier['Name_Identifier'])
-                    nameIdf.attrib['nameIdentifierScheme'] = identifier['Name_Identifier_Scheme']
-                    creator.append(nameIdf)
+                    if 'Name_Identifier' in identifier:
+                        nameIdf = NONE.nameIdentifier(identifier['Name_Identifier'])
+                        if 'Name_Identifier_Scheme' in identifier:
+                            nameIdf.attrib['nameIdentifierScheme'] = identifier['Name_Identifier_Scheme']
+                        creator.append(nameIdf)
 
                 creators.append(creator)
             datacite.append(creators)
@@ -235,9 +237,11 @@ class DataCite(object):
                 if not isinstance(idf_list, list):
                     idf_list = [idf_list]
                 for identifier in idf_list:
-                    nameIdf = NONE.nameIdentifier(identifier['Name_Identifier'])
-                    nameIdf.attrib['nameIdentifierScheme'] = identifier['Name_Identifier_Scheme']
-                    contributor.append(nameIdf)
+                    if 'Name_Identifier' in identifier:
+                        nameIdf = NONE.nameIdentifier(identifier['Name_Identifier'])
+                        if 'Name_Identifier_Scheme' in identifier:
+                            nameIdf.attrib['nameIdentifierScheme'] = identifier['Name_Identifier_Scheme']
+                        contributor.append(nameIdf)
 
                 contributors.append(contributor)
 
@@ -270,9 +274,12 @@ class DataCite(object):
                     if not isinstance(idf_list, list):
                         idf_list = [idf_list]
                     for identifier in idf_list:
-                        nameIdf = NONE.nameIdentifier(identifier['Name_Identifier'])
-                        nameIdf.attrib['nameIdentifierScheme'] = identifier['Name_Identifier_Scheme']
-                        contributor.append(nameIdf)
+
+                        if 'Name_Identifier' in identifier:
+                            nameIdf = NONE.nameIdentifier(identifier['Name_Identifier'])
+                            if 'Name_Identifier_Scheme' in identifier:
+                                nameIdf.attrib['nameIdentifierScheme'] = identifier['Name_Identifier_Scheme']
+                            contributor.append(nameIdf)
 
                     contributors.append(contributor)
             except KeyError:
